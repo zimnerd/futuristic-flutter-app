@@ -97,9 +97,14 @@ class UserModel {
           [],
       age: json['age'],
       gender: json['gender'],
-      photos: json['photos'] != null
-          ? (json['photos'] is List ? List<dynamic>.from(json['photos']) : [])
-          : [],
+      // Backend returns media array with profile photos (category: 'profile_photo')
+      // Fall back to 'photos' for backward compatibility with old API responses
+      photos: (json['media'] as List?)
+              ?.cast<dynamic>()
+              .toList() ??
+          (json['photos'] != null
+              ? (json['photos'] is List ? List<dynamic>.from(json['photos']) : [])
+              : []),
       location: json['location'],
       coordinates: json['coordinates'] != null
           ? Map<String, dynamic>.from(json['coordinates'])

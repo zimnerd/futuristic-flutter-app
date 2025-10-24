@@ -1,89 +1,99 @@
 import 'package:flutter/material.dart';
+import '../services/relationship_goals_service.dart';
 
 /// Shared intent options used across the app
-/// Single source of truth for intent/relationship goals selection
+/// Fetches from backend API - single source of truth for relationship goals
 class IntentOptions {
-  /// All available intent options
-  static const List<Map<String, dynamic>> all = [
-    {
-      'id': 'dating',
-      'title': 'Dating',
-      'description': 'Find romantic connections and meaningful relationships',
-      'icon': Icons.favorite,
-      'color': Color(0xFFFF6B9D),
-    },
-    {
-      'id': 'friendship',
-      'title': 'Friendship',
-      'description': 'Make new friends and expand your social circle',
-      'icon': Icons.people,
-      'color': Color(0xFF4ECDC4),
-    },
-    {
-      'id': 'events',
-      'title': 'Events & Activities',
-      'description': 'Find people to attend events and activities with',
-      'icon': Icons.event,
-      'color': Color(0xFFFFA726),
-    },
-    {
-      'id': 'companion',
-      'title': 'AI Companion',
-      'description': 'Chat with AI for advice, support, and conversation',
-      'icon': Icons.psychology,
-      'color': Color(0xFF9C27B0),
-    },
-    {
-      'id': 'support',
-      'title': 'Emotional Support',
-      'description': 'Connect with understanding people and find support',
-      'icon': Icons.favorite_border,
-      'color': Color(0xFF66BB6A),
-    },
-    {
-      'id': 'explore',
-      'title': 'Explore Everything',
-      'description': 'I want to explore all features and decide later',
-      'icon': Icons.explore,
-      'color': Color(0xFF7E57C2),
-    },
-  ];
+  // Map Material Design icon names to IconData
+  static final Map<String, IconData> _iconMap = {
+    'favorite': Icons.favorite,
+    'sentiment_satisfied': Icons.sentiment_satisfied,
+    'favorite_border': Icons.favorite_border,
+    'people': Icons.people,
+    'celebration': Icons.celebration,
+    'handshake': Icons.handshake,
+    'whatshot': Icons.whatshot,
+    'event': Icons.event,
+    'psychology': Icons.psychology,
+    'explore': Icons.explore,
+  };
 
-  /// Get option by ID
-  static Map<String, dynamic>? getById(String id) {
+  static final RelationshipGoalsService _goalService =
+      RelationshipGoalsService.instance;
+
+  /// Get all available intent options from backend
+  /// Returns list with: id, slug, title, description, icon, color, displayOrder
+  static Future<List<Map<String, dynamic>>> getAll({
+    bool forceRefresh = false,
+  }) async {
+    final goals = await _goalService.getAvailableGoals(
+      forceRefresh: forceRefresh,
+    );
+
+    // Convert icon names to IconData objects
+    return goals.map((goal) {
+      final iconName = goal['icon'] as String? ?? 'explore';
+      return {...goal, 'iconData': _iconMap[iconName] ?? Icons.explore};
+    }).toList();
+  }
+
+  /// Get option by slug/ID
+  static Future<Map<String, dynamic>?> getById(String id) async {
+    final goals = await getAll();
     try {
-      return all.firstWhere((option) => option['id'] == id);
+      return goals.firstWhere(
+        (option) => option['slug'] == id || option['id'] == id,
+      );
     } catch (e) {
       return null;
     }
   }
 
-  /// Get all option IDs
-  static List<String> getAllIds() {
-    return all.map((option) => option['id'] as String).toList();
+  /// Get all option IDs/slugs
+  static Future<List<String>> getAllIds() async {
+    final goals = await getAll();
+    return goals.map((option) => option['slug'] as String).toList();
   }
 
   /// Get option title by ID
-  static String? getTitleById(String id) {
-    final option = getById(id);
+  static Future<String?> getTitleById(String id) async {
+    final option = await getById(id);
     return option?['title'] as String?;
   }
 
   /// Get option description by ID
-  static String? getDescriptionById(String id) {
-    final option = getById(id);
+  static Future<String?> getDescriptionById(String id) async {
+    final option = await getById(id);
     return option?['description'] as String?;
   }
 
   /// Get option icon by ID
-  static IconData? getIconById(String id) {
-    final option = getById(id);
-    return option?['icon'] as IconData?;
+  static Future<IconData?> getIconById(String id) async {
+    final option = await getById(id);
+    return option?['iconData'] as IconData?;
   }
 
-  /// Get option color by ID
-  static Color? getColorById(String id) {
-    final option = getById(id);
-    return option?['color'] as Color?;
+  /// Get option color by ID (converts hex string to Color)
+  static Future<Color?> getColorById(String id) async {
+    final option = await getById(id);
+    if (option == null) return null;
+
+    final colorHex = option['color'] as String? ?? '#7E57C2';
+    return _parseColorFromHex(colorHex);
+  }
+
+  /// Parse color from hex string
+  static Color _parseColorFromHex(String hexString) {
+    try {
+      final hex = hexString.replaceFirst('#', '');
+      return Color(int.parse('FF$hex', radix: 16));
+    } catch (e) {
+      return const Color(0xFF7E57C2); // Fallback color
+    }
+  }
+
+  /// Clear cached goals (useful when logging out)
+  static void clearCache() {
+    _goalService.clearCache();
   }
 }

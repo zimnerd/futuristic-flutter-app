@@ -109,7 +109,10 @@ class ProfileService {
   /// Convert API user data to domain UserProfile entity
   domain.UserProfile _convertUserDataToEntity(Map<String, dynamic> userData) {
     // Extract photos from API response
-    final photosList = userData['photos'] as List<dynamic>?;
+    // Backend returns 'media' array with profile photos (category: 'profile_photo')
+    // Fall back to 'photos' for backward compatibility with old API responses
+    final photosList = (userData['media'] as List<dynamic>?) ??
+        (userData['photos'] as List<dynamic>?);
     final photos =
         photosList?.map((photo) {
           // Handle both string URL format (legacy) and Photo object format (new)

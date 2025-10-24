@@ -71,6 +71,9 @@ abstract class UserRemoteDataSource {
   Future<void> deleteProfilePhoto(String userId, String photoUrl);
   Future<void> reorderPhotos(List<String> photoIds);
   Future<void> syncPhotos(List<Map<String, dynamic>> photos);
+  Future<Map<String, dynamic>> updateRelationshipGoals(
+    List<String> relationshipGoals,
+  );
   Future<void> updateUserLocation(
     String userId,
     double latitude,
@@ -934,6 +937,38 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
       _logger.e('Sync photos error: $e');
       if (e is ApiException) rethrow;
       throw ApiException('Failed to sync photos: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> updateRelationshipGoals(
+    List<String> relationshipGoals,
+  ) async {
+    try {
+      _logger.i('Updating relationship goals: $relationshipGoals');
+
+      final response = await _apiClient.post(
+        '/users/me/profile/goals',
+        data: {'relationshipGoals': relationshipGoals},
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = response.data['data'] ?? response.data;
+        _logger.i(
+          '✅ Relationship goals updated successfully: $relationshipGoals',
+        );
+        return data as Map<String, dynamic>;
+      } else {
+        throw ApiException(
+          'Failed to update relationship goals: ${response.statusMessage}',
+        );
+      }
+    } catch (e) {
+      _logger.e('Update relationship goals error: $e');
+      if (e is ApiException) rethrow;
+      throw ApiException(
+        'Failed to update relationship goals: ${e.toString()}',
+      );
     }
   }
 

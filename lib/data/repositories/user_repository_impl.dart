@@ -373,7 +373,7 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
-  Future<void> uploadProfilePhoto(String userId, String photoPath) async {
+  Future<String> uploadProfilePhoto(String userId, String photoPath) async {
     try {
       _logger.i('Uploading profile photo for user: $userId');
 
@@ -392,6 +392,7 @@ class UserRepositoryImpl implements UserRepository {
       }
 
       _logger.i('Profile photo uploaded successfully: $photoUrl');
+      return photoUrl;
     } catch (e) {
       _logger.e('Upload profile photo failed: $e');
       if (e is AppException) rethrow;
@@ -956,4 +957,22 @@ class UserRepositoryImpl implements UserRepository {
       throw Exception('Failed to send test notification: $e');
     }
   }
+
+  @override
+  Future<Map<String, dynamic>> updateRelationshipGoals(
+    List<String> relationshipGoals,
+  ) async {
+    try {
+      _logger.i('Updating relationship goals: $relationshipGoals');
+      final result = await _remoteDataSource.updateRelationshipGoals(
+        relationshipGoals,
+      );
+      _logger.i('Relationship goals updated successfully');
+      return result;
+    } catch (e) {
+      _logger.e('Failed to update relationship goals: $e');
+      throw Exception('Failed to update relationship goals: $e');
+    }
+  }
 }
+

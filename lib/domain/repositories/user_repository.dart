@@ -61,8 +61,11 @@ abstract class UserRepository {
     String userId,
     Map<String, dynamic> updates,
   );
-  Future<void> uploadProfilePhoto(String userId, String photoPath);
+  Future<String> uploadProfilePhoto(String userId, String photoPath);
   Future<void> deleteProfilePhoto(String userId, String photoUrl);
+  Future<Map<String, dynamic>> updateRelationshipGoals(
+    List<String> relationshipGoals,
+  );
   Future<void> updateUserLocation(
     String userId,
     double latitude,

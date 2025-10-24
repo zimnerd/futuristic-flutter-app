@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -22,6 +23,7 @@ import '../../../domain/entities/user_profile.dart';
 import '../../navigation/app_router.dart';
 import '../../widgets/profile/interests_selector.dart';
 import '../../../core/constants/intent_options.dart';
+import '../../../core/services/service_locator.dart';
 
 /// Profile section edit screen for editing individual profile sections
 /// 
@@ -64,6 +66,36 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
       '📱 Initializing ProfileSectionEditScreen for section: ${widget.sectionType}',
     );
     context.read<ProfileBloc>().add(const LoadProfile());
+  }
+
+  @override
+  void didUpdateWidget(ProfileSectionEditScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // If section type changed, reinitialize and repopulate
+    if (oldWidget.sectionType != widget.sectionType) {
+      logger.i(
+        '🔄 Section type changed from ${oldWidget.sectionType} to ${widget.sectionType}',
+      );
+
+      // Clear section-specific form data for new section
+      _controllers.clear();
+      _formData.clear();
+      _formData.addAll(widget.initialData ?? {});
+      _initializeControllers();
+
+      // Repopulate fields if we have a cached profile
+      if (_currentProfile != null) {
+        logger.i(
+          '📝 Repopulating fields for new section: ${widget.sectionType}',
+        );
+        _populateFields(_currentProfile!);
+      } else {
+        // Load profile if not cached yet
+        logger.i('📥 Loading profile for new section');
+        context.read<ProfileBloc>().add(const LoadProfile());
+      }
+    }
   }
 
   void _initializeControllers() {
@@ -134,11 +166,25 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
           break;
 
         case 'photos':
-          _formData['photos'] = List.from(profile.photos);
+          // Convert ProfilePhoto objects to Maps for UI compatibility
+          _formData['photos'] = profile.photos
+              .map(
+                (photo) => {
+                  'id': photo.id,
+                  'url': photo.url,
+                  'order': photo.order,
+                  'description': photo.description,
+                  'blurhash': photo.blurhash,
+                  'isMain': photo.isMain,
+                  'isVerified': photo.isVerified,
+                  'uploadedAt': photo.uploadedAt?.toIso8601String(),
+                },
+              )
+              .toList();
           // newPhotos stays empty - only for new selections
           _formData['newPhotos'] = [];
           logger.i(
-            '✅ Populated photos: ${profile.photos.length} existing photos',
+            '✅ Populated photos: ${profile.photos.length} existing photos, converted to Maps',
           );
           break;
 
@@ -416,10 +462,19 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
         _formData['photos'] as List<dynamic>? ?? [];
 
     // Get new photos selected by user (File objects)
-    final List<File> newPhotos = _formData['newPhotos'] as List<File>? ?? [];
+    final List<File> newPhotos =
+        ((_formData['newPhotos'] as List<dynamic>?)?.cast<File>()) ?? [];
 
     // Total photo count
     final int totalPhotos = existingPhotos.length + newPhotos.length;
+    
+    logger.i(
+      '🖼️ _buildPhotosSection: existingPhotos=${existingPhotos.length}, newPhotos=${newPhotos.length}, total=$totalPhotos',
+    );
+
+    if (existingPhotos.isNotEmpty) {
+      logger.i('📸 First existing photo: ${existingPhotos.first}');
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -526,13 +581,28 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
   }
 
   Widget _buildExistingPhotoCard(dynamic photo, int displayIndex) {
-    final String photoUrl = photo is Map
-        ? (photo['url'] ?? photo['photo_url'] ?? '')
-        : photo.toString();
-    final String? description = photo is Map ? photo['description'] : null;
-    final bool isMain = photo is Map
-        ? (photo['isMain'] ?? photo['isPrimary'] ?? displayIndex == 0)
-        : displayIndex == 0;
+    // Handle both Map and ProfilePhoto objects
+    final String photoUrl;
+    final String? description;
+    final bool isMain;
+
+    if (photo is ProfilePhoto) {
+      // Handle ProfilePhoto entity objects
+      photoUrl = photo.url;
+      description = photo.description;
+      isMain = photo.isMain || displayIndex == 0;
+    } else if (photo is Map) {
+      // Handle Map/JSON objects
+      photoUrl = photo['url'] ?? photo['photo_url'] ?? '';
+      description = photo['description'] as String?;
+      isMain =
+          (photo['isMain'] ?? photo['isPrimary'] ?? displayIndex == 0) as bool;
+    } else {
+      // Fallback for string URLs
+      photoUrl = photo.toString();
+      description = null;
+      isMain = displayIndex == 0;
+    }
 
     return GestureDetector(
       onTap: () => _showPhotoDetails(photo, displayIndex),
@@ -619,7 +689,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
                 top: 4,
                 right: isMain ? 36 : 4,
                 child: GestureDetector(
-                  onTap: () => _showPhotoDescription(description),
+                  onTap: () => _showPhotoDescription(description ?? ''),
                   child: Container(
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
@@ -707,7 +777,9 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
             child: GestureDetector(
               onTap: () {
                 final List<File> newPhotos =
-                    _formData['newPhotos'] as List<File>? ?? [];
+                    ((_formData['newPhotos'] as List<dynamic>?)
+                        ?.cast<File>()) ??
+                    [];
                 setState(() {
                   newPhotos.removeAt(newPhotoIndex);
                   _formData['newPhotos'] = newPhotos;
@@ -871,7 +943,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
         final File file = File(image.path);
         setState(() {
           final List<File> newPhotos =
-              _formData['newPhotos'] as List<File>? ?? [];
+              ((_formData['newPhotos'] as List<dynamic>?)?.cast<File>()) ?? [];
           newPhotos.add(file);
           _formData['newPhotos'] = newPhotos;
         });
@@ -1585,65 +1657,101 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
   Widget _buildIntentSection() {
     final selectedIntent = _formData['intent'] as String?;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Text(
-              '*What brings you here?*',
-              style: PulseTextStyles.titleMedium.copyWith(
-                color: PulseColors.onSurface,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            Text(
-              ' *',
-              style: PulseTextStyles.titleMedium.copyWith(
+    return FutureBuilder<List<Map<String, dynamic>>>(
+      future: IntentOptions.getAll(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (snapshot.hasError) {
+          return Center(
+            child: Text(
+              'Error loading relationship goals',
+              style: PulseTextStyles.bodyMedium.copyWith(
                 color: PulseColors.error,
-                fontWeight: FontWeight.w600,
               ),
             ),
-          ],
-        ),
-        const SizedBox(height: PulseSpacing.md),
-        Text(
-          'Choose your primary intent. You can explore other features anytime.',
-          style: PulseTextStyles.bodyMedium.copyWith(
-            color: PulseColors.onSurfaceVariant,
-          ),
-        ),
-        const SizedBox(height: PulseSpacing.lg),
-        ...IntentOptions.all.map((option) {
-          final isSelected = selectedIntent == option['id'];
-          return Padding(
-            padding: const EdgeInsets.only(bottom: PulseSpacing.md),
-            child: GestureDetector(
-              onTap: () {
-                logger.i('🎯 GestureDetector tap - intent: ${option['id']}');
-                setState(() {
-                  _formData['intent'] = option['id'];
-                  logger.i('  ✅ Intent updated to: ${option['id']}');
-                });
-              },
-              child: Container(
-                padding: const EdgeInsets.all(PulseSpacing.lg),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? (option['color'] as Color).withValues(alpha: 0.1)
-                      : PulseColors.surface,
-                  border: Border.all(
-                    color: isSelected
-                        ? option['color'] as Color
-                        : Colors.grey.shade300,
-                    width: isSelected ? 2 : 1,
+          );
+        }
+
+        final goals = snapshot.data ?? [];
+
+        if (goals.isEmpty) {
+          return Center(
+            child: Text(
+              'No relationship goals available',
+              style: PulseTextStyles.bodyMedium.copyWith(
+                color: PulseColors.onSurfaceVariant,
+              ),
+            ),
+          );
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text(
+                  '*What brings you here?*',
+                  style: PulseTextStyles.titleMedium.copyWith(
+                    color: PulseColors.onSurface,
+                    fontWeight: FontWeight.w600,
                   ),
-                  borderRadius: BorderRadius.circular(PulseRadii.lg),
-                  boxShadow: isSelected
-                      ? [
-                          BoxShadow(
-                            color: (option['color'] as Color).withValues(
-                              alpha: 0.3,
+                ),
+                Text(
+                  ' *',
+                  style: PulseTextStyles.titleMedium.copyWith(
+                    color: PulseColors.error,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: PulseSpacing.md),
+            Text(
+              'Choose your primary intent. You can explore other features anytime.',
+              style: PulseTextStyles.bodyMedium.copyWith(
+                color: PulseColors.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: PulseSpacing.lg),
+            ...goals.map((option) {
+              final isSelected =
+                  selectedIntent == option['slug'] ||
+                  selectedIntent == option['id'];
+              final colorHex = option['color'] as String? ?? '#7E57C2';
+              final color = _parseColorFromHex(colorHex);
+
+              return Padding(
+                padding: const EdgeInsets.only(bottom: PulseSpacing.md),
+                child: GestureDetector(
+                  onTap: () {
+                    logger.i(
+                      '🎯 GestureDetector tap - intent: ${option['slug']}',
+                    );
+                    setState(() {
+                      _formData['intent'] = option['slug'] as String;
+                      logger.i('  ✅ Intent updated to: ${option['slug']}');
+                    });
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(PulseSpacing.lg),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? color.withValues(alpha: 0.1)
+                          : PulseColors.surface,
+                      border: Border.all(
+                        color: isSelected
+                            ? color : Colors.grey.shade300,
+                        width: isSelected ? 2 : 1,
+                      ),
+                      borderRadius: BorderRadius.circular(PulseRadii.lg),
+                      boxShadow: isSelected
+                          ? [
+                              BoxShadow(
+                                color: color.withValues(alpha: 0.3,
                                 ),
                                 blurRadius: 12,
                                 offset: const Offset(0, 4),
@@ -1653,50 +1761,49 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
                     ),
                     child: Row(
                       children: [
-                    // Radio button
-                    Container(
-                      width: 24,
-                      height: 24,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: isSelected
-                              ? option['color'] as Color
-                              : Colors.grey.shade400,
-                          width: 2,
+                        // Radio button
+                        Container(
+                          width: 24,
+                          height: 24,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: isSelected
+                                  ? color : Colors.grey.shade400,
+                              width: 2,
+                            ),
+                          ),
+                          child: isSelected
+                              ? Center(
+                                  child: Container(
+                                    width: 12,
+                                    height: 12,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: color,
+                                    ),
+                                  ),
+                                )
+                              : null,
                         ),
-                      ),
-                      child: isSelected
-                          ? Center(
-                              child: Container(
-                                width: 12,
-                                height: 12,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: option['color'] as Color,
-                                ),
-                              ),
-                            )
-                          : null,
-                    ),
-                    const SizedBox(width: PulseSpacing.md),
-                    // Icon
+                        const SizedBox(width: PulseSpacing.md),
+                        // Icon
                         Container(
                           width: 56,
                           height: 56,
                           decoration: BoxDecoration(
                             color: isSelected
-                                ? option['color'] as Color
-                                : (option['color'] as Color).withValues(
+                                ? color
+                                : color.withValues(
                                     alpha: 0.1,
                                   ),
                             borderRadius: BorderRadius.circular(PulseRadii.md),
                           ),
                           child: Icon(
-                            option['icon'] as IconData,
+                            option['iconData'] as IconData? ?? Icons.explore,
                             color: isSelected
                                 ? Colors.white
-                                : option['color'] as Color,
+                                : color,
                             size: 28,
                           ),
                         ),
@@ -1706,7 +1813,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                option['title'] as String,
+                                option['title'] as String? ?? 'Unknown',
                                 style: PulseTextStyles.titleMedium.copyWith(
                                   color: PulseColors.onSurface,
                                   fontWeight: FontWeight.w600,
@@ -1714,22 +1821,35 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
                               ),
                               const SizedBox(height: PulseSpacing.xs),
                               Text(
-                                option['description'] as String,
+                                option['description'] as String? ??
+                                    'No description',
                                 style: PulseTextStyles.bodyMedium.copyWith(
                                   color: PulseColors.onSurfaceVariant,
                                 ),
                               ),
                             ],
                           ),
-                    ),
+                        ),
                       ],
                     ),
                   ),
                 ),
               );
-            }),
-      ],
+            }).toList(),
+          ],
+        );
+      },
     );
+  }
+
+  /// Parse color from hex string
+  Color _parseColorFromHex(String hexString) {
+    try {
+      final hex = hexString.replaceFirst('#', '');
+      return Color(int.parse('FF$hex', radix: 16));
+    } catch (e) {
+      return const Color(0xFF7E57C2); // Fallback color
+    }
   }
 
   String _getSectionTitle() {
@@ -1803,7 +1923,9 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
         final existingPhotos =
             (_formData['photos'] as List<dynamic>?)?.isNotEmpty ?? false;
         final newPhotos =
-            (_formData['newPhotos'] as List<File>?)?.isNotEmpty ?? false;
+            ((_formData['newPhotos'] as List<dynamic>?)?.cast<File>())
+                ?.isNotEmpty ??
+            false;
         if (!existingPhotos && !newPhotos) {
           return 'Please add at least 1 photo';
         }
@@ -1873,44 +1995,66 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
       if (widget.sectionType == 'photos' &&
           _formData.containsKey('newPhotos')) {
         try {
-          final newPhotos = _formData['newPhotos'] as List<File>;
+          final newPhotos =
+              (_formData['newPhotos'] as List<dynamic>?)?.cast<File>() ??
+              <File>[];
 
-          // Check if there are existing photos
-          final hasExistingPhotos =
-              (_formData['photos'] as List<dynamic>?)?.isNotEmpty ?? false;
+          if (newPhotos.isNotEmpty) {
+            // Show uploading message
+            if (mounted) {
+              PulseToast.success(
+                context,
+                message: 'Uploading ${newPhotos.length} photo(s)...',
+                duration: const Duration(seconds: 2),
+              );
+            }
 
-          // Upload each new photo using ProfileBloc and PhotoBloc
-          for (int i = 0; i < newPhotos.length; i++) {
-            debugPrint(
-              '📸 Uploading photo ${i + 1}/${newPhotos.length}: ${newPhotos[i].path}',
-            );
+            // Upload each new photo and wait for completion
+            for (int i = 0; i < newPhotos.length; i++) {
+              debugPrint(
+                '📸 Uploading photo ${i + 1}/${newPhotos.length}: ${newPhotos[i].path}',
+              );
 
-            // Dispatch to ProfileBloc (existing implementation)
-            context.read<ProfileBloc>().add(
-              UploadPhoto(photoPath: newPhotos[i].path),
-            );
+              try {
+                // Wait for ProfileBloc upload to complete
+                final completer = Completer<void>();
 
-            // Also dispatch to PhotoBloc for photo-specific state management
-            context.read<PhotoBloc>().add(
-              photo_events.UploadPhoto(
-                photoFile: newPhotos[i],
-                setAsMain:
-                    !hasExistingPhotos && i == 0, // First photo if no existing
-              ),
-            );
+                // Listen to upload completion
+                final subscription = context.read<ProfileBloc>().stream.listen((
+                  state,
+                ) {
+                  // Check if this specific photo upload completed
+                  if (state.uploadingPhotos.isEmpty &&
+                      state.uploadStatus != ProfileStatus.loading) {
+                    if (!completer.isCompleted) {
+                      completer.complete();
+                    }
+                  }
+                });
+
+                // Dispatch upload event
+                context.read<ProfileBloc>().add(
+                  UploadPhoto(photoPath: newPhotos[i].path),
+                );
+
+                // Wait for upload to complete (with timeout)
+                await completer.future
+                    .timeout(const Duration(seconds: 30))
+                    .catchError((_) {
+                      debugPrint(
+                        '⚠️ Photo upload timeout or error for photo $i',
+                      );
+                    });
+
+                subscription.cancel();
+              } catch (e) {
+                debugPrint('❌ Error uploading photo $i: $e');
+              }
+            }
           }
 
           // Remove loading dialog
           if (mounted) Navigator.pop(context);
-
-          // Show success message
-          if (mounted) {
-            PulseToast.success(
-              context,
-              message: 'Uploading ${newPhotos.length} photo(s)...',
-              duration: const Duration(seconds: 2),
-            );
-          }
         } catch (e) {
           // Remove loading dialog
           if (mounted) Navigator.pop(context);
@@ -1919,6 +2063,28 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
           PulseToast.error(context, message: 'Failed to upload photos: $e');
           return;
         }
+      }
+
+      // Save section data to backend based on section type
+      try {
+        if (widget.sectionType == 'intent' && _formData.containsKey('intent')) {
+          // Save intent (relationship goals) to backend
+          final intent = _formData['intent'] as String?;
+          if (intent != null && intent.isNotEmpty) {
+            debugPrint('💾 Saving intent to backend: $intent');
+            final apiClient = ServiceLocator.instance.apiClient;
+            await apiClient.post(
+              '/users/me/profile/goals',
+              data: {
+                'relationshipGoals': [intent],
+              },
+            );
+            debugPrint('✅ Intent saved to backend');
+          }
+        }
+      } catch (e) {
+        debugPrint('⚠️ Warning: Failed to save section data to backend: $e');
+        // Don't fail the whole operation, but log it
       }
 
       // Mark this section as complete in SharedPreferences
