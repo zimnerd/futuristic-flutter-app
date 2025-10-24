@@ -14,14 +14,12 @@ class MockAuthBloc extends Mock implements AuthBloc {}
 void main() {
   late SpeedDatingBloc bloc;
   late MockSpeedDatingService mockService;
-  late MockAuthBloc mockAuthBloc;
 
   setUp(() {
     mockService = MockSpeedDatingService();
-    mockAuthBloc = MockAuthBloc();
+    // authBloc is no longer needed - userId extracted from auth token by backend
     bloc = SpeedDatingBloc(
       speedDatingService: mockService,
-      authBloc: mockAuthBloc,
     );
   });
 
@@ -83,7 +81,9 @@ void main() {
     blocTest<SpeedDatingBloc, SpeedDatingState>(
       'emits [SpeedDatingJoining, SpeedDatingJoined] when join successful',
       build: () {
-        when(() => mockService.joinEvent(any(), any())).thenAnswer(
+        when(
+          () => mockService.joinEvent(any()),
+        ).thenAnswer(
           (_) async => {'id': eventId, 'status': 'joined'},
         );
         when(() => mockService.getUpcomingEvents()).thenAnswer(
@@ -100,14 +100,14 @@ void main() {
         >(), // LoadUserSpeedDatingSessions is triggered after join
       ],
       verify: (_) {
-        verify(() => mockService.joinEvent(eventId, any())).called(1);
+        verify(() => mockService.joinEvent(eventId)).called(1);
       },
     );
 
     blocTest<SpeedDatingBloc, SpeedDatingState>(
       'emits [SpeedDatingJoining, SpeedDatingError] when join fails',
       build: () {
-        when(() => mockService.joinEvent(any(), any())).thenAnswer(
+        when(() => mockService.joinEvent(any())).thenAnswer(
           (_) async => null, // Null indicates failure
         );
         return bloc;
@@ -126,7 +126,7 @@ void main() {
     blocTest<SpeedDatingBloc, SpeedDatingState>(
       'emits [SpeedDatingLeaving, SpeedDatingLeft] when leave successful',
       build: () {
-        when(() => mockService.leaveEvent(any(), any())).thenAnswer(
+        when(() => mockService.leaveEvent(any())).thenAnswer(
           (_) async => true,
         );
         when(() => mockService.getUpcomingEvents()).thenAnswer(
@@ -143,14 +143,16 @@ void main() {
         >(), // LoadUserSpeedDatingSessions is triggered after leave
       ],
       verify: (_) {
-        verify(() => mockService.leaveEvent(eventId, any())).called(1);
+        verify(() => mockService.leaveEvent(eventId)).called(1);
       },
     );
 
     blocTest<SpeedDatingBloc, SpeedDatingState>(
       'emits [SpeedDatingLeaving, SpeedDatingError] when leave fails',
       build: () {
-        when(() => mockService.leaveEvent(any(), any())).thenAnswer(
+        when(
+          () => mockService.leaveEvent(any()),
+        ).thenAnswer(
           (_) async => false,
         );
         return bloc;
@@ -241,7 +243,7 @@ void main() {
     blocTest<SpeedDatingBloc, SpeedDatingState>(
       'emits [SpeedDatingMatchesLoading, SpeedDatingMatchesLoaded] when matches loaded',
       build: () {
-        when(() => mockService.getEventMatches(any(), any())).thenAnswer(
+        when(() => mockService.getEventMatches(any())).thenAnswer(
           (_) async => [
             {
               'userId': 'user456',
@@ -267,14 +269,16 @@ void main() {
         isA<SpeedDatingMatchesLoaded>(),
       ],
       verify: (_) {
-        verify(() => mockService.getEventMatches(eventId, any())).called(1);
+        verify(() => mockService.getEventMatches(eventId)).called(1);
       },
     );
 
     blocTest<SpeedDatingBloc, SpeedDatingState>(
       'emits empty matches list when no matches found',
       build: () {
-        when(() => mockService.getEventMatches(any(), any())).thenAnswer(
+        when(
+          () => mockService.getEventMatches(any()),
+        ).thenAnswer(
           (_) async => [],
         );
         return bloc;
@@ -293,7 +297,7 @@ void main() {
     blocTest<SpeedDatingBloc, SpeedDatingState>(
       'emits [SpeedDatingSessionStarting, SpeedDatingSessionStarted] when session starts',
       build: () {
-        when(() => mockService.joinEvent(any(), any())).thenAnswer(
+        when(() => mockService.joinEvent(any())).thenAnswer(
           (_) async => {
             'id': eventId,
             'currentSession': {
@@ -318,7 +322,7 @@ void main() {
     blocTest<SpeedDatingBloc, SpeedDatingState>(
       'emits [SpeedDatingSessionEnding, SpeedDatingSessionEnded] when session ends',
       build: () {
-        when(() => mockService.leaveEvent(any(), any())).thenAnswer(
+        when(() => mockService.leaveEvent(any())).thenAnswer(
           (_) async => true,
         );
         return bloc;

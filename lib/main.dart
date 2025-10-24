@@ -416,7 +416,6 @@ class PulseDatingApp extends StatelessWidget {
         BlocProvider<SpeedDatingBloc>(
           create: (context) => SpeedDatingBloc(
             speedDatingService: context.read<SpeedDatingService>(),
-            authBloc: context.read<AuthBloc>(),
           ),
         ),
       ],

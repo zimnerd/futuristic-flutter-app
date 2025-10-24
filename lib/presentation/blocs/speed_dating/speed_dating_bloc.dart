@@ -1,22 +1,17 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:logger/logger.dart';
 import '../../../data/services/speed_dating_service.dart';
-import '../auth/auth_bloc.dart';
-import '../auth/auth_state.dart';
 import 'speed_dating_event.dart';
 import 'speed_dating_state.dart';
 
 class SpeedDatingBloc extends Bloc<SpeedDatingEvent, SpeedDatingState> {
   final SpeedDatingService _speedDatingService;
-  final AuthBloc _authBloc;
   final Logger _logger = Logger();
   static const String _tag = 'SpeedDatingBloc';
 
   SpeedDatingBloc({
     required SpeedDatingService speedDatingService,
-    required AuthBloc authBloc,
   }) : _speedDatingService = speedDatingService,
-       _authBloc = authBloc,
        super(SpeedDatingInitial()) {
     on<LoadSpeedDatingEvents>(_onLoadSpeedDatingEvents);
     on<LoadUserSpeedDatingSessions>(_onLoadUserSpeedDatingSessions);
@@ -30,17 +25,6 @@ class SpeedDatingBloc extends Bloc<SpeedDatingEvent, SpeedDatingState> {
     on<CreateSpeedDatingEvent>(_onCreateSpeedDatingEvent);
     on<LoadSpeedDatingHistory>(_onLoadSpeedDatingHistory);
     on<RefreshSpeedDatingData>(_onRefreshSpeedDatingData);
-  }
-
-  /// Get current user ID from auth context
-  String _getCurrentUserId() {
-    final authState = _authBloc.state;
-    if (authState is AuthAuthenticated) {
-      return authState.user.id;
-    }
-    throw Exception(
-      'User not authenticated. Please log in to access Speed Dating.',
-    );
   }
 
   Future<void> _onLoadSpeedDatingEvents(
@@ -117,12 +101,10 @@ class SpeedDatingBloc extends Bloc<SpeedDatingEvent, SpeedDatingState> {
     Emitter<SpeedDatingState> emit,
   ) async {
     try {
-      // Show joining state instead of error
       emit(SpeedDatingJoining(event.eventId));
       _logger.d('$_tag: Joining speed dating event: ${event.eventId}');
 
-      final userId = _getCurrentUserId();
-      final result = await _speedDatingService.joinEvent(event.eventId, userId);
+      final result = await _speedDatingService.joinEvent(event.eventId);
 
       if (result != null) {
         // Emit joined state - this will trigger the success toast
@@ -164,11 +146,7 @@ class SpeedDatingBloc extends Bloc<SpeedDatingEvent, SpeedDatingState> {
       emit(SpeedDatingLeaving(event.eventId));
       _logger.d('$_tag: Leaving speed dating event: ${event.eventId}');
 
-      final userId = _getCurrentUserId();
-      final success = await _speedDatingService.leaveEvent(
-        event.eventId,
-        userId,
-      );
+      final success = await _speedDatingService.leaveEvent(event.eventId);
 
       if (success) {
         emit(SpeedDatingLeft(event.eventId));
@@ -201,11 +179,7 @@ class SpeedDatingBloc extends Bloc<SpeedDatingEvent, SpeedDatingState> {
       );
 
       // Note: Service doesn't have startSession method - using join instead
-      final userId = _getCurrentUserId();
-      final session = await _speedDatingService.joinEvent(
-        event.eventId,
-        userId,
-      );
+      final session = await _speedDatingService.joinEvent(event.eventId);
 
       if (session != null) {
         emit(SpeedDatingSessionStarted(session));
@@ -239,11 +213,7 @@ class SpeedDatingBloc extends Bloc<SpeedDatingEvent, SpeedDatingState> {
       _logger.d('$_tag: Ending speed dating session: ${event.sessionId}');
 
       // Note: Service doesn't have endSession method - using leave instead
-      final userId = _getCurrentUserId();
-      final success = await _speedDatingService.leaveEvent(
-        event.sessionId,
-        userId,
-      );
+      final success = await _speedDatingService.leaveEvent(event.sessionId);
 
       if (success) {
         emit(SpeedDatingSessionEnded(event.sessionId));
@@ -339,11 +309,7 @@ class SpeedDatingBloc extends Bloc<SpeedDatingEvent, SpeedDatingState> {
       emit(SpeedDatingMatchesLoading(event.eventId));
       _logger.d('$_tag: Loading matches for event: ${event.eventId}');
 
-      final userId = _getCurrentUserId();
-      final matches = await _speedDatingService.getEventMatches(
-        event.eventId,
-        userId,
-      );
+      final matches = await _speedDatingService.getEventMatches(event.eventId);
 
       emit(SpeedDatingMatchesLoaded(matches));
 

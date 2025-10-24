@@ -56,9 +56,9 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
         throw Exception('User not authenticated');
       }
 
+      // userId is now extracted from auth token by backend
       final matches = await _speedDatingService.getEventMatches(
         widget.eventId,
-        userId,
       );
 
       setState(() {

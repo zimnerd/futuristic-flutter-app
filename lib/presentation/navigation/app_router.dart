@@ -447,11 +447,9 @@ class AppRouter {
           path: AppRoutes.speedDating,
           name: 'speedDating',
           builder: (context, state) {
-            final authBloc = context.read<AuthBloc>();
             return BlocProvider(
               create: (_) => SpeedDatingBloc(
                 speedDatingService: SpeedDatingService(),
-                authBloc: authBloc,
               ),
               child: const SpeedDatingScreen(),
             );

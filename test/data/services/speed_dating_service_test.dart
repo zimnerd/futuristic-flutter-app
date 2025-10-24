@@ -81,19 +81,17 @@ void main() {
     test('joinEvent should return event data when successful', () async {
       // Arrange
       const eventId = 'event1';
-      const userId = 'user123';
 
-      // Act & Assert
-      expect(() => service.joinEvent(eventId, userId), returnsNormally);
+      // Act & Assert - userId is extracted from auth token automatically
+      expect(() => service.joinEvent(eventId), returnsNormally);
     });
 
     test('leaveEvent should return true when successful', () async {
       // Arrange
       const eventId = 'event1';
-      const userId = 'user123';
 
-      // Act & Assert
-      expect(() => service.leaveEvent(eventId, userId), returnsNormally);
+      // Act & Assert - userId is extracted from auth token automatically
+      expect(() => service.leaveEvent(eventId), returnsNormally);
     });
 
     test('getUserEvents should return user\'s events', () async {
@@ -162,10 +160,9 @@ void main() {
     test('getEventMatches should return list of mutual matches', () async {
       // Arrange
       const eventId = 'event1';
-      const userId = 'user123';
 
-      // Act & Assert
-      expect(() => service.getEventMatches(eventId, userId), returnsNormally);
+      // Act & Assert - userId is now extracted from auth token automatically
+      expect(() => service.getEventMatches(eventId), returnsNormally);
     });
   });
 
@@ -212,10 +209,9 @@ void main() {
     test('should handle invalid event ID in joinEvent', () async {
       // Arrange
       const invalidEventId = 'invalid-id';
-      const userId = 'user123';
 
-      // Act & Assert
-      expect(() => service.joinEvent(invalidEventId, userId), returnsNormally);
+      // Act & Assert - userId is extracted from auth token automatically
+      expect(() => service.joinEvent(invalidEventId), returnsNormally);
     });
 
     test('should handle invalid rating values', () async {

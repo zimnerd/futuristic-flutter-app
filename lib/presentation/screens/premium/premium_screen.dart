@@ -142,12 +142,66 @@ class _PremiumScreenState extends State<PremiumScreen>
               context,
             ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
           ),
+          const SizedBox(height: 8),
+          Text(
+            'Upgrade to unlock premium features and connect with more people',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: context.onSurfaceVariantColor,
+            ),
+          ),
           const SizedBox(height: 16),
 
-          SubscriptionPlansWidget(
-            plans: state.plans,
-            currentSubscription: state.subscription,
-            onPlanSelected: _handlePlanSelection,
+          // Plans list or empty state
+          if (state.plans.isEmpty)
+            _buildNoPlansSplash(context)
+          else
+            SubscriptionPlansWidget(
+              plans: state.plans,
+              currentSubscription: state.subscription,
+              onPlanSelected: _handlePlanSelection,
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNoPlansSplash(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: context.surfaceVariantColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: context.outlineColor.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        children: [
+          Icon(
+            Icons.inbox_outlined,
+            size: 64,
+            color: context.onSurfaceVariantColor.withValues(alpha: 0.5),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Premium Plans Unavailable',
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Premium subscription plans are currently unavailable. Please try again later.',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: context.onSurfaceVariantColor,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            onPressed: () {
+              context.read<PremiumBloc>().add(LoadPremiumData());
+            },
+            icon: const Icon(Icons.refresh),
+            label: const Text('Retry'),
           ),
         ],
       ),
@@ -392,35 +446,173 @@ class _PremiumScreenState extends State<PremiumScreen>
   }
 
   void _showSubscriptionManagement(UserSubscription subscription) {
-    // Implementation for subscription management
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
-        title: Text(
-          'Manage Subscription',
-          style: TextStyle(
-            color: Colors.grey.shade900,
-            fontWeight: FontWeight.bold,
-          ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: context.surfaceColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
-        content: Text(
-          'Subscription management functionality coming soon!',
-          style: TextStyle(color: Colors.grey.shade800, fontSize: 16),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(
-              'OK',
-              style: TextStyle(
-                color: PulseColors.primary,
-                fontWeight: FontWeight.w600,
-              ),
+        child: SingleChildScrollView(
+          padding: MediaQuery.of(context).viewInsets,
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: context.outlineColor,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  'Manage Subscription',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Current plan info
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: PulseColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: PulseColors.primary.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Current Plan',
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: context.onSurfaceVariantColor,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        subscription.planName,
+                        style: Theme.of(context).textTheme.headlineSmall
+                            ?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: PulseColors.primary,
+                            ),
+                      ),
+                      const SizedBox(height: 12),
+                      _buildSubscriptionDetail(
+                        'Started',
+                        subscription.startDate.toString().split(' ')[0],
+                      ),
+                      if (subscription.nextBillingDate != null) ...[
+                        const SizedBox(height: 8),
+                        _buildSubscriptionDetail(
+                          'Next Billing',
+                          subscription.nextBillingDate.toString().split(' ')[0],
+                        ),
+                      ],
+                      const SizedBox(height: 8),
+                      _buildSubscriptionDetail(
+                        'Auto-renewal',
+                        subscription.autoRenew ? 'Enabled' : 'Disabled',
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Auto-renewal toggle
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: context.surfaceVariantColor,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Auto-renewal',
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(
+                              fontWeight: FontWeight.w600),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Auto-renew at next billing date',
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
+                                  color: context.onSurfaceVariantColor,
+                                ),
+                          ),
+                        ],
+                      ),
+                      Switch(
+                        value: subscription.autoRenew,
+                        onChanged: (value) {
+                          // TODO: Implement auto-renewal toggle
+                          Navigator.of(context).pop();
+                          PulseToast.info(
+                            context,
+                            message: 'Auto-renewal update coming soon',
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Action buttons
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                    child: const Text('Close'),
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildSubscriptionDetail(String label, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: context.onSurfaceVariantColor),
+        ),
+        Text(
+          value,
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
+        ),
+      ],
     );
   }
 
@@ -456,15 +648,28 @@ class _PremiumScreenState extends State<PremiumScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Cancel Subscription'),
-        content: const Text(
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
+        title: Text(
+          'Cancel Subscription',
+          style: TextStyle(
+            color: Colors.grey.shade900,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Text(
           'Are you sure you want to cancel your premium subscription? '
           'You will lose access to premium features at the end of your billing period.',
+          style: TextStyle(color: Colors.grey.shade800, fontSize: 14),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Keep Subscription'),
+            style: TextButton.styleFrom(foregroundColor: PulseColors.primary),
+            child: const Text(
+              'Keep Subscription',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
           ),
           TextButton(
             onPressed: () {
@@ -472,7 +677,10 @@ class _PremiumScreenState extends State<PremiumScreen>
               context.read<PremiumBloc>().add(CancelSubscription());
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Cancel Subscription'),
+            child: const Text(
+              'Cancel Subscription',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
           ),
         ],
       ),

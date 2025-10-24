@@ -9,26 +9,35 @@ import '../../blocs/speed_dating/speed_dating_event.dart';
 import '../../blocs/speed_dating/speed_dating_state.dart';
 
 /// Screen showing detailed view of a speed dating event
-class SpeedDatingEventDetailsScreen extends StatelessWidget {
+class SpeedDatingEventDetailsScreen extends StatefulWidget {
   final Map<String, dynamic> event;
 
   const SpeedDatingEventDetailsScreen({super.key, required this.event});
 
   @override
+  State<SpeedDatingEventDetailsScreen> createState() =>
+      _SpeedDatingEventDetailsScreenState();
+}
+
+class _SpeedDatingEventDetailsScreenState
+    extends State<SpeedDatingEventDetailsScreen> {
+  bool _isWaitingToNavigateAfterLeave = false;
+
+  @override
   Widget build(BuildContext context) {
-    final startTime = DateTime.tryParse(event['startTime'] ?? '');
-    final durationMinutes = event['durationMinutes'] ?? 0;
-    final maxParticipants = event['maxParticipants'] ?? 0;
-    final currentParticipants = event['currentParticipants'] ?? 0;
-    final minAge = event['minAge'];
-    final maxAge = event['maxAge'];
-    final imageUrl = event['imageUrl'];
-    final location = event['location'];
-    final isVirtual = event['isVirtual'] ?? true;
-    final category = event['category'];
-    final tags = (event['tags'] as List?)?.cast<String>() ?? [];
-    final isRegistered = event['isRegistered'] == true;
-    final canJoin = event['canJoin'] == true && !isRegistered;
+    final startTime = DateTime.tryParse(widget.event['startTime'] ?? '');
+    final durationMinutes = widget.event['durationMinutes'] ?? 0;
+    final maxParticipants = widget.event['maxParticipants'] ?? 0;
+    final currentParticipants = widget.event['currentParticipants'] ?? 0;
+    final minAge = widget.event['minAge'];
+    final maxAge = widget.event['maxAge'];
+    final imageUrl = widget.event['imageUrl'];
+    final location = widget.event['location'];
+    final isVirtual = widget.event['isVirtual'] ?? true;
+    final category = widget.event['category'];
+    final tags = (widget.event['tags'] as List?)?.cast<String>() ?? [];
+    final isRegistered = widget.event['isRegistered'] == true;
+    final canJoin = widget.event['canJoin'] == true && !isRegistered;
 
     return BlocListener<SpeedDatingBloc, SpeedDatingState>(
       listener: (context, state) {
@@ -45,11 +54,23 @@ class SpeedDatingEventDetailsScreen extends StatelessWidget {
           });
         } else if (state is SpeedDatingLeft) {
           PulseToast.success(context, message: 'You have left the event');
-          Future.delayed(const Duration(milliseconds: 800), () {
-            if (context.mounted) {
-              context.pop();
-            }
+          // Set flag to wait for event list refresh
+          setState(() {
+            _isWaitingToNavigateAfterLeave = true;
           });
+          // BLoC will emit SpeedDatingLoaded after refreshing events
+        } else if (state is SpeedDatingLoaded) {
+          // Only navigate back if we're waiting for post-leave navigation
+          if (_isWaitingToNavigateAfterLeave) {
+            setState(() {
+              _isWaitingToNavigateAfterLeave = false;
+            });
+            Future.delayed(const Duration(milliseconds: 300), () {
+              if (context.mounted) {
+                context.pop();
+              }
+            });
+          }
         } else if (state is SpeedDatingError) {
           PulseToast.error(context, message: state.message);
         }
@@ -57,7 +78,7 @@ class SpeedDatingEventDetailsScreen extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           title: Text(
-            event['title'] ?? 'Speed Dating Event',
+            widget.event['title'] ?? 'Speed Dating Event',
             style: const TextStyle(
               color: Colors.black87,
               fontWeight: FontWeight.w600,
@@ -110,7 +131,7 @@ class SpeedDatingEventDetailsScreen extends StatelessWidget {
                         children: [
                           Expanded(
                             child: Text(
-                              event['title'] ?? 'Speed Dating Event',
+                              widget.event['title'] ?? 'Speed Dating Event',
                               style: Theme.of(context).textTheme.headlineSmall
                                   ?.copyWith(fontWeight: FontWeight.bold),
                             ),
@@ -138,11 +159,11 @@ class SpeedDatingEventDetailsScreen extends StatelessWidget {
                             ),
                         ],
                     ),
-                    if (event['description'] != null &&
-                        event['description'].isNotEmpty) ...[
+                      if (widget.event['description'] != null &&
+                          widget.event['description'].isNotEmpty) ...[
                         const SizedBox(height: 12),
                       Text(
-                        event['description'],
+                          widget.event['description'],
                         style: Theme.of(context).textTheme.bodyLarge,
                       ),
                     ],
@@ -300,12 +321,14 @@ class SpeedDatingEventDetailsScreen extends StatelessWidget {
             const SizedBox(height: 16),
 
             // Registration Fee
-            if (event['fee'] != null && event['fee'] > 0)
+              if (widget.event['fee'] != null && widget.event['fee'] > 0)
               Card(
                 child: ListTile(
                   leading: const Icon(Icons.attach_money),
                   title: const Text('Registration Fee'),
-                  subtitle: Text('\$${event['fee'].toStringAsFixed(2)}'),
+                    subtitle: Text(
+                      '\$${widget.event['fee'].toStringAsFixed(2)}',
+                    ),
                 ),
               ),
             const SizedBox(height: 32),
@@ -370,7 +393,7 @@ class SpeedDatingEventDetailsScreen extends StatelessWidget {
   }
 
   void _joinEvent(BuildContext context) {
-    final eventId = event['id'] as String?;
+    final eventId = widget.event['id'] as String?;
     if (eventId != null) {
       context.read<SpeedDatingBloc>().add(JoinSpeedDatingEvent(eventId));
     }
@@ -403,7 +426,7 @@ class SpeedDatingEventDetailsScreen extends StatelessWidget {
           ),
           TextButton(
             onPressed: () {
-              final eventId = event['id'] as String?;
+              final eventId = widget.event['id'] as String?;
               if (eventId != null) {
                 context.read<SpeedDatingBloc>().add(
                   LeaveSpeedDatingEvent(eventId),

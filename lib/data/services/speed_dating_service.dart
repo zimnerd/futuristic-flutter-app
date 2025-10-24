@@ -100,13 +100,13 @@ class SpeedDatingService {
     }
   }
 
-  /// Join a speed dating event
-  Future<Map<String, dynamic>?> joinEvent(String eventId, String userId) async {
+  /// Join a speed dating event (userId is extracted from auth token)
+  Future<Map<String, dynamic>?> joinEvent(String eventId) async {
     try {
-      _logger.d('Joining event $eventId as user $userId');
+      _logger.d('Joining event $eventId');
       final response = await _apiClient.post(
         '/speed-dating/events/$eventId/join',
-        data: {'userId': userId},
+        data: {},
       );
 
       // Accept both 200 and 201 status codes (201 for created/updated)
@@ -129,13 +129,13 @@ class SpeedDatingService {
     }
   }
 
-  /// Leave a speed dating event
-  Future<bool> leaveEvent(String eventId, String userId) async {
+  /// Leave a speed dating event (userId is extracted from auth token)
+  Future<bool> leaveEvent(String eventId) async {
     try {
-      _logger.d('Leaving event $eventId as user $userId');
+      _logger.d('Leaving event $eventId');
       final response = await _apiClient.post(
         '/speed-dating/events/$eventId/leave',
-        data: {'userId': userId},
+        data: {},
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -265,14 +265,12 @@ class SpeedDatingService {
   }
 
   /// Get matches for user in an event (mutual 4+ ratings)
-  Future<List<Map<String, dynamic>>> getEventMatches(
-    String eventId,
-    String userId,
-  ) async {
+  /// userId is extracted from auth token automatically by backend
+  Future<List<Map<String, dynamic>>> getEventMatches(String eventId) async {
     try {
       _logger.d('Fetching matches for event $eventId');
       final response = await _apiClient.get(
-        '/speed-dating/events/$eventId/matches?userId=$userId',
+        '/speed-dating/events/$eventId/matches',
       );
 
       if (response.statusCode == 200 && response.data != null) {
@@ -474,8 +472,8 @@ class SpeedDatingService {
         _eventStatusController.add(SpeedDatingEventStatus.completed);
         _stopTimer();
 
-        // Note: getEventMatches requires userId - should be called by BLoC layer
-        // which has access to auth state. Here we just notify event ended.
+        // userId is extracted from auth token automatically by backend
+        // Matches can be fetched by BLoC layer calling getEventMatches(eventId)
         _logger.i('✅ Event ended notification sent');
       } catch (e) {
         _logger.e('❌ Error handling event_ended: $e');
