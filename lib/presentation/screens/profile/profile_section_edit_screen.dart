@@ -32,7 +32,7 @@ import '../../../core/services/service_locator.dart';
 import '../../../core/network/api_client.dart';
 
 /// Profile section edit screen for editing individual profile sections
-/// 
+///
 /// Can operate in two modes:
 /// - isEditMode=true: Used when editing existing profile (pops after save)
 /// - isEditMode=false: Used during onboarding setup (progresses to next section)
@@ -66,7 +66,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
     _controllers = {};
     _formData = Map.from(widget.initialData ?? {});
     _initializeControllers();
-    
+
     // NEW: Load existing profile data for prepopulation
     logger.i(
       '📱 Initializing ProfileSectionEditScreen for section: ${widget.sectionType}',
@@ -195,21 +195,17 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
           break;
 
         case 'interests':
-          _formData['interests'] = List.from(profile.interests);
-          _formData['selectedInterests'] = List.from(profile.interests);
-          _formData['originalInterests'] = List.from(
-            profile.interests,
-          ); // Store original for change detection
-          logger.i(
-            '✅ Populated interests: ${profile.interests.length} interests selected',
-          );
+          // Fetch raw API response to get full Interest objects with IDs
+          // (profile.interests is just List<String>, we need the full objects)
+          _loadRawInterestsFromAPI(); // Fire and forget - will update via setState
           break;
 
         case 'goals':
           // Goals come from relationshipGoals array - store as complete list
           _formData['goals'] = List<String>.from(profile.relationshipGoals);
-          _formData['originalGoals'] =
-              List<String>.from(profile.relationshipGoals); // Store original for change detection
+          _formData['originalGoals'] = List<String>.from(
+            profile.relationshipGoals,
+          ); // Store original for change detection
           logger.i('✅ Populated goals: ${profile.relationshipGoals}');
           break;
 
@@ -279,7 +275,8 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
         final original =
             (_formData['originalGoals'] as List<dynamic>?)?.cast<String>() ??
             [];
-        final current = (_formData['goals'] as List<dynamic>?)?.cast<String>() ?? [];
+        final current =
+            (_formData['goals'] as List<dynamic>?)?.cast<String>() ?? [];
         return original.length != current.length ||
             !original.every((item) => current.contains(item));
 
@@ -490,7 +487,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
               ],
             ),
           ),
-        
+
         _buildTextField(
           controller: _controllers['name']!,
           label: 'Name',
@@ -539,7 +536,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
 
     // Total photo count
     final int totalPhotos = existingPhotos.length + newPhotos.length;
-    
+
     logger.i(
       '🖼️ _buildPhotosSection: existingPhotos=${existingPhotos.length}, newPhotos=${newPhotos.length}, total=$totalPhotos',
     );
@@ -1016,7 +1013,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
       }
 
       final ImagePicker picker = ImagePicker();
-      
+
       // Use pickMultiImage for gallery (multiple selection), pickImage for camera (single)
       final List<XFile> images;
       if (source == ImageSource.camera) {
@@ -1276,7 +1273,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
     final selectedInterests = _parseInterestsFromFormData(
       _formData['interests'],
     );
-    
+
     // Show pre-populated indicator if profile was loaded
     final showPrepopulatedIndicator = _currentProfile != null;
 
@@ -1299,7 +1296,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
               ],
             ),
           ),
-        
+
         // Use the reusable InterestsSelector widget
         InterestsSelector(
           selectedInterests: selectedInterests,
@@ -1816,7 +1813,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
     // Handle both list and string formats for goals
     final goalsData = _formData['goals'];
     String? selectedGoal;
-    
+
     if (goalsData is List && goalsData.isNotEmpty) {
       selectedGoal = goalsData.first as String?;
     } else if (goalsData is String) {
@@ -1888,8 +1885,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
                           ? color.withValues(alpha: 0.1)
                           : PulseColors.surface,
                       border: Border.all(
-                        color: isSelected
-                            ? color : Colors.grey.shade300,
+                        color: isSelected ? color : Colors.grey.shade300,
                         width: isSelected ? 2 : 1,
                       ),
                       borderRadius: BorderRadius.circular(PulseRadii.md),
@@ -1903,8 +1899,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: isSelected
-                                  ? color : Colors.grey.shade400,
+                              color: isSelected ? color : Colors.grey.shade400,
                               width: 1.5,
                             ),
                           ),
@@ -1929,16 +1924,12 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
                           decoration: BoxDecoration(
                             color: isSelected
                                 ? color
-                                : color.withValues(
-                                    alpha: 0.1,
-                                  ),
+                                : color.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(PulseRadii.sm),
                           ),
                           child: Icon(
                             option['iconData'] as IconData? ?? Icons.explore,
-                            color: isSelected
-                                ? Colors.white
-                                : color,
+                            color: isSelected ? Colors.white : color,
                             size: 20,
                           ),
                         ),
@@ -1996,21 +1987,35 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
     if (interestsData == null) return [];
 
     if (interestsData is List) {
+      debugPrint(
+        '🔍 Parsing interests from data with ${interestsData.length} items',
+      );
+      
       return interestsData
           .map((interest) {
             // If it's already an Interest object, return it
             if (interest is Interest) {
+              debugPrint(
+                '✅ Interest is already Interest object: ${interest.name}',
+              );
               return interest;
             }
             // If it's a nested object from API: {id, interest: {id, name}}
             if (interest is Map && interest.containsKey('interest')) {
-              final nestedInterest = interest['interest'] as Map?;
-              if (nestedInterest != null) {
+              debugPrint('🔄 Found nested interest object');
+              final nestedInterest = interest['interest'];
+              if (nestedInterest != null && nestedInterest is Map) {
                 try {
-                  return Interest.fromJson(
-                    nestedInterest.cast<String, dynamic>(),
-                  );
+                  // Safely convert to Map<String, dynamic> without casting nulls
+                  final interestMap = <String, dynamic>{};
+                  for (final entry in nestedInterest.entries) {
+                    interestMap[entry.key.toString()] = entry.value;
+                  }
+                  final parsed = Interest.fromJson(interestMap);
+                  debugPrint('✅ Parsed nested interest: ${parsed.name}');
+                  return parsed;
                 } catch (e) {
+                  debugPrint('❌ Failed to parse nested interest: $e');
                   return null;
                 }
               }
@@ -2020,17 +2025,27 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
                 interest.containsKey('id') &&
                 interest.containsKey('name')) {
               try {
-                return Interest.fromJson(interest.cast<String, dynamic>());
+                // Safely convert to Map<String, dynamic> without casting nulls
+                final interestMap = <String, dynamic>{};
+                for (final entry in interest.entries) {
+                  interestMap[entry.key.toString()] = entry.value;
+                }
+                final parsed = Interest.fromJson(interestMap);
+                debugPrint('✅ Parsed direct interest: ${parsed.name}');
+                return parsed;
               } catch (e) {
+                debugPrint('❌ Failed to parse direct interest: $e');
                 return null;
               }
             }
+            debugPrint('⚠️ Unknown interest format: $interest');
             return null;
           })
           .whereType<Interest>()
           .toList();
     }
 
+    debugPrint('⚠️ interestsData is not a List: ${interestsData.runtimeType}');
     return [];
   }
 
@@ -2142,6 +2157,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
 
     return null; // No validation errors
   }
+
   /// Delete a photo from current photos
   void _saveSection() async {
     // ✅ FIRST: Validate that all required fields are populated
@@ -2157,14 +2173,14 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
       debugPrint(
         '⏭️ No changes detected - marking section as complete and proceeding to next section',
       );
-      
+
       // Mark this section as complete since it was already valid
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('setup_${widget.sectionType}_completed', true);
       debugPrint(
         '✅ Marked setup_${widget.sectionType}_completed = true (skipped)',
       );
-      
+
       _proceedToNextSection();
       return;
     }
@@ -2274,9 +2290,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
             final apiClient = ServiceLocator.instance.apiClient;
             await apiClient.post(
               '/users/me/profile/goals',
-              data: {
-                'relationshipGoals': goalsList,
-              },
+              data: {'relationshipGoals': goalsList},
             );
             debugPrint('✅ Relationship goals saved to backend: $goalsList');
           }
@@ -2365,12 +2379,14 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
           '🔍 Final section complete - checking if all sections have minimal data...',
         );
         final allSectionsValid = await _validateAllSectionsHaveMinimalData();
-        
+
         if (!allSectionsValid) {
-          debugPrint('⚠️ Not all sections have minimal data yet - staying on current section');
+          debugPrint(
+            '⚠️ Not all sections have minimal data yet - staying on current section',
+          );
           return;
         }
-        
+
         debugPrint(
           '✅ All sections have minimal data - allowing progression to enrichment',
         );
@@ -2390,39 +2406,45 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
   Future<bool> _validateAllSectionsHaveMinimalData() async {
     try {
       debugPrint('📡 Calling backend to validate profile sections...');
-      
+
       final apiClient = ApiClient.instance;
       final response = await apiClient.getCurrentUser();
-      
+
       if (response.statusCode == 200 && response.data != null) {
         final data = response.data as Map<String, dynamic>;
         final userData = data['data'] as Map<String, dynamic>? ?? {};
-        
+
         // Check minimal requirements for each section
         bool hasGoals = false;
         bool hasPhotos = false;
         bool hasInterests = false;
-        
+
         // Check Goals - relationshipGoals should be non-empty list
         final goals = userData['relationshipGoals'] as List?;
         hasGoals = goals != null && goals.isNotEmpty;
-        debugPrint('  📋 Goals: ${hasGoals ? "✅ Yes (${goals.length})" : "❌ No"}');
-        
+        debugPrint(
+          '  📋 Goals: ${hasGoals ? "✅ Yes (${goals.length})" : "❌ No"}',
+        );
+
         // Check Photos - should have at least 1 photo
         final photos = userData['photos'] as List?;
         hasPhotos = photos != null && photos.isNotEmpty;
-        debugPrint('  📸 Photos: ${hasPhotos ? "✅ Yes (${photos.length})" : "❌ No"}');
-        
+        debugPrint(
+          '  📸 Photos: ${hasPhotos ? "✅ Yes (${photos.length})" : "❌ No"}',
+        );
+
         // Check Interests - should have at least 1 interest
         final interests = userData['interests'] as List?;
         hasInterests = interests != null && interests.isNotEmpty;
         debugPrint(
           '  💡 Interests: ${hasInterests ? "✅ Yes (${interests.length})" : "❌ No (need 1+)"}',
         );
-        
+
         final allValid = hasGoals && hasPhotos && hasInterests;
-        debugPrint('${allValid ? '✅ All sections have minimal data!' : '⚠️ Some sections missing minimal data'}');
-        
+        debugPrint(
+          '${allValid ? '✅ All sections have minimal data!' : '⚠️ Some sections missing minimal data'}',
+        );
+
         return allValid;
       } else {
         debugPrint('⚠️ Failed to validate profile: ${response.statusCode}');
@@ -2513,7 +2535,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
                     debugPrint(
                       '📍 Auth state changed to: ${authState.runtimeType}',
                     );
-                
+
                     // Navigate based on the new auth state
                     if (authState is AuthAuthenticated) {
                       debugPrint('✅ Auth successful - navigating to home');
@@ -2596,6 +2618,54 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
         ],
       ),
     );
+  }
+
+  /// Fetch raw user data from API to get full Interest objects with IDs
+  /// UserProfile entity only has interest names (List<String>), but we need
+  /// the full nested objects: [{id, interest: {id, name}}, ...]
+  /// to properly initialize the InterestsSelector with pre-selected interests
+  Future<void> _loadRawInterestsFromAPI() async {
+    try {
+      final apiClient = ServiceLocator.instance.apiClient;
+      final response = await apiClient.get('/users/me');
+
+      if (response.statusCode == 200 && response.data != null) {
+        final userData = response.data as Map<String, dynamic>;
+        debugPrint('🔍 Response data keys: ${userData.keys.toList()}');
+
+        // Handle nested 'data' wrapper if present
+        final actualData = userData['data'] ?? userData;
+        debugPrint('🔍 Actual user data keys: ${actualData.keys.toList()}');
+
+        final interestsData = actualData['interests'] as List<dynamic>? ?? [];
+        debugPrint('� Found ${interestsData.length} interests in response');
+
+        if (interestsData.isNotEmpty) {
+          debugPrint('🔍 First interest structure: ${interestsData.first}');
+        }
+
+        // Convert raw API response to Interest objects
+        final parsedInterests = _parseInterestsFromFormData(interestsData);
+
+        setState(() {
+          _formData['interests'] = parsedInterests;
+          _formData['selectedInterests'] = parsedInterests;
+          _formData['originalInterests'] = List.from(parsedInterests);
+        });
+
+        logger.i(
+          '✅ Populated interests: ${parsedInterests.length} interests selected with IDs',
+        );
+      }
+    } catch (e) {
+      logger.e('❌ Failed to load interests from API: $e');
+      // Fall back to empty interests
+      setState(() {
+        _formData['interests'] = [];
+        _formData['selectedInterests'] = [];
+        _formData['originalInterests'] = [];
+      });
+    }
   }
 
   /// Handle back arrow button on top left - shows exit confirmation

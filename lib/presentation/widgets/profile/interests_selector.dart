@@ -6,6 +6,7 @@ import '../../blocs/interests/interests_bloc.dart';
 import '../../blocs/interests/interests_event.dart';
 import '../../blocs/interests/interests_state.dart';
 import '../../theme/pulse_colors.dart';
+import '../../theme/theme_extensions.dart';
 
 /// Enhanced interests selector with API integration
 class InterestsSelector extends StatefulWidget {
@@ -37,6 +38,14 @@ class _InterestsSelectorState extends State<InterestsSelector>
   void initState() {
     super.initState();
     _selectedInterests = List.from(widget.selectedInterests);
+    debugPrint(
+      '🎯 InterestsSelector.initState: selectedInterests.length=${widget.selectedInterests.length}',
+    );
+    if (widget.selectedInterests.isNotEmpty) {
+      debugPrint(
+        '🎯 First interest in initState: id=${widget.selectedInterests.first.id}, name=${widget.selectedInterests.first.name}',
+      );
+    }
   }
 
   @override
@@ -44,6 +53,22 @@ class _InterestsSelectorState extends State<InterestsSelector>
     _tabController?.dispose();
     _searchController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(InterestsSelector oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Update selected interests if the parent widget provides new ones
+    debugPrint(
+      '🔄 didUpdateWidget: old=${oldWidget.selectedInterests.length}, new=${widget.selectedInterests.length}',
+    );
+    if (oldWidget.selectedInterests != widget.selectedInterests ||
+        oldWidget.selectedInterests.length != widget.selectedInterests.length) {
+      debugPrint('✅ Updating interests in InterestsSelector');
+      setState(() {
+        _selectedInterests = List.from(widget.selectedInterests);
+      });
+    }
   }
 
   void _toggleInterest(Interest interest) {
@@ -69,29 +94,29 @@ class _InterestsSelectorState extends State<InterestsSelector>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
-        title: const Text(
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        title: Text(
           'Maximum Interests Reached',
           style: TextStyle(
-            color: Color(0xFF202124), // Dark text color
+            color: Theme.of(context).colorScheme.onSurface,
             fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
         ),
         content: Text(
           'You can select up to ${widget.maxInterests} interests.',
-          style: const TextStyle(
-            color: Color(0xFF5F6368), // Medium gray text
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
             fontSize: 16,
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text(
+            child: Text(
               'OK',
               style: TextStyle(
-                color: Color(0xFF6E3BFF), // Primary purple
+                color: Theme.of(context).colorScheme.primary,
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
@@ -138,21 +163,28 @@ class _InterestsSelectorState extends State<InterestsSelector>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.error_outline, size: 48, color: Colors.red[300]),
+                  Icon(
+                    Icons.error_outline,
+                    size: 48,
+                    color: Theme.of(context).colorScheme.error,
+                  ),
                   const SizedBox(height: 16),
                   Text(
                     'Failed to load interests',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: Colors.grey[800],
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     state.message,
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton.icon(
@@ -165,7 +197,7 @@ class _InterestsSelectorState extends State<InterestsSelector>
                     label: const Text('Retry'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: PulseColors.primary,
-                      foregroundColor: Colors.white,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     ),
                   ),
                 ],
@@ -192,34 +224,47 @@ class _InterestsSelectorState extends State<InterestsSelector>
                 // Header
                 Row(
                   children: [
-                    const Text(
+                    Text(
                       'Interests',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
-                        color: Colors.black87,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                     const Spacer(),
                     Text(
                       '${_selectedInterests.length}/${widget.maxInterests}',
-                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Select at least ${widget.minInterests} interests that represent you',
-                  style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 ),
                 const SizedBox(height: 16),
 
                 // Search bar
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.grey[50],
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey[200]!, width: 1),
+                    border: Border.all(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.outline.withValues(alpha: 0.3),
+                      width: 1,
+                    ),
                   ),
                   child: TextField(
                     controller: _searchController,
@@ -230,8 +275,13 @@ class _InterestsSelectorState extends State<InterestsSelector>
                     },
                     decoration: InputDecoration(
                       hintText: 'Search interests...',
-                      hintStyle: TextStyle(color: Colors.grey[500]),
-                      prefixIcon: Icon(Icons.search, color: Colors.grey[500]),
+                      hintStyle: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                      prefixIcon: Icon(
+                        Icons.search,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                       border: InputBorder.none,
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16,
@@ -244,12 +294,12 @@ class _InterestsSelectorState extends State<InterestsSelector>
 
                 // Selected interests (if any)
                 if (_selectedInterests.isNotEmpty) ...[
-                  const Text(
+                  Text(
                     'Selected',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: Colors.black87,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -266,7 +316,9 @@ class _InterestsSelectorState extends State<InterestsSelector>
                 // Category tabs
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.grey[50],
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: TabBar(
@@ -278,8 +330,10 @@ class _InterestsSelectorState extends State<InterestsSelector>
                       borderRadius: BorderRadius.circular(8),
                     ),
                     indicatorSize: TabBarIndicatorSize.tab,
-                    labelColor: Colors.white,
-                    unselectedLabelColor: Colors.grey[600],
+                    labelColor: Theme.of(context).colorScheme.onPrimary,
+                    unselectedLabelColor: Theme.of(
+                      context,
+                    ).colorScheme.onSurfaceVariant,
                     labelStyle: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
@@ -314,14 +368,18 @@ class _InterestsSelectorState extends State<InterestsSelector>
                             children: [
                               Icon(
                                 Icons.search_off,
-                                color: Colors.grey[400],
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
                                 size: 48,
                               ),
                               const SizedBox(height: 16),
                               Text(
                                 'No interests found for "$_searchQuery"',
                                 style: TextStyle(
-                                  color: Colors.grey[600],
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
                                   fontSize: 16,
                                 ),
                               ),
@@ -346,6 +404,50 @@ class _InterestsSelectorState extends State<InterestsSelector>
                           final isSelected = _selectedInterests.any(
                             (i) => i.id == interest.id,
                           );
+                          
+                          // Debug all interests at the beginning
+                          if (index == 0 && _selectedInterests.isNotEmpty) {
+                            debugPrint(
+                              '\n📊 INTEREST MATCHING DEBUG FOR THIS TAB:',
+                            );
+                            debugPrint(
+                              '📋 _selectedInterests count: ${_selectedInterests.length}',
+                            );
+                            debugPrint(
+                              '📋 Selected Interests IDs: ${_selectedInterests.map((i) => i.id).join(", ")}',
+                            );
+                            debugPrint(
+                              '📋 Selected Interests Names: ${_selectedInterests.map((i) => i.name).join(", ")}',
+                            );
+                            debugPrint(
+                              '📋 Current Tab has ${interests.length} interests',
+                            );
+                            debugPrint('---');
+                          }
+
+                          // Debug: Show ID comparison for each interest
+                          debugPrint(
+                            '🔍 Interest #$index: name="${interest.name}", id="${interest.id}", selected=$isSelected',
+                          );
+                          if (isSelected) {
+                            debugPrint(
+                              '  ✅ MATCHED! This interest IS in _selectedInterests',
+                            );
+                          } else if (_selectedInterests.length > 0) {
+                            // Check if we can find it by name instead
+                            final byName = _selectedInterests
+                                .where((i) => i.name == interest.name)
+                                .toList();
+                            if (byName.isNotEmpty) {
+                              debugPrint(
+                                '  ⚠️ FOUND BY NAME! Name="${byName.first.name}" but ID mismatch! Saved=${byName.first.id}, Category=${interest.id}',
+                              );
+                            } else {
+                              debugPrint(
+                                '  ❌ Not selected. ID "${interest.id}" not in saved: ${_selectedInterests.map((i) => i.id).toList()}',
+                              );
+                            }
+                          }
                           return _buildInterestChip(interest, isSelected);
                         },
                       );
@@ -402,10 +504,14 @@ class _InterestsSelectorState extends State<InterestsSelector>
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? PulseColors.primary : Colors.white,
+          color: isSelected
+              ? PulseColors.primary
+              : Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: isSelected ? PulseColors.primary : Colors.grey[300]!,
+            color: isSelected
+                ? PulseColors.primary
+                : Theme.of(context).colorScheme.outline,
             width: 1.5,
           ),
         ),
@@ -415,7 +521,9 @@ class _InterestsSelectorState extends State<InterestsSelector>
               child: Text(
                 interest.name,
                 style: TextStyle(
-                  color: isSelected ? Colors.white : Colors.black87,
+                  color: isSelected
+                      ? Theme.of(context).colorScheme.onPrimary
+                      : Theme.of(context).colorScheme.onSurface,
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
                 ),
@@ -425,7 +533,11 @@ class _InterestsSelectorState extends State<InterestsSelector>
             ),
             if (isSelected) ...[
               const SizedBox(width: 8),
-              Icon(Icons.check_circle, color: Colors.white, size: 16),
+              Icon(
+                Icons.check_circle,
+                color: Theme.of(context).colorScheme.onPrimary,
+                size: 16,
+              ),
             ],
           ],
         ),
@@ -447,8 +559,8 @@ class _InterestsSelectorState extends State<InterestsSelector>
         children: [
           Text(
             interest.name,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onPrimary,
               fontSize: 12,
               fontWeight: FontWeight.w500,
             ),
@@ -456,7 +568,11 @@ class _InterestsSelectorState extends State<InterestsSelector>
           const SizedBox(width: 6),
           InkWell(
             onTap: () => _toggleInterest(interest),
-            child: const Icon(Icons.close, color: Colors.white, size: 14),
+            child: Icon(
+              Icons.close,
+              color: Theme.of(context).colorScheme.onPrimary,
+              size: 14,
+            ),
           ),
         ],
       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../theme/theme_extensions.dart';
 
 /// Skeleton loading widget - shows placeholder while content loads
 /// Token-efficient, simple UI improvement
@@ -62,9 +63,9 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
                 _animation.value + 0.3,
               ].map((s) => s.clamp(0.0, 1.0)).toList(),
               colors: [
-                Colors.grey.shade300,
-                Colors.grey.shade200,
-                Colors.grey.shade300,
+                Theme.of(context).colorScheme.surfaceContainerHighest,
+                Theme.of(context).colorScheme.surfaceContainer,
+                Theme.of(context).colorScheme.surfaceContainerHighest,
               ],
             ),
           ),

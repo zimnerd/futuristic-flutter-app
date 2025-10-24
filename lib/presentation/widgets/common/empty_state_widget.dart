@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/pulse_colors.dart';
+import '../../theme/theme_extensions.dart';
 
 /// Reusable empty state widget for consistent UX across the app
 /// Displays icon, title, message, and optional action button
@@ -76,7 +77,7 @@ class EmptyStateWidget extends StatelessWidget {
                 onPressed: onAction,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: PulseColors.primary,
-                  foregroundColor: Colors.white,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 32,
                     vertical: 16,
@@ -88,7 +89,7 @@ class EmptyStateWidget extends StatelessWidget {
                 child: Text(
                   actionLabel!,
                   style: PulseTextStyles.labelLarge.copyWith(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.onPrimary,
                     fontWeight: FontWeight.w600,
                   ),
                 ),

@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../domain/entities/event.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../theme/pulse_colors.dart';
+import '../../theme/theme_extensions.dart';
 import '../common/robust_network_image.dart';
 import 'event_analytics_indicators.dart';
 
@@ -50,7 +51,7 @@ class EventCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Event Image
-              _buildEventImage(),
+              _buildEventImage(context),
 
               // Event Content
               Padding(
@@ -134,7 +135,7 @@ class EventCard extends StatelessWidget {
                       children: [
                         _buildAttendeeInfo(),
                         const Spacer(),
-                        if (showAttendButton) _buildActionButton(),
+                        if (showAttendButton) _buildActionButton(context),
                       ],
                     ),
                   ],
@@ -147,7 +148,7 @@ class EventCard extends StatelessWidget {
     );
   }
 
-  Widget _buildEventImage() {
+  Widget _buildEventImage(BuildContext context) {
     return Stack(
       children: [
         Container(
@@ -198,12 +199,12 @@ class EventCard extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Icon(Icons.check, color: Colors.white, size: 16),
+                  Icon(Icons.check, color: Theme.of(context).colorScheme.onPrimary, size: 16),
                   const SizedBox(width: 4),
                   Text(
                     'JOINED',
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onPrimary,
                       fontWeight: FontWeight.bold,
                       fontSize: 12,
                       letterSpacing: 1.2,
@@ -280,7 +281,7 @@ class EventCard extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButton() {
+  Widget _buildActionButton(BuildContext context) {
     if (isLoading) {
       return SizedBox(
         width: 24,
@@ -319,7 +320,7 @@ class EventCard extends StatelessWidget {
       label: const Text('Join'),
       style: ElevatedButton.styleFrom(
         backgroundColor: PulseColors.primary,
-        foregroundColor: Colors.white,
+        foregroundColor: Theme.of(context).colorScheme.onPrimary,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         elevation: 0,

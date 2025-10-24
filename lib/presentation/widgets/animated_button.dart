@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../animations/pulse_animations.dart';
 import '../theme/pulse_colors.dart';
+import '../theme/theme_extensions.dart';
 
 /// Enhanced animated button with smooth interactions
 class AnimatedPulseButton extends StatefulWidget {
@@ -179,7 +180,7 @@ class _AnimatedPulseButtonState extends State<AnimatedPulseButton>
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
                         valueColor: AlwaysStoppedAnimation<Color>(
-                          widget.foregroundColor ?? Colors.white,
+                          widget.foregroundColor ?? Theme.of(context).colorScheme.onPrimary,
                         ),
                       ),
                     ),
@@ -189,7 +190,7 @@ class _AnimatedPulseButtonState extends State<AnimatedPulseButton>
                     duration: PulseAnimations.quick,
                     style: (widget.textStyle ?? theme.textTheme.labelLarge!)
                         .copyWith(
-                          color: widget.foregroundColor ?? Colors.white,
+                          color: widget.foregroundColor ?? Theme.of(context).colorScheme.onPrimary,
                           fontWeight: FontWeight.w600,
                         ),
                     child: Text(widget.text),
@@ -275,7 +276,7 @@ class _AnimatedFABState extends State<AnimatedFAB>
         child: FloatingActionButton(
           onPressed: _onTap,
           backgroundColor: widget.backgroundColor ?? PulseColors.primary,
-          foregroundColor: widget.foregroundColor ?? Colors.white,
+          foregroundColor: widget.foregroundColor ?? Theme.of(context).colorScheme.onPrimary,
           elevation: widget.elevation ?? 6,
           tooltip: widget.tooltip,
           heroTag: widget.heroTag,

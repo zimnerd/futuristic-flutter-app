@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../data/models/chat_model.dart';
+import '../../theme/theme_extensions.dart';
 
 /// Visual indicator showing the message send status
 ///
@@ -96,11 +97,11 @@ class _MessageStatusIndicatorState extends State<MessageStatusIndicator>
 
   @override
   Widget build(BuildContext context) {
-    final defaultColor = widget.color ?? Colors.grey.shade600;
+    final defaultColor = widget.color ?? Theme.of(context).colorScheme.onSurfaceVariant;
     // More prominent blue for read status
     final defaultReadColor =
         widget.readColor ?? const Color(0xFF2196F3); // Material Blue
-    final defaultErrorColor = widget.errorColor ?? Colors.red;
+    final defaultErrorColor = widget.errorColor ?? Theme.of(context).colorScheme.error;
 
     return ScaleTransition(
       scale: _scaleAnimation,

@@ -217,9 +217,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   /// Check if user profile is complete with minimum required fields
   bool _isProfileComplete(UserModel user) {
-    // Profile is complete when profileCompletionPercentage >= 50%
-    // This matches backend ProfileCompletionGuard requirement
-    return (user.profileCompletionPercentage ?? 0) >= 50;
+    // Profile completion is no longer gated by percentage
+    // Users can access matching features regardless of profile completion %
+    // Profile enrichment is now optional/progressive
+    return true;
   }
 
   /// Handles automatic login for development mode

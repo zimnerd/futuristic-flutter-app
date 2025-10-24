@@ -196,7 +196,7 @@ class _VoiceMessagePlayerWidgetState extends State<VoiceMessagePlayerWidget>
           IconButton(
             onPressed: widget.onClose,
             icon: const Icon(Icons.close),
-            color: Colors.grey[600],
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ],
       ),
@@ -309,7 +309,7 @@ class _VoiceMessagePlayerWidgetState extends State<VoiceMessagePlayerWidget>
             },
             icon: const Icon(Icons.replay_10),
             iconSize: 32,
-            color: Colors.grey[700],
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
 
           // Play/Pause

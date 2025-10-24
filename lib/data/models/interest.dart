@@ -22,16 +22,37 @@ class Interest {
   });
 
   factory Interest.fromJson(Map<String, dynamic> json) {
+    // Handle missing or null datetime fields (from nested API responses)
+    final now = DateTime.now();
+    DateTime? createdAt;
+    DateTime? updatedAt;
+    
+    try {
+      if (json['createdAt'] != null) {
+        createdAt = DateTime.parse(json['createdAt'] as String);
+      }
+    } catch (_) {
+      // Ignore parse errors, use fallback
+    }
+    
+    try {
+      if (json['updatedAt'] != null) {
+        updatedAt = DateTime.parse(json['updatedAt'] as String);
+      }
+    } catch (_) {
+      // Ignore parse errors, use fallback
+    }
+    
     return Interest(
       id: json['id'] as String,
       name: json['name'] as String,
-      categoryId: json['categoryId'] as String,
+      categoryId: json['categoryId'] as String? ?? '',
       description: json['description'] as String?,
       isActive: json['isActive'] as bool? ?? true,
       sortOrder: json['sortOrder'] as int? ?? 0,
       iconName: json['iconName'] as String?,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      createdAt: createdAt ?? now,
+      updatedAt: updatedAt ?? now,
     );
   }
 
