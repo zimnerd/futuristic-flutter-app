@@ -201,14 +201,11 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
           break;
 
         case 'goals':
-          // Goals come from relationshipGoals array - take first if exists
-          final goal = profile.relationshipGoals.isNotEmpty
-              ? profile.relationshipGoals.first
-              : null;
-          _formData['goals'] = goal;
-          _formData['originalGoal'] =
-              goal; // Store original for change detection
-          logger.i('✅ Populated goals: $goal');
+          // Goals come from relationshipGoals array - store as complete list
+          _formData['goals'] = List<String>.from(profile.relationshipGoals);
+          _formData['originalGoals'] =
+              List<String>.from(profile.relationshipGoals); // Store original for change detection
+          logger.i('✅ Populated goals: ${profile.relationshipGoals}');
           break;
 
         case 'preferences':
@@ -257,9 +254,12 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
             !original.every((item) => current.contains(item));
 
       case 'goals':
-        final original = _formData['originalGoal'] as String?;
-        final current = _formData['goals'] as String?;
-        return original != current;
+        final original =
+            (_formData['originalGoals'] as List<dynamic>?)?.cast<String>() ??
+            [];
+        final current = (_formData['goals'] as List<dynamic>?)?.cast<String>() ?? [];
+        return original.length != current.length ||
+            !original.every((item) => current.contains(item));
 
       case 'preferences':
         // Preferences are less frequently changed, but check anyway
@@ -338,7 +338,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
             elevation: 0,
             leading: IconButton(
               icon: const Icon(Icons.arrow_back, color: PulseColors.onSurface),
-              onPressed: () => context.pop(),
+              onPressed: () => _handleBackPress(),
             ),
             actions: [
               TextButton(
@@ -1716,7 +1716,15 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
   }
 
   Widget _buildGoalsSection() {
-    final selectedGoal = _formData['goals'] as String?;
+    // Handle both list and string formats for goals
+    final goalsData = _formData['goals'];
+    String? selectedGoal;
+    
+    if (goalsData is List && goalsData.isNotEmpty) {
+      selectedGoal = goalsData.first as String?;
+    } else if (goalsData is String) {
+      selectedGoal = goalsData;
+    }
 
     return FutureBuilder<List<Map<String, dynamic>>>(
       future: RelationshipGoalsOptions.getAll(),
@@ -1793,8 +1801,9 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
                       '🎯 GestureDetector tap - goals: ${option['slug']}',
                     );
                     setState(() {
-                      _formData['goals'] = option['slug'] as String;
-                      logger.i('  ✅ Goals updated to: ${option['slug']}');
+                      // Store as a list to match API format
+                      _formData['goals'] = [option['slug'] as String];
+                      logger.i('  ✅ Goals updated to: [${option['slug']}]');
                     });
                   },
                   child: Container(
@@ -2146,18 +2155,19 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
       // Save section data to backend based on section type
       try {
         if (widget.sectionType == 'goals' && _formData.containsKey('goals')) {
-          // Save relationship goals to backend
-          final goal = _formData['goals'] as String?;
-          if (goal != null && goal.isNotEmpty) {
-            debugPrint('💾 Saving relationship goal to backend: $goal');
+          // Save relationship goals to backend as an array
+          final goals = _formData['goals'] as List<dynamic>?;
+          if (goals != null && goals.isNotEmpty) {
+            final goalsList = goals.cast<String>();
+            debugPrint('💾 Saving relationship goals to backend: $goalsList');
             final apiClient = ServiceLocator.instance.apiClient;
             await apiClient.post(
               '/users/me/profile/goals',
               data: {
-                'relationshipGoals': [goal],
+                'relationshipGoals': goalsList,
               },
             );
-            debugPrint('✅ Relationship goal saved to backend');
+            debugPrint('✅ Relationship goals saved to backend: $goalsList');
           }
         }
       } catch (e) {
@@ -2175,6 +2185,29 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('setup_${widget.sectionType}_completed', true);
       debugPrint('✅ Marked setup_${widget.sectionType}_completed = true');
+
+      // 🔄 REFRESH USER DATA FROM API after successful save
+      // This ensures form data persists and reflects latest server state
+      try {
+        debugPrint('🔄 Refreshing user data from API after save...');
+        final apiClient = ApiClient.instance;
+        final response = await apiClient.getCurrentUser();
+
+        if (response.statusCode == 200 && response.data != null) {
+          final data = response.data as Map<String, dynamic>;
+          final userData = data['data'] as Map<String, dynamic>? ?? {};
+
+          // Update the current profile with fresh data
+          _currentProfile = UserProfile.fromJson(userData);
+
+          // Re-populate fields with fresh data to show in UI
+          _populateFields(_currentProfile!);
+          debugPrint('✅ User data refreshed and fields repopulated');
+        }
+      } catch (e) {
+        debugPrint('⚠️ Failed to refresh user data: $e');
+        // Don't block user - continue with save
+      }
 
       // Show success message
       if (mounted) {
@@ -2326,6 +2359,48 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
       if (mounted && context.mounted) {
         context.go(AppRoutes.home);
       }
+    }
+  }
+
+  void _handleBackPress() {
+    // If in setup mode (isEditMode=false) and on the first section (goals),
+    // show a warning that this will log the user off
+    if (!widget.isEditMode && widget.sectionType == 'goals') {
+      showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text(
+            'Leave Setup?',
+            style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
+          ),
+          content: const Text(
+            'Leaving now will log you off. You can resume setup later.',
+            style: TextStyle(color: Colors.black87),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => context.pop(),
+              child: const Text(
+                'Stay',
+                style: TextStyle(color: PulseColors.primary, fontWeight: FontWeight.w600),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                context.pop(); // Close dialog
+                context.pop(); // Navigate back
+              },
+              child: const Text(
+                'Log Off',
+                style: TextStyle(color: Colors.red, fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
+        ),
+      );
+    } else {
+      // Normal back navigation for other cases
+      context.pop();
     }
   }
 }
