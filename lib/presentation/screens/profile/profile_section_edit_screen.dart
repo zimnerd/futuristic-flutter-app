@@ -191,6 +191,9 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
         case 'interests':
           _formData['interests'] = List.from(profile.interests);
           _formData['selectedInterests'] = List.from(profile.interests);
+          _formData['originalInterests'] = List.from(
+            profile.interests,
+          ); // Store original for change detection
           logger.i(
             '✅ Populated interests: ${profile.interests.length} interests selected',
           );
@@ -202,6 +205,8 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
               ? profile.relationshipGoals.first
               : null;
           _formData['goals'] = goal;
+          _formData['originalGoal'] =
+              goal; // Store original for change detection
           logger.i('✅ Populated goals: $goal');
           break;
 
@@ -217,6 +222,50 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
     } catch (e) {
       logger.e('❌ Error in _populateFields(): $e');
       // Don't throw - form can still work with empty fields
+    }
+  }
+
+  /// Check if section data has changed from original
+  bool _hasSectionChanged() {
+    switch (widget.sectionType) {
+      case 'basic_info':
+        return _controllers['name']!.text != _currentProfile?.name ||
+            _controllers['bio']!.text != _currentProfile?.bio;
+
+      case 'work_education':
+        return _controllers['job']!.text !=
+                (_currentProfile?.occupation ?? _currentProfile?.job ?? '') ||
+            _controllers['company']!.text != (_currentProfile?.company ?? '') ||
+            _controllers['school']!.text !=
+                (_currentProfile?.education ?? _currentProfile?.school ?? '');
+
+      case 'photos':
+        final newPhotos =
+            (_formData['newPhotos'] as List<dynamic>?)?.cast<File>() ??
+            <File>[];
+        return newPhotos.isNotEmpty;
+
+      case 'interests':
+        final original =
+            (_formData['originalInterests'] as List<dynamic>?)
+                ?.cast<String>() ??
+            [];
+        final current =
+            (_formData['interests'] as List<dynamic>?)?.cast<String>() ?? [];
+        return original.length != current.length ||
+            !original.every((item) => current.contains(item));
+
+      case 'goals':
+        final original = _formData['originalGoal'] as String?;
+        final current = _formData['goals'] as String?;
+        return original != current;
+
+      case 'preferences':
+        // Preferences are less frequently changed, but check anyway
+        return false;
+
+      default:
+        return false;
     }
   }
 
@@ -1648,9 +1697,20 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
         const SizedBox(width: PulseSpacing.md),
         Expanded(
           flex: 2,
-          child: PulseButton(text: 'Save Changes', onPressed: _saveSection),
+          child: _buildActionButton(),
         ),
       ],
+    );
+  }
+
+  /// Build action button - shows "Skip" if no changes, "Save Changes" otherwise
+  Widget _buildActionButton() {
+    final hasChanges = _hasSectionChanged();
+    final isEditMode = widget.isEditMode;
+
+    return PulseButton(
+      text: (hasChanges || isEditMode) ? 'Save Changes' : 'Skip',
+      onPressed: _saveSection,
     );
   }
 
@@ -1932,7 +1992,8 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
         break;
 
       case 'interests':
-        final interests = _formData['interests'] as List<String>?;
+        final interests = (_formData['interests'] as List<dynamic>?)
+            ?.cast<String>();
         if (interests == null || interests.isEmpty) {
           return 'Please select at least 1 interest';
         }
@@ -1960,7 +2021,6 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
 
     return null; // No validation errors
   }
-
   /// Delete a photo from current photos
   void _saveSection() async {
     // ✅ FIRST: Validate that all required fields are populated
@@ -1969,6 +2029,15 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
       PulseToast.error(context, message: validationError);
       debugPrint('❌ Validation failed: $validationError');
       return; // Stop here, don't proceed
+    }
+
+    // ✅ CHECK: Skip if nothing changed (for already valid sections)
+    if (!_hasSectionChanged() && !widget.isEditMode) {
+      debugPrint(
+        '⏭️ No changes detected - skipping save and proceeding to next section',
+      );
+      _proceedToNextSection();
+      return;
     }
 
     if (_formKey.currentState?.validate() ?? false) {
@@ -2083,8 +2152,14 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
           }
         }
       } catch (e) {
-        debugPrint('⚠️ Warning: Failed to save section data to backend: $e');
-        // Don't fail the whole operation, but log it
+        debugPrint('❌ ERROR: Failed to save relationship goals: $e');
+        if (mounted) {
+          PulseToast.error(
+            context,
+            message: 'Failed to save relationship goals. Please try again.',
+          );
+        }
+        return; // Stop - don't proceed if goals failed to save
       }
 
       // Mark this section as complete in SharedPreferences
@@ -2102,33 +2177,34 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
 
       // Handle navigation based on mode
       if (mounted) {
-        if (widget.isEditMode) {
-          // Edit mode: pop back to profile edit page
-          debugPrint('🔙 Edit mode - popping back');
-          context.pop(_formData);
-        } else {
-          // Setup mode: navigate to next required section or home
-          const requiredSections = ['goals', 'photos', 'interests'];
-          final currentIndex = requiredSections.indexOf(widget.sectionType);
+        _proceedToNextSection();
+      }
+    }
+  }
 
-          if (currentIndex < requiredSections.length - 1) {
-            // There's a next required section - navigate to it
-            final nextSection = requiredSections[currentIndex + 1];
-            debugPrint(
-              '➡️ Setup mode - navigating to next section: $nextSection',
-            );
-            context.replace(
-              AppRoutes.profileSetup,
-              extra: {'sectionType': nextSection},
-            );
-          } else {
-            // All required sections are done - navigate to home
-            debugPrint(
-              '✅ Setup mode - all sections complete! Navigating to home',
-            );
-            context.go(AppRoutes.home);
-          }
-        }
+  /// Navigate to next section or home based on mode
+  void _proceedToNextSection() {
+    if (widget.isEditMode) {
+      // Edit mode: pop back to profile edit page
+      debugPrint('🔙 Edit mode - popping back');
+      context.pop(_formData);
+    } else {
+      // Setup mode: navigate to next required section or home
+      const requiredSections = ['goals', 'photos', 'interests'];
+      final currentIndex = requiredSections.indexOf(widget.sectionType);
+
+      if (currentIndex < requiredSections.length - 1) {
+        // There's a next required section - navigate to it
+        final nextSection = requiredSections[currentIndex + 1];
+        debugPrint('➡️ Setup mode - navigating to next section: $nextSection');
+        context.replace(
+          AppRoutes.profileSetup,
+          extra: {'sectionType': nextSection},
+        );
+      } else {
+        // All required sections are done - navigate to home
+        debugPrint('✅ Setup mode - all sections complete! Navigating to home');
+        context.go(AppRoutes.home);
       }
     }
   }

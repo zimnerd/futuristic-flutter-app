@@ -147,7 +147,11 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
     _selectedLifestyle = profile.lifestyleChoice;
     _selectedRelationshipGoals = List.from(profile.relationshipGoals);
     _selectedHeight = profile.height; // Use real data only
-    _selectedReligion = profile.religion;
+    
+    // Map backend religion value to UI format
+    _selectedReligion = ProfilePhysicalAttributesSection.mapReligionFromBackend(
+      profile.religion,
+    );
 
     // Map backend enum values to UI labels
     _selectedPolitics = ProfilePhysicalAttributesSection.mapPoliticsFromBackend(
@@ -456,8 +460,14 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
       lifestyleChoice: _selectedLifestyle,
       relationshipGoals: _selectedRelationshipGoals,
       height: _selectedHeight,
-      religion: _selectedReligion,
-      politics: _selectedPolitics,
+      // Map religion UI value back to backend format
+      religion: ProfilePhysicalAttributesSection.mapReligionToBackend(
+        _selectedReligion,
+      ),
+      // Map politics UI value back to backend format
+      politics: ProfilePhysicalAttributesSection.mapPoliticsToBackend(
+        _selectedPolitics,
+      ),
       drinking: _selectedDrinking,
       smoking: _selectedSmoking,
       drugs: _selectedDrugs,
@@ -925,30 +935,36 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
               '📝 Calling _populateFields with profile: ${state.profile!.name}',
             );
 
-            // Save current tab/page index before refresh
+            // Save current tab/page index BEFORE any rebuild
             final currentTabIndex = _tabController.index;
             final currentPageIndex = _currentPageIndex;
 
-            // Wrap in setState to trigger UI rebuild for all populated fields (especially DOB)
+            logger.i(
+              '🔖 Saved current tab index: $currentTabIndex, page index: $currentPageIndex',
+            );
+
+            // Update model AND restore tab position in SAME setState
+            // This ensures UI rebuild uses the correct tab index
             setState(() {
               _currentProfile = state.profile;
               _populateFields(state.profile!);
+              // Restore tab position BEFORE UI rebuild completes
+              _tabController.index = currentTabIndex;
+              _currentPageIndex = currentPageIndex;
             });
 
-            // Restore tab/page position after refresh to keep user on same tab
-            if (currentTabIndex != _tabController.index) {
-              logger.i('📍 Restoring tab position to index: $currentTabIndex');
-              _tabController.animateTo(currentTabIndex);
-              _pageController.jumpToPage(currentTabIndex);
-              setState(() {
-                _currentPageIndex = currentPageIndex;
-              });
-            }
+            // Defer PageView navigation to AFTER frame renders
+            // This ensures PageView is attached before calling jumpToPage
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (_pageController.hasClients) {
+                _pageController.jumpToPage(currentTabIndex);
+                logger.i('✅ Page controller synced to page: $currentTabIndex');
+              }
+            });
 
             logger.i(
-              '✅ _populateFields completed, _currentProfile: ${_currentProfile?.name}',
+              '✅ _populateFields completed, tab restored to: ${_tabController.index}, _currentProfile: ${_currentProfile?.name}',
             );
-            logger.i('📅 DOB after populate: $_dateOfBirth');
           }
 
           // Handle photo upload success/error

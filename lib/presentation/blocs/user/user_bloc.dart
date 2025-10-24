@@ -300,7 +300,8 @@ class UserBloc extends Bloc<UserEvent, UserState> {
         minAge: event.filters['minAge'] as int?,
         maxAge: event.filters['maxAge'] as int?,
         gender: event.filters['gender'] as String?,
-        interests: event.filters['interests'] as List<String>?,
+        interests: (event.filters['interests'] as List<dynamic>?)
+            ?.cast<String>(),
         maxDistanceKm: event.filters['maxDistanceKm'] as double?,
         limit: event.limit,
       );

@@ -207,7 +207,8 @@ class AppRouter {
             return OTPVerificationScreen(
               sessionId: extra['sessionId'] as String,
               phoneNumber: extra['phoneNumber'] as String,
-              deliveryMethods: extra['deliveryMethods'] as List<String>?,
+              deliveryMethods: (extra['deliveryMethods'] as List<dynamic>?)
+                  ?.cast<String>(),
             );
           },
         ),
@@ -1177,43 +1178,54 @@ class AppRouter {
       return AppRoutes.verificationMethod;
     }
 
+    // ✅ CONSOLIDATED: Fetch SharedPreferences ONCE for all profile checks
+    // This prevents multiple async calls that can cause widget tree conflicts
+    late final bool goalsCompleted;
+    late final bool photosCompleted;
+    late final bool interestsCompleted;
+    late final bool profileSetupComplete;
+    late final bool profileCompleteByPercentage;
+
+    if ((currentState is AuthProfileEnrichmentRequired ||
+            (isAuthenticated && !isProfileSetupRoute) ||
+            (isAuthenticated && (isAuthRoute || isWelcomeRoute))) &&
+        !isProfileSetupRoute) {
+      final prefs = await SharedPreferences.getInstance();
+      goalsCompleted = prefs.getBool('setup_goals_completed') ?? false;
+      photosCompleted = prefs.getBool('setup_photos_completed') ?? false;
+      interestsCompleted = prefs.getBool('setup_interests_completed') ?? false;
+      profileSetupComplete =
+          goalsCompleted && photosCompleted && interestsCompleted;
+
+      profileCompleteByPercentage = (currentState is AuthAuthenticated)
+          ? ((currentState.user.profileCompletionPercentage ?? 0) >= 50)
+          : false;
+    }
+
     // Check profile enrichment status for authenticated users
+    // BUT: Only redirect if profile setup is actually incomplete
     if (currentState is AuthProfileEnrichmentRequired &&
         !state.fullPath!.contains(AppRoutes.profileSetup)) {
-      debugPrint(
-        '  📝 User needs profile enrichment - redirecting to profile setup',
-      );
-      return AppRoutes.profileSetup;
+      // Only redirect if profile is actually incomplete
+      if (!profileSetupComplete) {
+        debugPrint(
+          '  📝 User needs profile enrichment - redirecting to profile setup (Goals: $goalsCompleted, Photos: $photosCompleted, Interests: $interestsCompleted)',
+        );
+        return AppRoutes.profileSetup;
+      } else {
+        debugPrint(
+          '  ✅ Profile setup actually complete despite AuthProfileEnrichmentRequired state - allowing home navigation',
+        );
+        // Don't redirect - profile is complete
+      }
     }
 
     // Check profile completion status for authenticated users
     if (isAuthenticated && !isProfileSetupRoute) {
-      final prefs = await SharedPreferences.getInstance();
-      
-      // Check individual step completion (more reliable than single flag)
-      final intentCompleted = prefs.getBool('setup_intent_completed') ?? false;
-      final photosCompleted = prefs.getBool('setup_photos_completed') ?? false;
-      final interestsCompleted =
-          prefs.getBool('setup_interests_completed') ?? false;
-
-      // Profile setup is complete only if all required steps are done
-      final profileSetupComplete =
-          intentCompleted && photosCompleted && interestsCompleted;
-
-      // ✅ NEW: Also check user model profile completion percentage as fallback
-      // This handles case where SharedPreferences flags haven't been set yet
-      // (e.g., after OTP verification but before profile setup started)
-      bool profileCompleteByPercentage = false;
-      if (currentState is AuthAuthenticated) {
-        final user = currentState.user;
-        profileCompleteByPercentage =
-            (user.profileCompletionPercentage ?? 0) >= 50;
-      }
-
       // If authenticated user hasn't completed profile setup
       if (!profileSetupComplete && !profileCompleteByPercentage) {
         debugPrint(
-          '  📝 Profile setup incomplete (SharedPrefs - Intent: $intentCompleted, Photos: $photosCompleted, Interests: $interestsCompleted | User Model - Completion: ${currentState is AuthAuthenticated ? (currentState.user.profileCompletionPercentage ?? 0) : 'N/A'}%) - redirecting to profile setup',
+          '  📝 Profile setup incomplete (SharedPrefs - Goals: $goalsCompleted, Photos: $photosCompleted, Interests: $interestsCompleted | User Model - Completion: ${currentState is AuthAuthenticated ? (currentState.user.profileCompletionPercentage ?? 0) : 'N/A'}%) - redirecting to profile setup',
         );
         return AppRoutes.profileSetup;
       }
@@ -1222,22 +1234,6 @@ class AppRouter {
     // If user is authenticated with completed profile and trying to access auth/welcome routes,
     // redirect to home
     if (isAuthenticated && (isAuthRoute || isWelcomeRoute)) {
-      final prefs = await SharedPreferences.getInstance();
-      final intentCompleted = prefs.getBool('setup_intent_completed') ?? false;
-      final photosCompleted = prefs.getBool('setup_photos_completed') ?? false;
-      final interestsCompleted =
-          prefs.getBool('setup_interests_completed') ?? false;
-      final profileSetupComplete =
-          intentCompleted && photosCompleted && interestsCompleted;
-
-      // ✅ NEW: Also check user model profile completion percentage as fallback
-      bool profileCompleteByPercentage = false;
-      if (currentState is AuthAuthenticated) {
-        final user = currentState.user;
-        profileCompleteByPercentage =
-            (user.profileCompletionPercentage ?? 0) >= 50;
-      }
-
       if (profileSetupComplete || profileCompleteByPercentage) {
         debugPrint(
           '  ✅ Authenticated user with complete profile accessing welcome/auth route - redirecting to home',

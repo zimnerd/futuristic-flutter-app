@@ -81,6 +81,48 @@ class ProfilePhysicalAttributesSection extends StatelessWidget {
     }
   }
 
+  // Map UI labels to backend enum values for religion
+  static String? mapReligionToBackend(String? value) {
+    if (value == null) return null;
+    // Backend expects lowercase values
+    return value.toLowerCase().replaceAll(' ', '-');
+  }
+
+  // Map backend values to UI labels for religion
+  static String? mapReligionFromBackend(String? value) {
+    if (value == null) return null;
+    // Convert backend format (lowercase with hyphens) to UI format
+    switch (value.toLowerCase()) {
+      case 'agnostic':
+        return 'Agnostic';
+      case 'atheist':
+        return 'Atheist';
+      case 'buddhist':
+        return 'Buddhist';
+      case 'catholic':
+        return 'Catholic';
+      case 'christian':
+        return 'Christian';
+      case 'hindu':
+        return 'Hindu';
+      case 'jewish':
+        return 'Jewish';
+      case 'muslim':
+        return 'Muslim';
+      case 'sikh':
+        return 'Sikh';
+      case 'spiritual':
+        return 'Spiritual';
+      case 'other':
+        return 'Other';
+      case 'prefer-not-to-say':
+        return 'Prefer not to say';
+      default:
+        // Capitalize first letter for any unknown values
+        return value[0].toUpperCase() + value.substring(1);
+    }
+  }
+
   String _formatHeight(int cm) {
     final feet = cm ~/ 30.48;
     final inches = ((cm % 30.48) / 2.54).round();
@@ -308,7 +350,11 @@ class ProfilePhysicalAttributesSection extends StatelessWidget {
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
                     isExpanded: true,
-                    value: religion,
+                    // Only use religion value if it's actually in the options, otherwise null
+                    value:
+                        (religion != null && religionOptions.contains(religion))
+                        ? religion
+                        : null,
                     hint: Text(
                       'Select your religion',
                       style: TextStyle(
@@ -380,7 +426,11 @@ class ProfilePhysicalAttributesSection extends StatelessWidget {
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
                     isExpanded: true,
-                    value: politics,
+                    // Only use politics value if it's actually in the options, otherwise null
+                    value:
+                        (politics != null && politicsOptions.contains(politics))
+                        ? politics
+                        : null,
                     hint: Text(
                       'Select your political views',
                       style: TextStyle(

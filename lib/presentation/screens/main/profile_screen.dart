@@ -764,7 +764,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           school: formData['school'] as String?,
           gender: formData['gender'] as String?,
           lookingFor: formData['lookingFor'] as String?,
-          interests: formData['interests'] as List<String>?,
+          interests: (formData['interests'] as List<dynamic>?)?.cast<String>(),
         );
 
         // Dispatch UpdateProfile event to save changes
