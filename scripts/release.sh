@@ -74,28 +74,29 @@ flutter build ios \
 
 echo -e "${GREEN}✓ iOS archive built${NC}"
 
-# Step 4: Convert iOS Archive to IPA
-echo -e "\n${YELLOW}🔄 Step 4: Converting XCArchive to IPA...${NC}"
+# Step 4: Create IPA from Built App
+echo -e "\n${YELLOW}🔄 Step 4: Creating IPA from Flutter Build...${NC}"
 
 IOS_DIST_DIR="$MOBILE_DIR/build/release/distribution/ios"
 mkdir -p "$IOS_DIST_DIR"
 
-# Find the xcarchive
-XCARCHIVE=$(find "$MOBILE_DIR/build/ios" -name "*.xcarchive" | head -1)
+# Find the built app
+APP_PATH="$MOBILE_DIR/build/ios/iphoneos/Runner.app"
 
-if [ -z "$XCARCHIVE" ]; then
-  echo -e "${RED}✗ XCArchive not found${NC}"
+if [ ! -d "$APP_PATH" ]; then
+  echo -e "${RED}✗ Runner.app not found at $APP_PATH${NC}"
   exit 1
 fi
 
-echo -e "Found archive: ${BLUE}$(basename "$XCARCHIVE")${NC}"
+echo -e "Found app: ${BLUE}Runner.app${NC}"
 
-# Extract app from archive
+# Create Payload directory structure
 IPA_STAGING="$IOS_DIST_DIR/Payload"
 rm -rf "$IPA_STAGING"
 mkdir -p "$IPA_STAGING"
 
-cp -r "$XCARCHIVE/Products/Applications/Runner.app" "$IPA_STAGING/"
+# Copy app to Payload
+cp -r "$APP_PATH" "$IPA_STAGING/"
 
 # Create IPA (zip)
 IPA_PATH="$IOS_DIST_DIR/PulseLink-${NEW_VERSION}.ipa"
@@ -103,6 +104,9 @@ rm -f "$IPA_PATH"
 cd "$IOS_DIST_DIR"
 zip -r -q "PulseLink-${NEW_VERSION}.ipa" Payload/
 cd - > /dev/null
+
+# Cleanup staging
+rm -rf "$IPA_STAGING"
 
 echo -e "${GREEN}✓ IPA created: $(du -h "$IPA_PATH" | cut -f1)${NC}"
 
