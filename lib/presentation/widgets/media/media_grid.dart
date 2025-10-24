@@ -66,7 +66,7 @@ class MediaGrid extends StatelessWidget {
                 fit: BoxFit.cover,
               ),
               // Video play button overlay
-              if (messageType == MessageType.video) _buildVideoOverlay(),
+              if (messageType == MessageType.video) _buildVideoOverlay(context),
             ],
           ),
         ),
@@ -166,13 +166,13 @@ class MediaGrid extends StatelessWidget {
                       // Overlay for more items
                       Container(
                         decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.6),
+                          color: Theme.of(context).colorScheme.scrim.withValues(alpha: 0.6),
                         ),
                         child: Center(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(
+                              const Icon(
                                 Icons.photo_library_rounded,
                                 color: Colors.white,
                                 size: 32,
@@ -218,20 +218,20 @@ class MediaGrid extends StatelessWidget {
               fit: BoxFit.cover,
             ),
             // Video play button overlay
-            if (messageType == MessageType.video) _buildVideoOverlay(),
+            if (messageType == MessageType.video) _buildVideoOverlay(context),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildVideoOverlay() {
+  Widget _buildVideoOverlay(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Colors.black.withValues(alpha: 0.1),
-            Colors.black.withValues(alpha: 0.3),
+            Theme.of(context).colorScheme.scrim.withValues(alpha: 0.1),
+            Theme.of(context).colorScheme.scrim.withValues(alpha: 0.3),
           ],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
@@ -241,20 +241,20 @@ class MediaGrid extends StatelessWidget {
         child: Container(
           width: 48,
           height: 48,
-          decoration: const BoxDecoration(
-            color: Colors.white,
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: Colors.black26,
+                color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.3),
                 blurRadius: 8,
-                offset: Offset(0, 2),
+                offset: const Offset(0, 2),
               ),
             ],
           ),
-          child: const Icon(
+          child: Icon(
             Icons.play_arrow_rounded,
-            color: Colors.black87,
+            color: Theme.of(context).colorScheme.onSurface,
             size: 24,
           ),
         ),

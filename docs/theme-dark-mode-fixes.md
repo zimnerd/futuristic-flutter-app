@@ -38,11 +38,11 @@
 | Discovery/Swipe | ✅ Complete | 1 |
 | Chat Components | ✅ Complete (5 critical files) | 5 |
 | Main Navigation Screens | ✅ Complete (2/4) | 2 |
-| Common Widgets | ✅ Complete (1/~20) | 1 |
+| Common Widgets | ✅ Complete (4 critical) | 4 |
 | Other Screens | Pending | ~46 |
-| Other Widgets | Pending | ~170 |
+| Other Widgets | Pending | ~167 |
 
-**Completed Files (15 total - ~210+ color replacements):**
+**Completed Files (24 total - ~270+ color replacements):**
 1. ✅ `presentation/dialogs/call_back_confirmation_dialog.dart` (10 replacements)
 2. ✅ `presentation/dialogs/photo_details_dialog.dart` (12 replacements)
 3. ✅ `presentation/sheets/cancellation_reason_dialog.dart` (16 replacements)
@@ -52,12 +52,21 @@
 7. ✅ `presentation/screens/main/profile_screen.dart` (14 replacements)
 8. ✅ `presentation/screens/matches/matches_screen.dart` (12 replacements)
 9. ✅ `presentation/widgets/profile/profile_modal.dart` (7 replacements)
-10. ✅ `presentation/widgets/discovery/swipe_card.dart` (3 replacements)
-11. ✅ `presentation/widgets/chat/message_bubble.dart` (40+ replacements)
-12. ✅ `presentation/widgets/chat/voice_message_bubble.dart` (10 replacements)
-13. ✅ `presentation/widgets/chat/call_message_widget.dart` (7 replacements)
-14. ✅ `presentation/widgets/chat/message_input_new.dart` (4 replacements)
-15. ✅ `presentation/widgets/common/profile_modal.dart` (7 replacements)
+10. ✅ `presentation/widgets/profile/interests_selector.dart` (25 replacements)
+11. ✅ `presentation/widgets/discovery/swipe_card.dart` (3 replacements)
+12. ✅ `presentation/widgets/chat/message_bubble.dart` (40+ replacements)
+13. ✅ `presentation/widgets/chat/voice_message_bubble.dart` (10 replacements)
+14. ✅ `presentation/widgets/chat/call_message_widget.dart` (7 replacements)
+15. ✅ `presentation/widgets/chat/message_input_new.dart` (4 replacements)
+16. ✅ `presentation/widgets/common/profile_modal.dart` (7 replacements)
+17. ✅ `presentation/widgets/common/skeleton_loading.dart` (3 replacements - loading shimmer)
+18. ✅ `presentation/widgets/common/pulse_error_widget.dart` (5 replacements - error states)
+19. ✅ `presentation/widgets/common/empty_state_widget.dart` (3 replacements - empty states)
+20. ✅ `presentation/widgets/animated_button.dart` (3 replacements - button foreground colors)
+21. ✅ `presentation/widgets/messaging/message_status_indicator.dart` (2 replacements - status colors)
+22. ✅ `presentation/widgets/sync/sync_refresh_wrapper.dart` (4 replacements - sync status colors)
+23. ✅ `presentation/widgets/events/event_card.dart` (3 replacements - event badges)
+24. ✅ `presentation/widgets/voice_messages/voice_message_player_widget.dart` (2 replacements - player controls)
 
 ### 5. Completed Work
 
@@ -178,8 +187,8 @@ The foundation is now in place. To complete the dark mode implementation:
 - **Persistence**: ✅ Uses SharedPreferences
 - **Automatic theme**: ✅ Follows system by default
 - **Manual override**: ✅ User can choose Light/Dark
-- **Hard-coded colors**: 🔄 ~210+ replacements complete in 15 critical files
-- **Remaining work**: ~3,530 color references in ~238 files
+- **Hard-coded colors**: 🔄 ~270+ replacements complete in 24 critical files
+- **Remaining work**: ~3,470 color references in ~229 files
 
 ### 📊 Impact Summary
 **High-Impact Components Fixed (Ready for Dark Mode):**
@@ -191,6 +200,8 @@ The foundation is now in place. To complete the dark mode implementation:
 - ✅ Profile modal
 - ✅ **Profile screen** (stats, skeletons, premium badges, error states)
 - ✅ **Matches screen** (all view modes, empty states, action buttons)
+- ✅ **Interests selector** (search, category tabs, interest chips, selected badges)
+- ✅ **Common widgets** (skeleton loading, error states, empty states)
 
 **Components Working Correctly in Both Themes:**
 - Theme toggle in settings
@@ -203,6 +214,9 @@ The foundation is now in place. To complete the dark mode implementation:
 - **Profile stats and analytics displays**
 - **Match cards in list/grid/slider views**
 - **Match accept/reject buttons**
+- **Loading skeletons** (shimmer animation adapts to theme)
+- **Error screens** (error icon, messages, retry buttons)
+- **Empty state screens** (across all sections)
 
 **Next Priority Areas:**
 1. Remaining main navigation screens (Discovery, Chat list)

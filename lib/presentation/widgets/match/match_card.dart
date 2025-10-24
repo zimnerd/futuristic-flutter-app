@@ -51,7 +51,7 @@ class MatchCard extends StatelessWidget {
             child: Row(
               children: [
                 // User profile photo
-                _buildUserPhoto(),
+                _buildUserPhoto(context),
                 const SizedBox(width: 16),
 
                 // User details
@@ -70,7 +70,7 @@ class MatchCard extends StatelessWidget {
                       Text(
                         _getUserDetails(),
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.grey[600],
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -104,7 +104,7 @@ class MatchCard extends StatelessWidget {
                               child: Text(
                                 _getUserLocation(),
                                 style: TextStyle(
-                                  color: Colors.grey[500],
+                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                                   fontSize: 12,
                                 ),
                                 maxLines: 1,
@@ -129,13 +129,13 @@ class MatchCard extends StatelessWidget {
                           Icon(
                             Icons.favorite,
                             size: 12,
-                            color: Colors.grey[400],
+                            color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
                           ),
                           const SizedBox(width: 4),
                           Text(
                             _getMatchTimeText(),
                             style: TextStyle(
-                              color: Colors.grey[500],
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
                               fontSize: 11,
                               fontStyle: FontStyle.italic,
                             ),
@@ -172,7 +172,7 @@ class MatchCard extends StatelessWidget {
 
                 // Context menu button (vertical ellipsis)
                 PopupMenuButton<String>(
-                  icon: Icon(Icons.more_vert, color: Colors.grey[600]),
+                  icon: Icon(Icons.more_vert, color: Theme.of(context).colorScheme.onSurfaceVariant),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -291,7 +291,7 @@ class MatchCard extends StatelessWidget {
   }
 
   /// Build user profile photo widget
-  Widget _buildUserPhoto() {
+  Widget _buildUserPhoto(BuildContext context) {
     // For now, use userProfile if available, otherwise show placeholder
     if (userProfile?.photos.isNotEmpty == true) {
       return ClipOval(
@@ -308,8 +308,8 @@ class MatchCard extends StatelessWidget {
     // Default placeholder
     return CircleAvatar(
       radius: 30,
-      backgroundColor: Colors.grey[300],
-      child: Icon(Icons.person, size: 30, color: Colors.grey[600]),
+      backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+      child: Icon(Icons.person, size: 30, color: Theme.of(context).colorScheme.onSurfaceVariant),
     );
   }
 

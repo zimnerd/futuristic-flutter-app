@@ -18,7 +18,7 @@ class ErrorMessage extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(icon, size: 64, color: Colors.red[300]),
+        Icon(icon, size: 64, color: Theme.of(context).colorScheme.error.withValues(alpha: 0.6)),
         const SizedBox(height: 16),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -27,7 +27,7 @@ class ErrorMessage extends StatelessWidget {
             textAlign: TextAlign.center,
             style: Theme.of(
               context,
-            ).textTheme.bodyLarge?.copyWith(color: Colors.red[700]),
+            ).textTheme.bodyLarge?.copyWith(color: Theme.of(context).colorScheme.error),
           ),
         ),
         if (onRetry != null) ...[

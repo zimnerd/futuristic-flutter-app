@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/pulse_colors.dart';
-import '../../theme/theme_extensions.dart';
 
 class TypingIndicator extends StatefulWidget {
   final String? userName;
@@ -45,11 +44,11 @@ class _TypingIndicatorState extends State<TypingIndicator>
         children: [
           CircleAvatar(
             radius: 16,
-            backgroundColor: context.surfaceVariantColor,
+            backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
             child: Text(
               widget.userName?.substring(0, 1).toUpperCase() ?? 'U',
               style: TextStyle(
-                color: context.onSurfaceVariantColor,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
               ),
@@ -59,7 +58,7 @@ class _TypingIndicatorState extends State<TypingIndicator>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: ThemeColors.getSubtleBackground(context),
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(20),
                 topRight: Radius.circular(20),
@@ -75,7 +74,7 @@ class _TypingIndicatorState extends State<TypingIndicator>
                       ? '${widget.userName} is typing'
                       : 'Typing',
                   style: TextStyle(
-                    color: context.onSurfaceVariantColor,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontSize: 14,
                     fontStyle: FontStyle.italic,
                   ),

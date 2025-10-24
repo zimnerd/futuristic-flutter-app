@@ -44,20 +44,20 @@ class VoiceMessageListWidget extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.mic_none, size: 64, color: Colors.grey[400]),
+          Icon(Icons.mic_none, size: 64, color: Theme.of(context).colorScheme.onSurfaceVariant),
           const SizedBox(height: 16),
           Text(
             emptyStateTitle,
             style: Theme.of(
               context,
-            ).textTheme.headlineSmall?.copyWith(color: Colors.grey[600]),
+            ).textTheme.headlineSmall?.copyWith(color: Theme.of(context).colorScheme.onSurface),
           ),
           const SizedBox(height: 8),
           Text(
             emptyStateSubtitle,
             style: Theme.of(
               context,
-            ).textTheme.bodyMedium?.copyWith(color: Colors.grey[500]),
+            ).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
             textAlign: TextAlign.center,
           ),
         ],
@@ -80,20 +80,20 @@ class VoiceMessageListWidget extends StatelessWidget {
               Expanded(
                 child: Row(
                   children: [
-                    _buildPlayButton(message),
+                    _buildPlayButton(context, message),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildWaveform(message),
+                          _buildWaveform(context, message),
                           const SizedBox(height: 8),
                           Row(
                             children: [
                               Text(
                                 _formatDuration(message.duration),
                                 style: Theme.of(context).textTheme.bodySmall
-                                    ?.copyWith(color: Colors.grey[600]),
+                                    ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
                               ),
                               const SizedBox(width: 8),
                               if (!message.isPlayed)
@@ -111,7 +111,7 @@ class VoiceMessageListWidget extends StatelessWidget {
                                     style: TextStyle(
                                       fontSize: 10,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.white,
+                                      color: Theme.of(context).colorScheme.onPrimary,
                                     ),
                                   ),
                                 ),
@@ -153,7 +153,7 @@ class VoiceMessageListWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildPlayButton(VoiceMessage message) {
+  Widget _buildPlayButton(BuildContext context, VoiceMessage message) {
     return Container(
       width: 48,
       height: 48,
@@ -170,13 +170,13 @@ class VoiceMessageListWidget extends StatelessWidget {
       ),
       child: Icon(
         message.isPlayed ? Icons.replay : Icons.play_arrow,
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.onPrimary,
         size: 24,
       ),
     );
   }
 
-  Widget _buildWaveform(VoiceMessage message) {
+  Widget _buildWaveform(BuildContext context, VoiceMessage message) {
     return SizedBox(
       height: 40,
       child: Row(
@@ -186,7 +186,7 @@ class VoiceMessageListWidget extends StatelessWidget {
             margin: const EdgeInsets.symmetric(horizontal: 1),
             height: amplitude * 40,
             decoration: BoxDecoration(
-              color: message.isPlayed ? Colors.grey[400] : PulseColors.primary,
+              color: message.isPlayed ? Theme.of(context).colorScheme.onSurfaceVariant : PulseColors.primary,
               borderRadius: BorderRadius.circular(1.5),
             ),
           );
@@ -204,7 +204,7 @@ class VoiceMessageListWidget extends StatelessWidget {
             onPressed: () => onMessageReply!(message),
             icon: const Icon(Icons.reply),
             iconSize: 20,
-            color: Colors.blue,
+            color: Theme.of(context).colorScheme.primary,
             tooltip: 'Reply',
           ),
         if (onMessageDelete != null)
@@ -212,7 +212,7 @@ class VoiceMessageListWidget extends StatelessWidget {
             onPressed: () => _showDeleteDialog(context, message),
             icon: const Icon(Icons.delete_outline),
             iconSize: 20,
-            color: Colors.red,
+            color: Theme.of(context).colorScheme.error,
             tooltip: 'Delete',
           ),
       ],
@@ -238,7 +238,7 @@ class VoiceMessageListWidget extends StatelessWidget {
               Navigator.of(context).pop();
               onMessageDelete!(message);
             },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.error),
             child: const Text('Delete'),
           ),
         ],

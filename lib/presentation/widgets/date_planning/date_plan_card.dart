@@ -91,7 +91,7 @@ class DatePlanCard extends StatelessWidget {
 
               if (description.isNotEmpty) ...[
                 const SizedBox(height: 8),
-                Text(description, style: TextStyle(color: Colors.grey[600])),
+                Text(description, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
               ],
 
               const SizedBox(height: 12),
@@ -100,13 +100,14 @@ class DatePlanCard extends StatelessWidget {
               Column(
                 children: [
                   if (date.isNotEmpty)
-                    _buildDetailRow(Icons.calendar_today, 'Date', date),
+                    _buildDetailRow(context, Icons.calendar_today, 'Date', date),
                   if (location.isNotEmpty)
-                    _buildDetailRow(Icons.location_on, 'Location', location),
+                    _buildDetailRow(context, Icons.location_on, 'Location', location),
                   if (budget.isNotEmpty)
-                    _buildDetailRow(Icons.attach_money, 'Budget', budget),
+                    _buildDetailRow(context, Icons.attach_money, 'Budget', budget),
                   if (activities.isNotEmpty)
                     _buildDetailRow(
+                      context,
                       Icons.local_activity,
                       'Activities',
                       '${activities.length} activities planned',
@@ -124,9 +125,9 @@ class DatePlanCard extends StatelessWidget {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: PulseColors.primary,
                         ),
-                        child: const Text(
+                        child: Text(
                           'Accept',
-                          style: TextStyle(color: Colors.white),
+                          style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
                         ),
                       ),
                     ),
@@ -147,22 +148,22 @@ class DatePlanCard extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailRow(IconData icon, String label, String value) {
+  Widget _buildDetailRow(BuildContext context, IconData icon, String label, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 4),
       child: Row(
         children: [
-          Icon(icon, size: 16, color: Colors.grey[600]),
+          Icon(icon, size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
           const SizedBox(width: 8),
           Text(
             '$label: ',
             style: TextStyle(
               fontWeight: FontWeight.w500,
-              color: Colors.grey[700],
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           Expanded(
-            child: Text(value, style: TextStyle(color: Colors.grey[600])),
+            child: Text(value, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
           ),
         ],
       ),

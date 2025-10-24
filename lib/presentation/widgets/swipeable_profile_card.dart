@@ -207,15 +207,15 @@ class _SwipeableProfileCardState extends State<SwipeableProfileCard>
     _rotationController.forward();
   }
 
-  Color _getSwipeIndicatorColor() {
+  Color _getSwipeIndicatorColor(BuildContext context) {
     if (_panUpdate.dy < _superLikeThreshold) {
-      return Colors.blue;
+      return Theme.of(context).colorScheme.tertiary;
     } else if (_panUpdate.dx > _swipeThreshold) {
-      return Colors.green;
+      return Theme.of(context).colorScheme.tertiary;
     } else if (_panUpdate.dx < -_swipeThreshold) {
-      return Colors.red;
+      return Theme.of(context).colorScheme.error;
     }
-    return Colors.transparent;
+    return Theme.of(context).colorScheme.surface.withValues(alpha: 0);
   }
 
   String _getSwipeIndicatorText() {
@@ -279,7 +279,7 @@ class _SwipeableProfileCardState extends State<SwipeableProfileCard>
 
                     // Swipe indicator overlay
                     if (_isDragging && _getSwipeIndicatorText().isNotEmpty)
-                      _buildSwipeIndicator(),
+                      _buildSwipeIndicator(context),
                   ],
                 ),
               ),
@@ -397,8 +397,8 @@ class _SwipeableProfileCardState extends State<SwipeableProfileCard>
     );
   }
 
-  Widget _buildSwipeIndicator() {
-    final color = _getSwipeIndicatorColor();
+  Widget _buildSwipeIndicator(BuildContext context) {
+    final color = _getSwipeIndicatorColor(context);
     final text = _getSwipeIndicatorText();
 
     return Positioned.fill(
