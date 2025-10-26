@@ -61,7 +61,7 @@ class PremiumFeaturesWidget extends StatelessWidget {
         ),
         color: isUnlocked
             ? context.primaryColor.withValues(alpha: 0.05)
-            : Colors.grey[50],
+            : context.formFieldBackground,
       ),
       child: Row(
         children: [
@@ -104,7 +104,7 @@ class PremiumFeaturesWidget extends StatelessWidget {
                     if (isUnlocked)
                       Icon(
                         Icons.check_circle,
-                        color: Colors.green[600],
+                        color: context.recordingReady,
                         size: 18,
                       )
                     else
@@ -133,13 +133,13 @@ class PremiumFeaturesWidget extends StatelessWidget {
                       Icon(
                         Icons.monetization_on,
                         size: 14,
-                        color: Colors.amber[600],
+                        color: context.statusWarning,
                       ),
                       const SizedBox(width: 4),
                       Text(
                         '${featureInfo.coinCost} coins per use',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.amber[600],
+                          color: context.statusWarning,
                           fontWeight: FontWeight.w500,
                         ),
                       ),

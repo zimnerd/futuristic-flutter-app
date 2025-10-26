@@ -83,7 +83,7 @@ class _QuickReplyChipBarState extends State<QuickReplyChipBar>
         height: 56,
         padding: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
-          color: Colors.grey[50],
+          color: context.formFieldBackground,
           border: Border(
             top: BorderSide(
               color: context.outlineColor.withValues(alpha: 0.15),
@@ -106,7 +106,7 @@ class _QuickReplyChipBarState extends State<QuickReplyChipBar>
       itemBuilder: (context, index) {
         return Shimmer.fromColors(
           baseColor: context.outlineColor.withValues(alpha: 0.3),
-          highlightColor: Colors.grey[100]!,
+          highlightColor: context.formFieldBackground,
           child: Container(
             width: 120,
             height: 36,

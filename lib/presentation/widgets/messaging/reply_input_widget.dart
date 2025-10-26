@@ -112,7 +112,7 @@ class _ReplyInputWidgetState extends State<ReplyInputWidget>
           color: context.onSurfaceColor,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
+              color: context.shadowColor.withValues(alpha: 0.1),
               blurRadius: 8,
               offset: const Offset(0, -2),
             ),
@@ -155,7 +155,7 @@ class _ReplyInputWidgetState extends State<ReplyInputWidget>
                   Expanded(
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.grey[100],
+                        color: context.formFieldBackground,
                         borderRadius: BorderRadius.circular(25),
                         border: Border.all(
                           color: context.outlineColor.withValues(alpha: 0.3),
@@ -215,7 +215,7 @@ class _ReplyInputWidgetState extends State<ReplyInputWidget>
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey[50],
+        color: context.formFieldBackground,
         border: Border(
           bottom: BorderSide(
             color: context.outlineColor.withValues(alpha: 0.15),

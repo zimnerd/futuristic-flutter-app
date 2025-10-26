@@ -98,7 +98,7 @@ class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
                         end: Alignment.bottomRight,
                       )
                     : null,
-                color: widget.isSelected ? null : Colors.white,
+                color: widget.isSelected ? null : context.surfaceColor,
                 border: Border.all(
                   color: widget.isSelected
                       ? Colors.transparent
@@ -143,8 +143,8 @@ class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
                                       fontSize: 20,
                                       fontWeight: FontWeight.bold,
                                       color: widget.isSelected
-                                          ? Colors.white
-                                          : Colors.black87,
+                                          ? context.surfaceColor
+                                          : context.onSurfaceColor,
                                     ),
                                   ),
                                   if (widget.plan.description.isNotEmpty)
@@ -153,7 +153,9 @@ class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
                                       style: TextStyle(
                                         fontSize: 14,
                                         color: widget.isSelected
-                                            ? Colors.white70
+                                            ? context.surfaceColor.withValues(
+                                                alpha: 0.7,
+                                              )
                                             : context.onSurfaceVariantColor,
                                       ),
                                     ),
@@ -168,7 +170,7 @@ class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
                                 ),
                                 decoration: BoxDecoration(
                                   color: widget.isSelected
-                                      ? Colors.white
+                                      ? context.surfaceColor
                                       : context.primaryColor,
                                   borderRadius: BorderRadius.circular(20),
                                 ),
@@ -179,7 +181,7 @@ class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
                                     fontWeight: FontWeight.bold,
                                     color: widget.isSelected
                                         ? context.primaryColor
-                                        : Colors.white,
+                                        : context.surfaceColor,
                                   ),
                                 ),
                               ),
@@ -198,8 +200,8 @@ class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
                                 fontSize: 32,
                                 fontWeight: FontWeight.bold,
                                 color: widget.isSelected
-                                    ? Colors.white
-                                    : Colors.black87,
+                                    ? context.surfaceColor
+                                    : context.onSurfaceColor,
                               ),
                             ),
                             Text(
@@ -207,7 +209,9 @@ class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
                               style: TextStyle(
                                 fontSize: 16,
                                 color: widget.isSelected
-                                    ? Colors.white70
+                                    ? context.surfaceColor.withValues(
+                                        alpha: 0.7,
+                                      )
                                     : context.onSurfaceVariantColor,
                               ),
                             ),
@@ -335,7 +339,9 @@ class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
           Icon(
             Icons.check_circle,
             size: 20,
-            color: widget.isSelected ? Colors.white : context.primaryColor,
+            color: widget.isSelected
+                ? context.surfaceColor
+                : context.primaryColor,
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -343,7 +349,9 @@ class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
               feature,
               style: TextStyle(
                 fontSize: 14,
-                color: widget.isSelected ? Colors.white : Colors.black87,
+                color: widget.isSelected
+                    ? context.onSurfaceColor
+                    : context.onSurfaceVariantColor,
               ),
             ),
           ),
@@ -427,7 +435,7 @@ class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
   }) {
     return Card(
       child: ListTile(
-        leading: Icon(icon, size: 32, color: Colors.blue),
+        leading: Icon(icon, size: 32, color: context.primaryColor),
         title: Text(title, style: TextStyle(fontWeight: FontWeight.w600)),
         subtitle: Text(subtitle),
         trailing: Icon(Icons.arrow_forward_ios),

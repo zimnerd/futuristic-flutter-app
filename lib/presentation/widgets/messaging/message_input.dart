@@ -87,7 +87,7 @@ class _MessageInputState extends State<MessageInput>
             _buildActionButton(
               icon: Icons.add,
               onPressed: widget.onAttachment!,
-              backgroundColor: Colors.grey[100]!,
+              backgroundColor: context.formFieldBackground,
               iconColor: context.onSurfaceVariantColor,
             ),
 
@@ -98,7 +98,7 @@ class _MessageInputState extends State<MessageInput>
             child: Container(
               constraints: const BoxConstraints(minHeight: 40, maxHeight: 120),
               decoration: BoxDecoration(
-                color: Colors.grey[100],
+                color: context.formFieldBackground,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
                   color: widget.focusNode.hasFocus
@@ -139,13 +139,13 @@ class _MessageInputState extends State<MessageInput>
                         icon: Icons.send,
                         onPressed: _onSend,
                         backgroundColor: PulseColors.primary,
-                        iconColor: Colors.white,
+                        iconColor: context.surfaceColor,
                       ),
                     )
                   : _buildActionButton(
                       icon: Icons.mic,
                       onPressed: widget.onVoiceMessage ?? () {},
-                      backgroundColor: Colors.grey[100]!,
+                      backgroundColor: context.formFieldBackground,
                       iconColor: context.onSurfaceVariantColor,
                     );
             },

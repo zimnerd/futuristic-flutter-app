@@ -328,7 +328,7 @@ class _MessageComposerState extends State<MessageComposer>
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: context.shadowColor.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),
@@ -442,7 +442,7 @@ class _MessageComposerState extends State<MessageComposer>
             constraints: const BoxConstraints(maxHeight: 120),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              color: Colors.grey[100],
+              color: context.formFieldBackground,
               borderRadius: BorderRadius.circular(25),
             ),
             child: TextField(
@@ -474,7 +474,7 @@ class _MessageComposerState extends State<MessageComposer>
                       shape: BoxShape.circle,
                     ),
                     child: IconButton(
-                      icon: Icon(Icons.send, color: Colors.white),
+                      icon: Icon(Icons.send, color: context.surfaceColor),
                       onPressed: _sendMessage,
                     ),
                   ),
@@ -569,7 +569,7 @@ class _MessageComposerState extends State<MessageComposer>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey[50],
+        color: context.formFieldBackground,
         border: Border(
           top: BorderSide(color: context.outlineColor, width: 0.2),
         ),
@@ -582,7 +582,7 @@ class _MessageComposerState extends State<MessageComposer>
               _buildAttachmentOption(
                 icon: Icons.camera_alt,
                 label: 'Camera',
-                color: Colors.blue,
+                color: context.primaryColor,
                 onTap: () {
                   _handleCameraAttachment();
                   _hideAttachments();
@@ -591,7 +591,7 @@ class _MessageComposerState extends State<MessageComposer>
               _buildAttachmentOption(
                 icon: Icons.photo_library,
                 label: 'Gallery',
-                color: Colors.green,
+                color: context.categoryNeutral,
                 onTap: () {
                   _handleGalleryAttachment();
                   _hideAttachments();
@@ -600,7 +600,7 @@ class _MessageComposerState extends State<MessageComposer>
               _buildAttachmentOption(
                 icon: Icons.videocam,
                 label: 'Video',
-                color: context.errorColor,
+                color: context.recordingActive,
                 onTap: () {
                   _handleVideoAttachment();
                   _hideAttachments();
@@ -609,7 +609,7 @@ class _MessageComposerState extends State<MessageComposer>
               _buildAttachmentOption(
                 icon: Icons.location_on,
                 label: 'Location',
-                color: Colors.purple,
+                color: context.statusWarning,
                 onTap: () {
                   _handleLocationAttachment();
                   _hideAttachments();
@@ -624,7 +624,7 @@ class _MessageComposerState extends State<MessageComposer>
               _buildAttachmentOption(
                 icon: Icons.insert_drive_file,
                 label: 'Document',
-                color: Colors.orange,
+                color: context.categoryGeneral,
                 onTap: () {
                   _handleDocumentAttachment();
                   _hideAttachments();
@@ -633,7 +633,7 @@ class _MessageComposerState extends State<MessageComposer>
               _buildAttachmentOption(
                 icon: Icons.music_note,
                 label: 'Audio',
-                color: Colors.teal,
+                color: context.accentColor,
                 onTap: () {
                   _handleAudioAttachment();
                   _hideAttachments();
@@ -642,7 +642,7 @@ class _MessageComposerState extends State<MessageComposer>
               _buildAttachmentOption(
                 icon: Icons.person,
                 label: 'Contact',
-                color: Colors.indigo,
+                color: context.recordingReady,
                 onTap: () {
                   _handleContactAttachment();
                   _hideAttachments();
@@ -651,7 +651,7 @@ class _MessageComposerState extends State<MessageComposer>
               _buildAttachmentOption(
                 icon: Icons.gif,
                 label: 'GIF',
-                color: Colors.pink,
+                color: context.categoryDanger,
                 onTap: () {
                   _handleGifPicker();
                   _hideAttachments();

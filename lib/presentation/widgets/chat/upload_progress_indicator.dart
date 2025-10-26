@@ -28,17 +28,19 @@ class UploadProgressIndicator extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: hasError ? Colors.red.shade50 : PulseColors.surface,
+        color: hasError
+            ? context.errorColor.withValues(alpha: 0.1)
+            : PulseColors.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: hasError
-              ? Colors.red.shade200
+              ? context.errorColor.withValues(alpha: 0.3)
               : PulseColors.primary.withValues(alpha: 0.2),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
+            color: Theme.of(context).shadowColor.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -53,7 +55,7 @@ class UploadProgressIndicator extends StatelessWidget {
             children: [
               Icon(
                 hasError ? Icons.error_outline : Icons.upload_outlined,
-                color: hasError ? Colors.red : PulseColors.primary,
+                color: hasError ? context.errorColor : PulseColors.primary,
                 size: 20,
               ),
               const SizedBox(width: 12),
@@ -66,7 +68,7 @@ class UploadProgressIndicator extends StatelessWidget {
                         fileName!,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           fontWeight: FontWeight.w500,
-                          color: hasError ? Colors.red.shade700 : null,
+                          color: hasError ? context.errorColor : null,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -76,7 +78,7 @@ class UploadProgressIndicator extends StatelessWidget {
                         fileSize!,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: hasError
-                              ? Colors.red.shade500
+                              ? context.errorColor
                               : context.outlineColor.shade600,
                         ),
                       ),

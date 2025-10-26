@@ -173,10 +173,10 @@ class _PhotoPickerWidgetState extends State<PhotoPickerWidget> {
                     color: context.textOnPrimary,
                     borderRadius: BorderRadius.circular(4),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Primary',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: context.surfaceColor,
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
                     ),
@@ -190,11 +190,15 @@ class _PhotoPickerWidgetState extends State<PhotoPickerWidget> {
                 onTap: () => _removePhoto(index),
                 child: Container(
                   padding: const EdgeInsets.all(4),
-                  decoration: const BoxDecoration(
-                    color: Colors.red,
+                  decoration: BoxDecoration(
+                    color: context.errorColor,
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.close, color: Colors.white, size: 16),
+                  child: Icon(
+                    Icons.close,
+                    color: context.surfaceColor,
+                    size: 16,
+                  ),
                 ),
               ),
             ),
@@ -326,11 +330,11 @@ class _PhotoPickerWidgetState extends State<PhotoPickerWidget> {
             ),
             Divider(height: 1, color: context.borderColor),
             ListTile(
-              leading: const Icon(Icons.close, color: Colors.red),
-              title: const Text(
+              leading: Icon(Icons.close, color: context.errorColor),
+              title: Text(
                 'Cancel',
                 style: TextStyle(
-                  color: Colors.red,
+                  color: context.errorColor,
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
                 ),

@@ -144,7 +144,7 @@ class _PremiumTierCardState extends State<PremiumTierCard>
                                       fontSize: 20,
                                       fontWeight: FontWeight.bold,
                                       color: widget.isSelected
-                                          ? Colors.white
+                                          ? context.surfaceColor
                                           : context.onSurfaceColor,
                                     ),
                                   ),
@@ -153,7 +153,9 @@ class _PremiumTierCardState extends State<PremiumTierCard>
                                     style: TextStyle(
                                       fontSize: 14,
                                       color: widget.isSelected
-                                          ? Colors.white70
+                                          ? context.surfaceColor.withValues(
+                                              alpha: 0.7,
+                                            )
                                           : context.onSurfaceVariantColor,
                                     ),
                                   ),
@@ -168,7 +170,7 @@ class _PremiumTierCardState extends State<PremiumTierCard>
                                 ),
                                 decoration: BoxDecoration(
                                   color: widget.isSelected
-                                      ? Colors.white
+                                      ? context.surfaceColor
                                       : context.primaryColor,
                                   borderRadius: BorderRadius.circular(20),
                                 ),
@@ -179,7 +181,7 @@ class _PremiumTierCardState extends State<PremiumTierCard>
                                     fontWeight: FontWeight.bold,
                                     color: widget.isSelected
                                         ? context.primaryColor
-                                        : Colors.white,
+                                        : context.surfaceColor,
                                   ),
                                 ),
                               ),
@@ -199,8 +201,8 @@ class _PremiumTierCardState extends State<PremiumTierCard>
                                   fontSize: 32,
                                   fontWeight: FontWeight.bold,
                                   color: widget.isSelected
-                                      ? Colors.white
-                                      : Colors.black87,
+                                      ? context.surfaceColor
+                                      : context.onSurfaceColor,
                                 ),
                               ),
                             ],
@@ -212,8 +214,8 @@ class _PremiumTierCardState extends State<PremiumTierCard>
                               fontSize: 32,
                               fontWeight: FontWeight.bold,
                               color: widget.isSelected
-                                  ? Colors.white
-                                  : Colors.black87,
+                                  ? context.surfaceColor
+                                  : context.onSurfaceColor,
                             ),
                           ),
 
@@ -316,7 +318,9 @@ class _PremiumTierCardState extends State<PremiumTierCard>
               feature.displayName,
               style: TextStyle(
                 fontSize: 14,
-                color: widget.isSelected ? Colors.white : Colors.black87,
+                color: widget.isSelected
+                    ? context.surfaceColor
+                    : context.onSurfaceColor,
               ),
             ),
           ),
