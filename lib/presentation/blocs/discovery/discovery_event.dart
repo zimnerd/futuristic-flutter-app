@@ -112,10 +112,11 @@ class LoadDiscoverableUsersWithPreferences extends DiscoveryEvent {
 
 /// Load users who liked the current user (premium feature)
 class LoadWhoLikedYou extends DiscoveryEvent {
-  const LoadWhoLikedYou({this.filters});
+  const LoadWhoLikedYou({this.filters, this.superLikesOnly = false});
 
   final DiscoveryFilters? filters;
+  final bool superLikesOnly;
 
   @override
-  List<Object?> get props => [filters];
+  List<Object?> get props => [filters, superLikesOnly];
 }

@@ -58,7 +58,10 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
 
   void _loadWhoLikedYou() {
     context.read<DiscoveryBloc>().add(
-      LoadWhoLikedYou(filters: DiscoveryFilters(verifiedOnly: _verifiedOnly)),
+      LoadWhoLikedYou(
+        filters: DiscoveryFilters(verifiedOnly: _verifiedOnly),
+        superLikesOnly: _superLikesOnly,
+      ),
     );
   }
 
@@ -199,8 +202,9 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
         margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
-          color: context.borderColor,
+          color: context.backgroundColor,
           borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: context.borderColor, width: 1),
         ),
         child: Row(
           children: [
@@ -942,9 +946,9 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: PulseColors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: context.surfaceColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -996,14 +1000,14 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
               ),
             ),
 
-            const Divider(height: 1),
-
+            Divider(height: 1, color: context.borderColor),
+            
             // Filter options
             SwitchListTile(
               title: Text(
                 'Verified only',
                 style: PulseTypography.bodyMedium.copyWith(
-                  color: context.borderColor.shade900,
+                  color: context.textPrimary,
                   fontWeight: FontWeight.w600,
                 ),
               ),

@@ -511,10 +511,13 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
   ) async {
     try {
       emit(const DiscoveryLoading());
-      AppLogger.debug('Loading who liked you...');
+      AppLogger.debug(
+        'Loading who liked you... (superLikesOnly: ${event.superLikesOnly})',
+      );
 
       final users = await _discoveryService.getWhoLikedYou(
         filters: event.filters,
+        superLikesOnly: event.superLikesOnly,
         limit: 20,
       );
       
