@@ -189,7 +189,7 @@ class _ResponsiveFilterHeaderState extends State<ResponsiveFilterHeader> {
       decoration: BoxDecoration(
         color: Colors.grey[50],
         border: Border(
-          top: BorderSide(color: context.outlineColor.withValues(alpha: 0.15)!),
+          top: BorderSide(color: context.outlineColor.withValues(alpha: 0.15)),
         ),
       ),
       child: Column(

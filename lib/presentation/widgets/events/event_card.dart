@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 import '../../../domain/entities/event.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../theme/pulse_colors.dart';
-import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 import '../common/robust_network_image.dart';
 import 'event_analytics_indicators.dart';
 

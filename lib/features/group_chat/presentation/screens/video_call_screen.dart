@@ -196,7 +196,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
         color: Colors.grey[900],
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isLocal ? Colors.blue : context.onSurfaceVariantColor!,
+          color: isLocal ? Colors.blue : context.onSurfaceVariantColor,
           width: 2,
         ),
       ),

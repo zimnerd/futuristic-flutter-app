@@ -4,7 +4,6 @@ import 'package:logger/logger.dart';
 
 import '../../../blocs/chat_bloc.dart';
 import '../../../data/services/background_sync_manager.dart';
-import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 import '../common/pulse_toast.dart';
 
 /// A widget that provides pull-to-refresh functionality with background sync

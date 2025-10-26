@@ -10,7 +10,7 @@ import '../../../blocs/chat_bloc.dart';
 import '../../blocs/profile/profile_bloc.dart';
 import '../../blocs/block_report/block_report_bloc.dart';
 import '../../theme/pulse_colors.dart';
-import '../../widgets/common/pulse_button.dart';
+import '../../theme/pulse_profile_colors.dart';
 import '../../widgets/common/pulse_toast.dart';
 import '../../widgets/verification/verification_badge.dart';
 import '../../widgets/dialogs/block_user_dialog.dart';
@@ -198,7 +198,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: context.surfaceColor,
-      extendBody: false, // Ensure bottom sheet isn't obscured
+      extendBody: true,
       body: CustomScrollView(
         slivers: [
           _buildSliverAppBar(),
@@ -206,6 +206,8 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                _buildQuickStatsRow(),
+                const SizedBox(height: 12),
                 _buildProfileHeader(),
                 if (widget.isOwnProfile) ...[
                   const SizedBox(height: 20),
@@ -236,13 +238,13 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                   _buildPhotosGrid(),
                   const SizedBox(height: 20),
                 ],
-                const SizedBox(height: 100), // Space for bottom actions
+                const SizedBox(height: 100),
               ],
             ),
           ),
         ],
       ),
-      bottomSheet: widget.isOwnProfile ? null : _buildBottomActions(),
+      bottomSheet: widget.isOwnProfile ? null : _buildStickyActionBar(),
     );
   }
 
@@ -927,15 +929,13 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Colors.white,
-            PulseColors.secondaryContainer.withValues(alpha: 0.1),
-          ],
+          colors: PulseProfileColors.gradientAbout,
         ),
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: PulseProfileColors.darkBorder, width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
@@ -949,20 +949,22 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: PulseColors.secondary.withValues(alpha: 0.1),
+                  color: PulseProfileColors.accentPrimary.withValues(
+                    alpha: 0.15,
+                  ),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
-                  Icons.person,
-                  color: PulseColors.secondary,
-                  size: 20,
+                child: Text(
+                  PulseProfileColors.iconAbout,
+                  style: const TextStyle(fontSize: 18),
                 ),
               ),
               const SizedBox(width: 12),
               Text(
                 'About',
                 style: PulseTextStyles.titleLarge.copyWith(
-                  color: Colors.black87,
+                  color: PulseProfileColors.darkTextPrimary,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
@@ -972,7 +974,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
             widget.profile.bio,
             style: PulseTextStyles.bodyLarge.copyWith(
               height: 1.6,
-              color: Colors.black87,
+              color: PulseProfileColors.darkTextPrimary,
             ),
           ),
         ],
@@ -1127,12 +1129,13 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Colors.white, PulseColors.success.withValues(alpha: 0.02)],
+          colors: PulseProfileColors.gradientInterests,
         ),
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: PulseProfileColors.darkBorder, width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
@@ -1146,20 +1149,22 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: PulseColors.success.withValues(alpha: 0.1),
+                  color: PulseProfileColors.accentSuccess.withValues(
+                    alpha: 0.15,
+                  ),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
-                  Icons.favorite_outline,
-                  color: PulseColors.success,
-                  size: 20,
+                child: Text(
+                  PulseProfileColors.iconInterests,
+                  style: const TextStyle(fontSize: 18),
                 ),
               ),
               const SizedBox(width: 12),
               Text(
                 'Interests',
                 style: PulseTextStyles.titleLarge.copyWith(
-                  color: Colors.black87,
+                  color: PulseProfileColors.darkTextPrimary,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
@@ -1175,20 +1180,21 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                   vertical: 14,
                 ),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      PulseColors.primary.withValues(alpha: 0.15),
-                      PulseColors.secondary.withValues(alpha: 0.15),
-                    ],
+                  color: PulseProfileColors.accentPrimary.withValues(
+                    alpha: 0.15,
                   ),
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(
-                    color: PulseColors.primary.withValues(alpha: 0.3),
+                    color: PulseProfileColors.accentPrimary.withValues(
+                      alpha: 0.3,
+                    ),
                     width: 1.5,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: PulseColors.primary.withValues(alpha: 0.15),
+                      color: PulseProfileColors.accentPrimary.withValues(
+                        alpha: 0.1,
+                      ),
                       blurRadius: 10,
                       offset: const Offset(0, 3),
                     ),
@@ -1197,17 +1203,20 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.check_circle,
-                      color: PulseColors.success,
-                      size: 18,
+                    Text(
+                      '✓',
+                      style: TextStyle(
+                        color: PulseProfileColors.accentSuccess,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
                     ),
                     const SizedBox(width: 6),
                     Text(
                       interest,
                       style: PulseTextStyles.bodyMedium.copyWith(
-                        color: PulseColors.primary,
-                        fontWeight: FontWeight.bold,
+                        color: PulseProfileColors.darkTextPrimary,
+                        fontWeight: FontWeight.w500,
                         fontSize: 15,
                       ),
                     ),
@@ -1236,7 +1245,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
-                  color: Colors.black87,
+                  color: PulseProfileColors.darkTextPrimary,
                 ),
               ),
               const Spacer(),
@@ -1361,12 +1370,13 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Colors.white, PulseColors.secondary.withValues(alpha: 0.02)],
+          colors: PulseProfileColors.gradientLifestyle,
         ),
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: PulseProfileColors.darkBorder, width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
@@ -1380,20 +1390,22 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: PulseColors.secondary.withValues(alpha: 0.1),
+                  color: PulseProfileColors.accentPrimary.withValues(
+                    alpha: 0.15,
+                  ),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
-                  Icons.person_outline,
-                  color: PulseColors.secondary,
-                  size: 20,
+                child: Text(
+                  PulseProfileColors.iconLifestyle,
+                  style: const TextStyle(fontSize: 18),
                 ),
               ),
               const SizedBox(width: 12),
               Text(
                 'Physical & Beliefs',
                 style: PulseTextStyles.titleLarge.copyWith(
-                  color: Colors.black87,
+                  color: PulseProfileColors.darkTextPrimary,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
@@ -1485,12 +1497,13 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Colors.white, PulseColors.success.withValues(alpha: 0.02)],
+          colors: PulseProfileColors.gradientLifestyle,
         ),
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: PulseProfileColors.darkBorder, width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
@@ -1504,20 +1517,22 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: PulseColors.success.withValues(alpha: 0.1),
+                  color: PulseProfileColors.accentPrimary.withValues(
+                    alpha: 0.15,
+                  ),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
-                  Icons.spa_outlined,
-                  color: PulseColors.success,
-                  size: 20,
+                child: Text(
+                  PulseProfileColors.iconLifestyle,
+                  style: const TextStyle(fontSize: 18),
                 ),
               ),
               const SizedBox(width: 12),
               Text(
                 'Lifestyle Choices',
                 style: PulseTextStyles.titleLarge.copyWith(
-                  color: Colors.black87,
+                  color: PulseProfileColors.darkTextPrimary,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
@@ -1541,12 +1556,13 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Colors.white, PulseColors.secondary.withValues(alpha: 0.02)],
+          colors: PulseProfileColors.gradientGoals,
         ),
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: PulseProfileColors.darkBorder, width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
@@ -1560,20 +1576,22 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: PulseColors.secondary.withValues(alpha: 0.1),
+                  color: PulseProfileColors.accentPrimary.withValues(
+                    alpha: 0.15,
+                  ),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
-                  Icons.favorite_outline,
-                  color: PulseColors.secondary,
-                  size: 20,
+                child: Text(
+                  PulseProfileColors.iconGoals,
+                  style: const TextStyle(fontSize: 18),
                 ),
               ),
               const SizedBox(width: 12),
               Text(
                 'Looking For',
                 style: PulseTextStyles.titleLarge.copyWith(
-                  color: Colors.black87,
+                  color: PulseProfileColors.darkTextPrimary,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
@@ -1589,22 +1607,21 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                   vertical: 12,
                 ),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      PulseColors.secondary.withValues(alpha: 0.1),
-                      PulseColors.secondary.withValues(alpha: 0.1),
-                    ],
+                  color: PulseProfileColors.accentPrimary.withValues(
+                    alpha: 0.15,
                   ),
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(
-                    color: PulseColors.secondary.withValues(alpha: 0.3),
+                    color: PulseProfileColors.accentPrimary.withValues(
+                      alpha: 0.3,
+                    ),
                     width: 1,
                   ),
                 ),
                 child: Text(
                   goal,
                   style: PulseTextStyles.bodyMedium.copyWith(
-                    color: PulseColors.secondary,
+                    color: PulseProfileColors.darkTextPrimary,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -1626,12 +1643,13 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Colors.white, PulseColors.primary.withValues(alpha: 0.02)],
+          colors: PulseProfileColors.gradientLanguages,
         ),
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: PulseProfileColors.darkBorder, width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
@@ -1645,20 +1663,22 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: PulseColors.primary.withValues(alpha: 0.1),
+                  color: PulseProfileColors.accentPrimary.withValues(
+                    alpha: 0.15,
+                  ),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
-                  Icons.language,
-                  color: PulseColors.primary,
-                  size: 20,
+                child: Text(
+                  PulseProfileColors.iconLanguages,
+                  style: const TextStyle(fontSize: 18),
                 ),
               ),
               const SizedBox(width: 12),
               Text(
                 'Languages',
                 style: PulseTextStyles.titleLarge.copyWith(
-                  color: Colors.black87,
+                  color: PulseProfileColors.darkTextPrimary,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
@@ -1674,17 +1694,21 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                   vertical: 12,
                 ),
                 decoration: BoxDecoration(
-                  color: PulseColors.primary.withValues(alpha: 0.1),
+                  color: PulseProfileColors.accentPrimary.withValues(
+                    alpha: 0.15,
+                  ),
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(
-                    color: PulseColors.primary.withValues(alpha: 0.2),
+                    color: PulseProfileColors.accentPrimary.withValues(
+                      alpha: 0.3,
+                    ),
                     width: 1,
                   ),
                 ),
                 child: Text(
                   language,
                   style: PulseTextStyles.bodyMedium.copyWith(
-                    color: PulseColors.primary,
+                    color: PulseProfileColors.darkTextPrimary,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -1708,12 +1732,13 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Colors.white, PulseColors.secondary.withValues(alpha: 0.02)],
+          colors: PulseProfileColors.gradientPersonality,
         ),
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: PulseProfileColors.darkBorder, width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
@@ -1727,20 +1752,22 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: PulseColors.secondary.withValues(alpha: 0.1),
+                  color: PulseProfileColors.accentPrimary.withValues(
+                    alpha: 0.15,
+                  ),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
-                  Icons.psychology_outlined,
-                  color: PulseColors.secondary,
-                  size: 20,
+                child: Text(
+                  PulseProfileColors.iconPersonality,
+                  style: const TextStyle(fontSize: 18),
                 ),
               ),
               const SizedBox(width: 12),
               Text(
                 'Personality',
                 style: PulseTextStyles.titleLarge.copyWith(
-                  color: Colors.black87,
+                  color: PulseProfileColors.darkTextPrimary,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
@@ -1756,17 +1783,21 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                   vertical: 12,
                 ),
                 decoration: BoxDecoration(
-                  color: PulseColors.secondary.withValues(alpha: 0.1),
+                  color: PulseProfileColors.accentPrimary.withValues(
+                    alpha: 0.15,
+                  ),
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(
-                    color: PulseColors.secondary.withValues(alpha: 0.2),
+                    color: PulseProfileColors.accentPrimary.withValues(
+                      alpha: 0.3,
+                    ),
                     width: 1,
                   ),
                 ),
                 child: Text(
                   trait,
                   style: PulseTextStyles.bodyMedium.copyWith(
-                    color: PulseColors.secondary,
+                    color: PulseProfileColors.darkTextPrimary,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -1825,7 +1856,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
               Text(
                 widget.profile.promptAnswers[i],
                 style: PulseTextStyles.bodyLarge.copyWith(
-                  color: Colors.black87,
+                  color: PulseProfileColors.darkTextPrimary,
                   height: 1.5,
                 ),
               ),
@@ -1842,12 +1873,13 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Colors.white, PulseColors.success.withValues(alpha: 0.02)],
+          colors: PulseProfileColors.gradientAbout,
         ),
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: PulseProfileColors.darkBorder, width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
@@ -1861,20 +1893,22 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: PulseColors.success.withValues(alpha: 0.1),
+                  color: PulseProfileColors.accentPrimary.withValues(
+                    alpha: 0.15,
+                  ),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
-                  Icons.chat_bubble_outline,
-                  color: PulseColors.success,
-                  size: 20,
+                child: Text(
+                  PulseProfileColors.iconPrompts,
+                  style: const TextStyle(fontSize: 18),
                 ),
               ),
               const SizedBox(width: 12),
               Text(
                 'My Vibe',
                 style: PulseTextStyles.titleLarge.copyWith(
-                  color: Colors.black87,
+                  color: PulseProfileColors.darkTextPrimary,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
@@ -1886,261 +1920,277 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
     );
   }
 
-  Widget _buildBottomActions() {
-    // Discovery context: Show like/superlike/pass actions
-    if (widget.context == ProfileContext.discovery) {
-      return Container(
-        decoration: BoxDecoration(
-          color: context.onSurfaceColor,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(24),
-            topRight: Radius.circular(24),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 20,
-              offset: const Offset(0, -4),
-            ),
-          ],
-        ),
-        padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
-        child: SafeArea(
-          top: false,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              // Pass/Dislike button
-              _buildActionButton(
-                icon: Icons.close,
-                label: 'Pass',
-                color: context.outlineColor.withValues(alpha: 0.2),
-                onPressed: () {
-                  if (widget.onDislike != null) {
-                    widget.onDislike!();
-                    // Auto-close after action
-                    if (mounted) {
-                      context.pop();
-                    }
-                  }
-                },
-              ),
-              const SizedBox(width: 16),
-              // Super Like button
-              _buildActionButton(
-                icon: Icons.star,
-                label: 'Super',
-                color: PulseColors.warning,
-                gradient: LinearGradient(
-                  colors: [PulseColors.warning, Colors.orange],
-                ),
-                onPressed: () {
-                  if (widget.onSuperLike != null) {
-                    widget.onSuperLike!();
-                    // Auto-close after action
-                    if (mounted) {
-                      context.pop();
-                    }
-                  }
-                },
-                size: 72,
-              ),
-              const SizedBox(width: 16),
-              // Like button
-              _buildActionButton(
-                icon: Icons.favorite,
-                label: 'Like',
-                color: PulseColors.error,
-                onPressed: () {
-                  if (widget.onLike != null) {
-                    widget.onLike!();
-                    // Auto-close after action
-                    if (mounted) {
-                      context.pop();
-                    }
-                  }
-                },
-              ),
-            ],
-          ),
-        ),
-      );
+  /// Quick stats row - Shows key profile info at a glance
+  Widget _buildQuickStatsRow() {
+    final stats = <_StatItem>[
+      if (widget.profile.occupation != null)
+        _StatItem(icon: '🏢', label: widget.profile.occupation!),
+      if (widget.profile.education != null)
+        _StatItem(icon: '📚', label: widget.profile.education!),
+      if (widget.profile.height != null)
+        _StatItem(icon: '📏', label: _formatHeight(widget.profile.height!)),
+      if (widget.profile.zodiacSign != null)
+        _StatItem(icon: '♈', label: widget.profile.zodiacSign!),
+    ];
+
+    if (stats.isEmpty) {
+      return const SizedBox.shrink();
     }
 
-    // Matches context: Show chat/call/unmatch/report actions
-    if (widget.context == ProfileContext.matches) {
-      return Container(
-        decoration: BoxDecoration(
-          color: context.onSurfaceColor,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(24),
-            topRight: Radius.circular(24),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 20,
-              offset: const Offset(0, -4),
-            ),
-          ],
-        ),
-        padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
-        child: SafeArea(
-          top: false,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Primary actions: Chat and Call
-              Row(
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: Row(
+        children: List.generate(
+          stats.length,
+          (index) => Padding(
+            padding: EdgeInsets.only(right: index < stats.length - 1 ? 8 : 0),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: context.borderColor,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: context.borderColor, width: 1),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Expanded(
-                    child: PulseButton(
-                      text: '💬 Chat',
-                      onPressed:
-                          widget.onMessage ?? () => _startConversation(context),
-                      icon: Icon(Icons.chat_bubble_outline, size: 18),
+                  Text(stats[index].icon, style: const TextStyle(fontSize: 14)),
+                  const SizedBox(width: 6),
+                  Text(
+                    stats[index].label,
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: context.textPrimary,
+                      fontWeight: FontWeight.w500,
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: PulseButton(
-                      text: '� Call',
-                      onPressed: () => _startVoiceCall(context),
-                      variant: PulseButtonVariant.secondary,
-                      icon: Icon(Icons.phone, size: 18),
-                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-              // Secondary actions: Unmatch and Report
-              Row(
-                children: [
-                  Expanded(
-                    child: TextButton.icon(
-                      onPressed: widget.onUnmatch,
-                      icon: Icon(Icons.link_off, size: 18),
-                      label: Text('Unmatch'),
-                      style: TextButton.styleFrom(
-                        foregroundColor: context.onSurfaceVariantColor,
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: TextButton.icon(
-                      onPressed: widget.onReport,
-                      icon: Icon(Icons.flag_outlined, size: 18),
-                      label: Text('Report'),
-                      style: TextButton.styleFrom(
-                        foregroundColor: PulseColors.error,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    // General/Legacy context: Show minimal actions (backward compatibility)
-    return Container(
-      decoration: BoxDecoration(
-        color: context.onSurfaceColor,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(24),
-          topRight: Radius.circular(24),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 20,
-            offset: const Offset(0, -4),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
-      child: SafeArea(
-        top: false,
-        child: Row(
-          children: [
-            if (widget.onSuperLike != null)
-              Expanded(
-                child: PulseButton(
-                  text: '⭐ Super Like',
-                  onPressed: widget.onSuperLike,
-                  variant: PulseButtonVariant.secondary,
-                  icon: Icon(Icons.star, size: 18),
-                ),
-              ),
-            if (widget.onSuperLike != null) const SizedBox(width: 12),
-            Expanded(
-              child: PulseButton(
-                text: '💬 Chat',
-                onPressed:
-                    widget.onMessage ?? () => _startConversation(context),
-                icon: Icon(Icons.chat_bubble_outline, size: 18),
-              ),
             ),
-          ],
+          ),
         ),
       ),
     );
   }
 
-  /// Builds a circular action button for discovery mode
-  Widget _buildActionButton({
-    required IconData icon,
-    required String label,
-    required Color color,
-    Gradient? gradient,
-    VoidCallback? onPressed,
-    double size = 64,
-  }) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: size,
-          height: size,
-          decoration: BoxDecoration(
-            gradient: gradient,
-            color: gradient == null ? color.withValues(alpha: 0.2) : null,
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: color.withValues(alpha: 0.3),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
+  /// Sticky action bar - Always visible, context-aware buttons
+  Widget _buildStickyActionBar() {
+    return Container(
+      decoration: BoxDecoration(
+        color: context.surfaceColor.withValues(alpha: 0.95),
+        border: Border(top: BorderSide(color: context.borderColor, width: 1)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 16,
+            offset: const Offset(0, -4),
           ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: onPressed,
-              customBorder: const CircleBorder(),
-              child: Center(
-                child: Icon(
-                  icon,
-                  color: gradient != null ? Colors.white : color,
-                  size: size * 0.45,
-                ),
-              ),
-            ),
+        ],
+      ),
+      padding: EdgeInsets.fromLTRB(
+        16,
+        12,
+        16,
+        16 + MediaQuery.of(context).padding.bottom,
+      ),
+      child: SafeArea(
+        top: false,
+        child: widget.context == ProfileContext.discovery
+            ? _buildDiscoveryActions()
+            : _buildMatchesActions(),
+      ),
+    );
+  }
+
+  /// Discovery mode actions: Pass, Super Like, Like
+  Widget _buildDiscoveryActions() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        _buildCircleActionButton(
+          icon: Icons.close,
+          label: 'Pass',
+          backgroundColor: context.borderColor,
+          iconColor: context.textSecondary,
+          onPressed: widget.onDislike,
+        ),
+        _buildCircleActionButton(
+          icon: Icons.star,
+          label: 'Super',
+          backgroundColor: PulseColors.warning,
+          iconColor: Colors.white,
+          size: 64,
+          onPressed: widget.onSuperLike,
+        ),
+        _buildCircleActionButton(
+          icon: Icons.favorite,
+          label: 'Like',
+          backgroundColor: PulseColors.error,
+          iconColor: Colors.white,
+          onPressed: widget.onLike,
+        ),
+      ],
+    );
+  }
+
+  /// Matches mode actions: Chat, Call, More
+  Widget _buildMatchesActions() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        Expanded(
+          child: _buildRoundedActionButton(
+            icon: Icons.message,
+            label: 'Chat',
+            onPressed: widget.onMessage ?? () => _startConversation(context),
           ),
         ),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: context.onSurfaceVariantColor,
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildRoundedActionButton(
+            icon: Icons.call,
+            label: 'Call',
+            onPressed: () => _startVoiceCall(context),
+          ),
+        ),
+        const SizedBox(width: 12),
+        GestureDetector(
+          onTap: () {
+            showModalBottomSheet(
+              context: context,
+              builder: (context) => Container(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ListTile(
+                      leading: Icon(Icons.undo, color: context.textPrimary),
+                      title: Text(
+                        'Unmatch',
+                        style: TextStyle(color: context.textPrimary),
+                      ),
+                      onTap: () {
+                        Navigator.pop(context);
+                        if (widget.onUnmatch != null) widget.onUnmatch!();
+                      },
+                    ),
+                    ListTile(
+                      leading: Icon(Icons.flag, color: PulseColors.error),
+                      title: Text(
+                        'Report',
+                        style: TextStyle(color: PulseColors.error),
+                      ),
+                      onTap: () {
+                        Navigator.pop(context);
+                        _reportProfile();
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: context.borderColor,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(Icons.more_vert, color: context.textPrimary),
           ),
         ),
       ],
+    );
+  }
+
+  /// Circle action button - for discovery mode
+  Widget _buildCircleActionButton({
+    required IconData icon,
+    required String label,
+    required Color backgroundColor,
+    required Color iconColor,
+    required VoidCallback? onPressed,
+    double size = 56,
+  }) {
+    return GestureDetector(
+      onTap: onPressed != null
+          ? () {
+              onPressed();
+              if (mounted) {
+                context.pop();
+              }
+            }
+          : null,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: size,
+            height: size,
+            decoration: BoxDecoration(
+              color: backgroundColor,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: backgroundColor.withValues(alpha: 0.3),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Icon(icon, color: iconColor, size: size * 0.4),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            label,
+            style: Theme.of(
+              context,
+            ).textTheme.labelSmall?.copyWith(color: context.textSecondary),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Rounded action button - for matches mode
+  Widget _buildRoundedActionButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback? onPressed,
+  }) {
+    return GestureDetector(
+      onTap: onPressed,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          color: PulseColors.primary,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: PulseColors.primary.withValues(alpha: 0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: Colors.white, size: 18),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -2827,4 +2877,12 @@ class _FullScreenPhotoViewerState extends State<_FullScreenPhotoViewer> {
       ),
     );
   }
+}
+
+/// Helper class for quick stats
+class _StatItem {
+  final String icon;
+  final String label;
+
+  _StatItem({required this.icon, required this.label});
 }

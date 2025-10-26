@@ -147,7 +147,7 @@ class _SubscriptionManagementSheetState
             : LinearGradient(
                 colors: [
                   context.outlineColor.withValues(alpha: 0.2),
-                  context.onSurfaceVariantColor.withValues(alpha: 0.6)!,
+                  context.onSurfaceVariantColor.withValues(alpha: 0.6),
                 ],
               ),
         borderRadius: BorderRadius.circular(16),

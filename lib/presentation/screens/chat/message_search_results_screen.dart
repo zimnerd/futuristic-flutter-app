@@ -649,7 +649,7 @@ class _MessageSearchResultsScreenState
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: context.outlineColor.withValues(alpha: 0.15)!),
+        side: BorderSide(color: context.outlineColor.withValues(alpha: 0.15)),
       ),
       child: InkWell(
         onTap: () => _jumpToMessage(result.message),

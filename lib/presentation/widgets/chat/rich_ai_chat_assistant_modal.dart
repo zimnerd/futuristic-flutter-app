@@ -436,7 +436,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
           color: value
               ? PulseColors.primary
               : (isDark
-                    ? context.onSurfaceVariantColor!
+                    ? context.onSurfaceVariantColor
                     : context.outlineColor.withValues(alpha: 0.3)),
           width: value ? 2.5 : 1.5,
         ),
@@ -867,7 +867,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
                   borderRadius: BorderRadius.circular(16),
                   side: BorderSide(
                     color: isDark
-                        ? context.onSurfaceVariantColor!
+                        ? context.onSurfaceVariantColor
                         : context.outlineColor.withValues(alpha: 0.3),
                     width: 1.5,
                   ),

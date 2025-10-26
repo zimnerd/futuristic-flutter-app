@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../../data/models/chat_model.dart';
-import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Visual indicator showing the message send status
 ///

@@ -122,7 +122,7 @@ class _GiftPurchaseWidgetState extends State<GiftPurchaseWidget> {
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: context.outlineColor.withValues(alpha: 0.15)!,
+          color: context.outlineColor.withValues(alpha: 0.15),
         ),
       ),
       child: Row(

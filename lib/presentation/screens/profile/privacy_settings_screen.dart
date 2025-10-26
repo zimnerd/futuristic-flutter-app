@@ -385,7 +385,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
               decoration: BoxDecoration(
                 border: Border(
                   bottom: BorderSide(
-                    color: context.outlineColor.withValues(alpha: 0.15)!,
+                    color: context.outlineColor.withValues(alpha: 0.15),
                     width: 0.5,
                   ),
                 ),
@@ -638,7 +638,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
-            color: context.outlineColor.withValues(alpha: 0.15)!,
+            color: context.outlineColor.withValues(alpha: 0.15),
             width: 0.5,
           ),
         ),
@@ -723,7 +723,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
-            color: context.outlineColor.withValues(alpha: 0.15)!,
+            color: context.outlineColor.withValues(alpha: 0.15),
             width: 0.5,
           ),
         ),

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Skeleton loading widget - shows placeholder while content loads
 /// Token-efficient, simple UI improvement

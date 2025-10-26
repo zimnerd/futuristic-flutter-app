@@ -86,7 +86,7 @@ class _QuickReplyChipBarState extends State<QuickReplyChipBar>
           color: Colors.grey[50],
           border: Border(
             top: BorderSide(
-              color: context.outlineColor.withValues(alpha: 0.15)!,
+              color: context.outlineColor.withValues(alpha: 0.15),
               width: 1,
             ),
           ),

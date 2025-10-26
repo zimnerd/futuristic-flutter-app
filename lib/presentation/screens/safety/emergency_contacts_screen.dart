@@ -281,7 +281,7 @@ class _EmergencyContactsScreenState extends State<EmergencyContactsScreen> {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: context.outlineColor.withValues(alpha: 0.15)!),
+        side: BorderSide(color: context.outlineColor.withValues(alpha: 0.15)),
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.all(16),

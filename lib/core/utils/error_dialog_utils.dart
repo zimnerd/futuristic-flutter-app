@@ -57,7 +57,7 @@ class ErrorDialogUtils {
                       color: Colors.grey[100],
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                        color: context.outlineColor.withValues(alpha: 0.3)!,
+                        color: context.outlineColor.withValues(alpha: 0.3),
                       ),
                     ),
                     child: Column(
@@ -255,7 +255,7 @@ class ErrorDialogUtils {
         title = 'Not Found';
         message = 'The requested resource could not be found.';
         icon = Icons.search_off;
-        color = context.onSurfaceVariantColor!;
+        color = context.onSurfaceVariantColor;
         break;
 
       case 409:
@@ -319,12 +319,12 @@ class ErrorDialogUtils {
           message =
               'Unable to connect to the server. Please check your internet connection.';
           icon = Icons.wifi_off;
-          color = context.onSurfaceVariantColor!;
+          color = context.onSurfaceVariantColor;
         } else if (error.type == DioExceptionType.cancel) {
           title = 'Request Cancelled';
           message = 'The request was cancelled.';
           icon = Icons.cancel_outlined;
-          color = context.onSurfaceVariantColor!;
+          color = context.onSurfaceVariantColor;
         } else {
           title = 'Network Error';
           message = 'A network error occurred. Please try again.';

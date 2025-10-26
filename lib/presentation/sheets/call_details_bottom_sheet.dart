@@ -266,7 +266,7 @@ class CallDetailsBottomSheet extends StatelessWidget {
     } else if (duration > 0) {
       return Colors.green[700]!;
     } else {
-      return context.onSurfaceVariantColor!;
+      return context.onSurfaceVariantColor;
     }
   }
 

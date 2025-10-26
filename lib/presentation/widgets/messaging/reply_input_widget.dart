@@ -218,7 +218,7 @@ class _ReplyInputWidgetState extends State<ReplyInputWidget>
         color: Colors.grey[50],
         border: Border(
           bottom: BorderSide(
-            color: context.outlineColor.withValues(alpha: 0.15)!,
+            color: context.outlineColor.withValues(alpha: 0.15),
           ),
         ),
       ),

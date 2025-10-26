@@ -275,7 +275,7 @@ class _GiftHistoryWidgetState extends State<GiftHistoryWidget> {
                         color: Colors.grey[50],
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: context.outlineColor.withValues(alpha: 0.15)!,
+                          color: context.outlineColor.withValues(alpha: 0.15),
                         ),
                       ),
                       child: Text(

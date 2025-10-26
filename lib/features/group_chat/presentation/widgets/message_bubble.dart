@@ -286,7 +286,7 @@ class MessageBubble extends StatelessWidget {
                 border: Border.all(
                   color: hasMyReaction
                       ? Theme.of(context).primaryColor
-                      : context.outlineColor.withValues(alpha: 0.3)!,
+                      : context.outlineColor.withValues(alpha: 0.3),
                 ),
               ),
               child: Row(

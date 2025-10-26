@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/pulse_colors.dart';
-import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Common error widget with retry functionality
 class PulseErrorWidget extends StatelessWidget {

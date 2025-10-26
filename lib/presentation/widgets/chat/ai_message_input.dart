@@ -154,15 +154,15 @@ class _AiMessageInputState extends State<AiMessageInput>
         keyboardPadding > 0 ? keyboardPadding + 8 : 8,
       ),
       decoration: BoxDecoration(
-        color: context.onSurfaceColor,
+        color: context.surfaceColor,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 20,
             offset: const Offset(0, -2),
           ),
         ],
-        border: Border(top: BorderSide(color: Colors.grey[100]!, width: 0.5)),
+        border: Border(top: BorderSide(color: context.borderColor, width: 0.5)),
       ),
       child: Column(
         children: [
@@ -484,12 +484,12 @@ class _AiMessageInputState extends State<AiMessageInput>
     return Container(
       constraints: const BoxConstraints(maxHeight: 120),
       decoration: BoxDecoration(
-        color: Colors.grey[50],
+        color: context.backgroundColor,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: _isComposing
               ? PulseColors.primary.withValues(alpha: 0.3)
-              : context.outlineColor.withValues(alpha: 0.15)!,
+              : context.outlineColor.withValues(alpha: 0.15),
           width: 1.5,
         ),
         boxShadow: [
@@ -507,7 +507,7 @@ class _AiMessageInputState extends State<AiMessageInput>
         style: TextStyle(
           fontSize: 16,
           height: 1.4,
-          color: Colors.black87,
+          color: context.onSurfaceColor,
         ),
         decoration: InputDecoration(
           hintText: 'Type a message...',

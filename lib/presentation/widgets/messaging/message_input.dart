@@ -88,7 +88,7 @@ class _MessageInputState extends State<MessageInput>
               icon: Icons.add,
               onPressed: widget.onAttachment!,
               backgroundColor: Colors.grey[100]!,
-              iconColor: context.onSurfaceVariantColor!,
+              iconColor: context.onSurfaceVariantColor,
             ),
 
           if (widget.onAttachment != null) const SizedBox(width: 8),
@@ -146,7 +146,7 @@ class _MessageInputState extends State<MessageInput>
                       icon: Icons.mic,
                       onPressed: widget.onVoiceMessage ?? () {},
                       backgroundColor: Colors.grey[100]!,
-                      iconColor: context.onSurfaceVariantColor!,
+                      iconColor: context.onSurfaceVariantColor,
                     );
             },
           ),
