@@ -654,7 +654,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
           child: Container(
             height: 120,
             decoration: PulseDecorations.glassmorphism(
-              color: context.backgroundColor,
+              color: context.surfaceColor,
             ),
             child: SafeArea(
               child: Padding(
