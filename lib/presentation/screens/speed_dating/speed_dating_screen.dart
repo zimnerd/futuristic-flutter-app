@@ -202,7 +202,7 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
                     borderRadius: BorderRadius.circular(12),
                   ),
                   filled: true,
-                  fillColor: Colors.white,
+                  fillColor: context.surfaceColor,
                 ),
                 onChanged: (value) {
                   setState(() {

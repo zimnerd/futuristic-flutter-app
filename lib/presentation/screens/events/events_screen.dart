@@ -234,9 +234,9 @@ class _EventsScreenState extends State<EventsScreen>
         }
       },
       child: KeyboardDismissibleScaffold(
-        backgroundColor: PulseColors.surface,
+        backgroundColor: context.backgroundColor,
         appBar: AppBar(
-          backgroundColor: PulseColors.surface,
+          backgroundColor: context.backgroundColor,
           elevation: 0,
           title: Text(
             'Events',

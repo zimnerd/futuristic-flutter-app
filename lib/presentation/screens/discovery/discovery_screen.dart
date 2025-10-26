@@ -26,6 +26,7 @@ import '../../widgets/common/empty_state_widget.dart';
 import '../../widgets/common/pulse_toast.dart';
 import '../../widgets/common/skeleton_loading.dart';
 import '../../widgets/filters/filter_preview_widget.dart';
+import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 import '../../blocs/filters/filter_bloc.dart';
 import '../../blocs/filters/filter_event.dart';
 import '../../blocs/filters/filter_state.dart';
@@ -543,24 +544,34 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(
-          create: (context) =>
-              BoostBloc(BoostService())..add(CheckBoostStatus()),
-        ),
-        BlocProvider(
-          create: (context) => PremiumBloc(
-            premiumService: PremiumService(ApiClient.instance),
-            authBloc: context.read<AuthBloc>(),
-          )..add(LoadCurrentSubscription()),
-        ),
-      ],
-      child: Scaffold(
-        body: Container(
-          decoration: BoxDecoration(gradient: PulseGradients.background),
-          child: BlocListener<DiscoveryBloc, DiscoveryState>(
-            listener: (context, state) {
+    // Determine if dark mode is active
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: isDark
+          ? SystemUiOverlayStyle.light.copyWith(
+              statusBarColor: Colors.transparent,
+            )
+          : SystemUiOverlayStyle.dark.copyWith(
+              statusBarColor: Colors.transparent,
+            ),
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (context) =>
+                BoostBloc(BoostService())..add(CheckBoostStatus()),
+          ),
+          BlocProvider(
+            create: (context) => PremiumBloc(
+              premiumService: PremiumService(ApiClient.instance),
+              authBloc: context.read<AuthBloc>(),
+            )..add(LoadCurrentSubscription()),
+          ),
+        ],
+        child: KeyboardDismissibleScaffold(
+          body: SafeArea(
+            child: BlocListener<DiscoveryBloc, DiscoveryState>(
+              listener: (context, state) {
               // Handle rewind success/error feedback
               if (state is DiscoveryLoaded && state.rewindJustCompleted) {
                 // Rewind was successful
@@ -604,45 +615,49 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                 return previous.runtimeType != current.runtimeType;
               },
               builder: (context, state) {
-                return Stack(
-                  children: [
-                    // Modern curved header
-                    _buildModernHeader(),
+                  return Container(
+                    color: context.backgroundColor,
+                    child: Stack(
+                      children: [
+                        // Modern curved header
+                        _buildModernHeader(),
 
-                    // Main content area
-                    Positioned(
-                      top: 120,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      child: _buildMainContent(state),
-                    ),
+                        // Main content area
+                        Positioned(
+                          top: 120,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          child: _buildMainContent(state),
+                        ),
 
-                    // Prominent undo button (below card stack)
-                    if (state is DiscoveryLoaded &&
-                        state.hasUsers &&
-                        _rewindHistory.isNotEmpty)
-                      _buildProminentUndoButton(),
+                        // Prominent undo button (below card stack)
+                        if (state is DiscoveryLoaded &&
+                            state.hasUsers &&
+                            _rewindHistory.isNotEmpty)
+                          _buildProminentUndoButton(),
 
-                    // Enhanced action buttons
-                    if (state is DiscoveryLoaded && state.hasUsers)
-                      _buildModernActionButtons(),
+                        // Enhanced action buttons
+                        if (state is DiscoveryLoaded && state.hasUsers)
+                          _buildModernActionButtons(),
 
-                    // Floating boost button (bottom-right corner)
-                    if (state is DiscoveryLoaded && state.hasUsers)
-                      _buildFloatingBoostButton(),
+                        // Floating boost button (bottom-right corner)
+                        if (state is DiscoveryLoaded && state.hasUsers)
+                          _buildFloatingBoostButton(),
 
-                    // Match celebration
-                    if (state is DiscoveryMatchFound)
-                      _buildMatchDialog(context, state),
-                  ],
-                ); // Stack
+                        // Match celebration
+                        if (state is DiscoveryMatchFound)
+                          _buildMatchDialog(context, state),
+                      ],
+                    ), // Stack
+                  ); // Container
               }, // BlocBuilder builder
             ), // BlocBuilder
-          ), // DiscoveryBloc BlocListener child
-        ), // Container (Scaffold body)
-      ), // Scaffold
-    ); // MultiBlocProvider child
+            ), // DiscoveryBloc BlocListener child
+          ), // SafeArea
+        ), // KeyboardDismissibleScaffold
+      ), // MultiBlocProvider
+    ); // AnnotatedRegion
   }
 
   Widget _buildModernHeader() {
@@ -821,14 +836,9 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
           decoration: BoxDecoration(
             color: color.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(PulseBorderRadius.md),
-            border: Border.all(
-              color: color.withValues(alpha: 0.2),
-              width: 1,
-            ),
+            border: Border.all(color: color.withValues(alpha: 0.2), width: 1),
           ),
-          child: Center(
-            child: Icon(icon, color: color, size: 18),
-          ),
+          child: Center(child: Icon(icon, color: color, size: 18)),
         ),
       ),
     );
@@ -1670,7 +1680,6 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
       ),
     );
   }
-
 
   void _showNotificationsModal() {
     showModalBottomSheet(

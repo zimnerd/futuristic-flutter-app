@@ -1459,7 +1459,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
               color: context.onSurfaceVariantColor.withValues(alpha: 0.6),
             ),
             filled: true,
-            fillColor: Colors.white,
+            fillColor: context.surfaceColor,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
@@ -1513,7 +1513,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
           onChanged: onChanged,
           decoration: InputDecoration(
             filled: true,
-            fillColor: Colors.white,
+            fillColor: context.surfaceColor,
             hintText: value == null ? 'Select an option' : null,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),

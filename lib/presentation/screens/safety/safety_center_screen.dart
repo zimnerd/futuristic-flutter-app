@@ -14,7 +14,7 @@ class SafetyCenterScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Safety Center'),
-        backgroundColor: PulseColors.primary,
+        backgroundColor: context.backgroundColor,
         foregroundColor: context.onSurfaceColor,
       ),
       body: ListView(
