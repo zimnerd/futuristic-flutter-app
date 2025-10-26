@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 import '../widgets/chat/ai_message_input.dart';
 import '../theme/pulse_colors.dart';
@@ -110,7 +111,7 @@ class _AiFeaturesDemoState extends State<AiFeaturesDemo>
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [Color(0xFF0F0F0F), Color(0xFF1A1A2E), Color(0xFF16213E)],
             begin: Alignment.topCenter,
@@ -137,7 +138,7 @@ class _AiFeaturesDemoState extends State<AiFeaturesDemo>
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+            icon: Icon(Icons.arrow_back_ios, color: Colors.white),
             onPressed: () => Navigator.pop(context),
           ),
           Expanded(
@@ -158,16 +159,16 @@ class _AiFeaturesDemoState extends State<AiFeaturesDemo>
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.auto_awesome,
-                        color: Colors.white,
+                        color: context.onSurfaceColor,
                         size: 16,
                       ),
                       const SizedBox(width: 8),
-                      const Text(
+                      Text(
                         'AI Features Demo',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: context.onSurfaceColor,
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                         ),
@@ -274,7 +275,7 @@ class _AiFeaturesDemoState extends State<AiFeaturesDemo>
       child: Text(
         label,
         style: TextStyle(
-          color: Colors.white,
+          color: context.onSurfaceColor,
           fontSize: 11,
           fontWeight: FontWeight.w500,
         ),
@@ -319,9 +320,9 @@ class _AiFeaturesDemoState extends State<AiFeaturesDemo>
                 ),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.auto_awesome,
-                color: Colors.white,
+                color: context.onSurfaceColor,
                 size: 16,
               ),
             ),
@@ -346,7 +347,10 @@ class _AiFeaturesDemoState extends State<AiFeaturesDemo>
                 children: [
                   Text(
                     message.text,
-                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                    style: TextStyle(
+                      color: context.onSurfaceColor,
+                      fontSize: 14,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -365,8 +369,8 @@ class _AiFeaturesDemoState extends State<AiFeaturesDemo>
             Container(
               width: 32,
               height: 32,
-              decoration: const BoxDecoration(
-                color: Colors.white,
+              decoration: BoxDecoration(
+                color: context.onSurfaceColor,
                 shape: BoxShape.circle,
               ),
               child: Icon(Icons.person, color: PulseColors.primary, size: 16),

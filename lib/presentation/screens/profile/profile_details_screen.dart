@@ -16,6 +16,7 @@ import '../../widgets/verification/verification_badge.dart';
 import '../../widgets/dialogs/block_user_dialog.dart';
 import '../../widgets/dialogs/report_user_dialog.dart';
 import '../../../core/utils/time_format_utils.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Context for profile viewing - determines which actions to show
 enum ProfileContext {
@@ -196,7 +197,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: context.surfaceColor,
       extendBody: false, // Ensure bottom sheet isn't obscured
       body: CustomScrollView(
         slivers: [
@@ -249,14 +250,14 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
     return SliverAppBar(
       expandedHeight: 400,
       pinned: true,
-      backgroundColor: Colors.white,
+      backgroundColor: context.surfaceColor,
       // Make icons always visible with white color against dark overlay
-      foregroundColor: Colors.white,
+      foregroundColor: context.onSurfaceColor,
       elevation: 0,
       actions: [
         if (!widget.isOwnProfile)
           PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert),
+            icon: Icon(Icons.more_vert),
             onSelected: (value) {
               switch (value) {
                 case 'share':
@@ -281,23 +282,30 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                   ],
                 ),
               ),
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'report',
                 child: Row(
                   children: [
-                    Icon(Icons.flag_outlined, size: 20, color: Colors.red),
-                    SizedBox(width: 12),
-                    Text('Report', style: TextStyle(color: Colors.red)),
+                    Icon(
+                      Icons.flag_outlined,
+                      size: 20,
+                      color: context.errorColor,
+                    ),
+                    const SizedBox(width: 12),
+                    Text('Report', style: TextStyle(color: context.errorColor)),
                   ],
                 ),
               ),
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'block',
                 child: Row(
                   children: [
-                    Icon(Icons.block, size: 20, color: Colors.red),
-                    SizedBox(width: 12),
-                    Text('Block User', style: TextStyle(color: Colors.red)),
+                    Icon(Icons.block, size: 20, color: context.errorColor),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Block User',
+                      style: TextStyle(color: context.errorColor),
+                    ),
                   ],
                 ),
               ),
@@ -311,9 +319,9 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
   Widget _buildPhotoCarousel() {
     if (widget.profile.photos.isEmpty) {
       return Container(
-        color: Colors.grey[200],
-        child: const Center(
-          child: Icon(Icons.person, size: 80, color: Colors.grey),
+        color: context.outlineColor.withValues(alpha: 0.15),
+        child: Center(
+          child: Icon(Icons.person, size: 80, color: context.outlineColor),
         ),
       );
     }
@@ -402,10 +410,10 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                         Flexible(
                           child: Text(
                             widget.profile.name,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 28,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: context.onSurfaceColor,
                               shadows: [
                                 Shadow(
                                   color: Colors.black45,
@@ -421,10 +429,10 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                         if (_shouldShowAge())
                           Text(
                             ', ${widget.profile.age}',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 28,
                               fontWeight: FontWeight.w500,
-                              color: Colors.white,
+                              color: context.onSurfaceColor,
                               shadows: [
                                 Shadow(
                                   color: Colors.black45,
@@ -446,17 +454,17 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                     if (_shouldShowDistance())
                       Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.location_on,
-                            color: Colors.white,
+                            color: context.onSurfaceColor,
                             size: 16,
                           ),
                           const SizedBox(width: 4),
                           Text(
                             widget.profile.distanceString,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 14,
-                              color: Colors.white,
+                              color: context.onSurfaceColor,
                               shadows: [
                                 Shadow(
                                   color: Colors.black45,
@@ -472,7 +480,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                             Container(
                               width: 8,
                               height: 8,
-                              decoration: const BoxDecoration(
+                              decoration: BoxDecoration(
                                 color: PulseColors.success,
                                 shape: BoxShape.circle,
                                 boxShadow: [
@@ -485,11 +493,11 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                               ),
                             ),
                             const SizedBox(width: 6),
-                            const Text(
+                            Text(
                               'Online now',
                               style: TextStyle(
                                 fontSize: 14,
-                                color: Colors.white,
+                                color: context.onSurfaceColor,
                                 shadows: [
                                   Shadow(
                                     color: Colors.black45,
@@ -509,9 +517,9 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                         widget.profile.bio.length > 100
                             ? '${widget.profile.bio.substring(0, 100)}...'
                             : widget.profile.bio,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
-                          color: Colors.white,
+                          color: context.onSurfaceColor,
                           height: 1.3,
                           shadows: [
                             Shadow(
@@ -629,14 +637,14 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                   children: [
                     Icon(
                       Icons.photo_library_outlined,
-                      color: Colors.white,
+                      color: context.onSurfaceColor,
                       size: 16,
                     ),
                     const SizedBox(width: 6),
                     Text(
                       '${_currentPhotoIndex + 1}/${widget.profile.photos.length}',
                       style: PulseTextStyles.labelMedium.copyWith(
-                        color: Colors.white,
+                        color: context.onSurfaceColor,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -673,16 +681,16 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
 
   Widget _buildPhotoLoading() {
     return Container(
-      color: Colors.grey[200],
-      child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+      color: context.outlineColor.withValues(alpha: 0.15),
+      child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
     );
   }
 
   Widget _buildPhotoError() {
     return Container(
-      color: Colors.grey[200],
-      child: const Center(
-        child: Icon(Icons.error_outline, size: 48, color: Colors.grey),
+      color: context.outlineColor.withValues(alpha: 0.15),
+      child: Center(
+        child: Icon(Icons.error_outline, size: 48, color: context.outlineColor),
       ),
     );
   }
@@ -709,14 +717,14 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: Colors.white, size: 14),
+          Icon(icon, color: context.onSurfaceColor, size: 14),
           const SizedBox(width: 6),
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: Colors.white,
+              color: context.onSurfaceColor,
               shadows: [
                 Shadow(
                   color: Colors.black45,
@@ -819,9 +827,12 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.onSurfaceColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.withValues(alpha: 0.1), width: 1),
+        border: Border.all(
+          color: context.outlineColor.withValues(alpha: 0.1),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
@@ -865,7 +876,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                       Container(
                         width: 8,
                         height: 8,
-                        decoration: const BoxDecoration(
+                        decoration: BoxDecoration(
                           color: PulseColors.success,
                           shape: BoxShape.circle,
                         ),
@@ -884,7 +895,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                         width: 8,
                         height: 8,
                         decoration: BoxDecoration(
-                          color: Colors.grey[400],
+                          color: context.outlineColor.withValues(alpha: 0.2),
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -892,7 +903,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                       Text(
                         _formatLastActive(),
                         style: PulseTextStyles.labelSmall.copyWith(
-                          color: Colors.grey[600],
+                          color: context.onSurfaceVariantColor,
                         ),
                       ),
                     ],
@@ -1054,9 +1065,12 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.onSurfaceColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.withValues(alpha: 0.1), width: 1),
+        border: Border.all(
+          color: context.outlineColor.withValues(alpha: 0.1),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
@@ -1083,7 +1097,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                 Text(
                   label,
                   style: PulseTextStyles.labelMedium.copyWith(
-                    color: Colors.grey[600],
+                    color: context.onSurfaceVariantColor,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -1217,7 +1231,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
         children: [
           Row(
             children: [
-              const Text(
+              Text(
                 'More Photos',
                 style: TextStyle(
                   fontSize: 20,
@@ -1783,10 +1797,10 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
           margin: const EdgeInsets.only(bottom: 16),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: context.onSurfaceColor,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: Colors.grey.withValues(alpha: 0.1),
+              color: context.outlineColor.withValues(alpha: 0.1),
               width: 1,
             ),
             boxShadow: [
@@ -1877,7 +1891,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
     if (widget.context == ProfileContext.discovery) {
       return Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.onSurfaceColor,
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(24),
             topRight: Radius.circular(24),
@@ -1900,7 +1914,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
               _buildActionButton(
                 icon: Icons.close,
                 label: 'Pass',
-                color: Colors.grey[400]!,
+                color: context.outlineColor.withValues(alpha: 0.2),
                 onPressed: () {
                   if (widget.onDislike != null) {
                     widget.onDislike!();
@@ -1957,7 +1971,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
     if (widget.context == ProfileContext.matches) {
       return Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.onSurfaceColor,
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(24),
             topRight: Radius.circular(24),
@@ -1984,7 +1998,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                       text: '💬 Chat',
                       onPressed:
                           widget.onMessage ?? () => _startConversation(context),
-                      icon: const Icon(Icons.chat_bubble_outline, size: 18),
+                      icon: Icon(Icons.chat_bubble_outline, size: 18),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -1993,7 +2007,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                       text: '� Call',
                       onPressed: () => _startVoiceCall(context),
                       variant: PulseButtonVariant.secondary,
-                      icon: const Icon(Icons.phone, size: 18),
+                      icon: Icon(Icons.phone, size: 18),
                     ),
                   ),
                 ],
@@ -2005,18 +2019,18 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                   Expanded(
                     child: TextButton.icon(
                       onPressed: widget.onUnmatch,
-                      icon: const Icon(Icons.link_off, size: 18),
-                      label: const Text('Unmatch'),
+                      icon: Icon(Icons.link_off, size: 18),
+                      label: Text('Unmatch'),
                       style: TextButton.styleFrom(
-                        foregroundColor: Colors.grey[600],
+                        foregroundColor: context.onSurfaceVariantColor,
                       ),
                     ),
                   ),
                   Expanded(
                     child: TextButton.icon(
                       onPressed: widget.onReport,
-                      icon: const Icon(Icons.flag_outlined, size: 18),
-                      label: const Text('Report'),
+                      icon: Icon(Icons.flag_outlined, size: 18),
+                      label: Text('Report'),
                       style: TextButton.styleFrom(
                         foregroundColor: PulseColors.error,
                       ),
@@ -2033,7 +2047,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
     // General/Legacy context: Show minimal actions (backward compatibility)
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.onSurfaceColor,
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(24),
           topRight: Radius.circular(24),
@@ -2057,7 +2071,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                   text: '⭐ Super Like',
                   onPressed: widget.onSuperLike,
                   variant: PulseButtonVariant.secondary,
-                  icon: const Icon(Icons.star, size: 18),
+                  icon: Icon(Icons.star, size: 18),
                 ),
               ),
             if (widget.onSuperLike != null) const SizedBox(width: 12),
@@ -2066,7 +2080,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                 text: '💬 Chat',
                 onPressed:
                     widget.onMessage ?? () => _startConversation(context),
-                icon: const Icon(Icons.chat_bubble_outline, size: 18),
+                icon: Icon(Icons.chat_bubble_outline, size: 18),
               ),
             ),
           ],
@@ -2123,7 +2137,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w600,
-            color: Colors.grey[700],
+            color: context.onSurfaceVariantColor,
           ),
         ),
       ],
@@ -2226,7 +2240,7 @@ Join PulseLink to connect!''';
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.onSurfaceColor,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -2253,7 +2267,7 @@ Join PulseLink to connect!''';
                 ),
               ],
             ),
-            child: Icon(icon, color: Colors.white, size: 24),
+            child: Icon(icon, color: context.onSurfaceColor, size: 24),
           ),
           const SizedBox(height: 12),
           Text(
@@ -2266,7 +2280,9 @@ Join PulseLink to connect!''';
           const SizedBox(height: 4),
           Text(
             label,
-            style: PulseTextStyles.bodyMedium.copyWith(color: Colors.grey[600]),
+            style: PulseTextStyles.bodyMedium.copyWith(
+              color: context.onSurfaceVariantColor,
+            ),
           ),
         ],
       ),
@@ -2277,7 +2293,7 @@ Join PulseLink to connect!''';
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.onSurfaceColor,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -2293,7 +2309,7 @@ Join PulseLink to connect!''';
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: Colors.grey[300],
+              color: context.outlineColor.withValues(alpha: 0.3),
               shape: BoxShape.circle,
             ),
           ),
@@ -2302,7 +2318,7 @@ Join PulseLink to connect!''';
             width: 40,
             height: 20,
             decoration: BoxDecoration(
-              color: Colors.grey[300],
+              color: context.outlineColor.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(4),
             ),
           ),
@@ -2311,7 +2327,7 @@ Join PulseLink to connect!''';
             width: 50,
             height: 14,
             decoration: BoxDecoration(
-              color: Colors.grey[200],
+              color: context.outlineColor.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(4),
             ),
           ),
@@ -2365,9 +2381,9 @@ Join PulseLink to connect!''';
                     ),
                   ],
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.trending_up,
-                  color: Colors.white,
+                  color: context.onSurfaceColor,
                   size: 20,
                 ),
               ),
@@ -2386,7 +2402,7 @@ Join PulseLink to connect!''';
                     Text(
                       'Get more matches with a complete profile',
                       style: PulseTextStyles.bodySmall.copyWith(
-                        color: Colors.grey[600],
+                        color: context.onSurfaceVariantColor,
                       ),
                     ),
                   ],
@@ -2408,7 +2424,7 @@ Join PulseLink to connect!''';
               Text(
                 'Profile Strength',
                 style: PulseTextStyles.bodyMedium.copyWith(
-                  color: Colors.grey[700],
+                  color: context.onSurfaceVariantColor,
                 ),
               ),
               Text(
@@ -2425,7 +2441,7 @@ Join PulseLink to connect!''';
             borderRadius: BorderRadius.circular(8),
             child: LinearProgressIndicator(
               value: completionPercentage / 100,
-              backgroundColor: Colors.grey[300],
+              backgroundColor: context.outlineColor.withValues(alpha: 0.3),
               valueColor: const AlwaysStoppedAnimation<Color>(
                 Color(0xFFFF9800),
               ),
@@ -2461,9 +2477,11 @@ Join PulseLink to connect!''';
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.onSurfaceColor,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
+          border: Border.all(
+            color: context.outlineColor.withValues(alpha: 0.2),
+          ),
         ),
         child: Row(
           children: [
@@ -2494,7 +2512,7 @@ Join PulseLink to connect!''';
                   Text(
                     section['description'] as String,
                     style: PulseTextStyles.bodySmall.copyWith(
-                      color: Colors.grey[600],
+                      color: context.onSurfaceVariantColor,
                     ),
                   ),
                 ],
@@ -2723,7 +2741,7 @@ class _FullScreenPhotoViewerState extends State<_FullScreenPhotoViewer> {
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.close, color: Colors.white),
+            icon: Icon(Icons.close, color: Colors.white),
             onPressed: () {
               if (mounted) {
                 Navigator.of(context).pop();
@@ -2732,7 +2750,7 @@ class _FullScreenPhotoViewerState extends State<_FullScreenPhotoViewer> {
           ),
           title: Text(
             '${_currentIndex + 1} of ${widget.photos.length}',
-            style: const TextStyle(color: Colors.white),
+            style: TextStyle(color: Colors.white),
           ),
         ),
         body: Stack(
@@ -2758,11 +2776,11 @@ class _FullScreenPhotoViewerState extends State<_FullScreenPhotoViewer> {
                         imageUrl: photo.url,
                         fit: BoxFit.contain,
                         placeholder: (context, url) =>
-                            const Center(child: CircularProgressIndicator()),
-                        errorWidget: (context, url, error) => const Center(
+                            Center(child: CircularProgressIndicator()),
+                        errorWidget: (context, url, error) => Center(
                           child: Icon(
                             Icons.error,
-                            color: Colors.white,
+                            color: context.onSurfaceColor,
                             size: 48,
                           ),
                         ),
@@ -2794,8 +2812,8 @@ class _FullScreenPhotoViewerState extends State<_FullScreenPhotoViewer> {
                   padding: const EdgeInsets.fromLTRB(20, 40, 20, 40),
                   child: Text(
                     currentPhoto.description!,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: context.onSurfaceColor,
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                       height: 1.4,

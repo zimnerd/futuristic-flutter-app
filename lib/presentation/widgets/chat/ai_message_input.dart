@@ -4,6 +4,7 @@ import '../../../data/models/chat_model.dart';
 import '../../theme/pulse_colors.dart';
 import 'rich_ai_chat_assistant_modal.dart';
 import '../common/pulse_toast.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 class AiMessageInput extends StatefulWidget {
   final TextEditingController controller;
@@ -153,7 +154,7 @@ class _AiMessageInputState extends State<AiMessageInput>
         keyboardPadding > 0 ? keyboardPadding + 8 : 8,
       ),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.onSurfaceColor,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -221,7 +222,7 @@ class _AiMessageInputState extends State<AiMessageInput>
           child: IconButton(
             icon: Icon(
               _isLoadingSuggestions ? Icons.auto_awesome : Icons.psychology,
-              color: Colors.white,
+              color: context.onSurfaceColor,
               size: 20,
             ),
             onPressed: _isLoadingSuggestions
@@ -269,7 +270,10 @@ class _AiMessageInputState extends State<AiMessageInput>
                             ? '${message.content!.substring(0, 50)}...'
                             : message.content!)
                       : 'Media message',
-                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: context.onSurfaceVariantColor,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -281,10 +285,14 @@ class _AiMessageInputState extends State<AiMessageInput>
             child: Container(
               padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
-                color: Colors.grey[200],
+                color: context.outlineColor.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.close, size: 14, color: Colors.grey[600]),
+              child: Icon(
+                Icons.close,
+                size: 14,
+                color: context.onSurfaceVariantColor,
+              ),
             ),
           ),
         ],
@@ -337,7 +345,7 @@ class _AiMessageInputState extends State<AiMessageInput>
                     ),
                     const Spacer(),
                     IconButton(
-                      icon: const Icon(Icons.close, size: 16),
+                      icon: Icon(Icons.close, size: 16),
                       onPressed: () {
                         setState(() {
                           _showAiSuggestions = false;
@@ -405,14 +413,16 @@ class _AiMessageInputState extends State<AiMessageInput>
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.7),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
+                  border: Border.all(
+                    color: context.outlineColor.withValues(alpha: 0.2),
+                  ),
                 ),
                 child: Row(
                   children: [
                     Expanded(
                       child: Text(
                         suggestion,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
                           color: Colors.black87,
                         ),
@@ -421,7 +431,7 @@ class _AiMessageInputState extends State<AiMessageInput>
                     Icon(
                       Icons.arrow_forward_ios,
                       size: 12,
-                      color: Colors.grey[400],
+                      color: context.outlineColor.withValues(alpha: 0.2),
                     ),
                   ],
                 ),
@@ -455,7 +465,9 @@ class _AiMessageInputState extends State<AiMessageInput>
           duration: const Duration(milliseconds: 200),
           child: Icon(
             _showAttachments ? Icons.close_rounded : Icons.add_rounded,
-            color: _showAttachments ? PulseColors.primary : Colors.grey[600],
+            color: _showAttachments
+                ? PulseColors.primary
+                : context.onSurfaceVariantColor,
             size: 20,
           ),
         ),
@@ -477,7 +489,7 @@ class _AiMessageInputState extends State<AiMessageInput>
         border: Border.all(
           color: _isComposing
               ? PulseColors.primary.withValues(alpha: 0.3)
-              : Colors.grey[200]!,
+              : context.outlineColor.withValues(alpha: 0.15)!,
           width: 1.5,
         ),
         boxShadow: [
@@ -492,14 +504,14 @@ class _AiMessageInputState extends State<AiMessageInput>
         controller: widget.controller,
         maxLines: null,
         textCapitalization: TextCapitalization.sentences,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 16,
           height: 1.4,
           color: Colors.black87,
         ),
         decoration: InputDecoration(
           hintText: 'Type a message...',
-          hintStyle: TextStyle(color: Colors.grey[600], fontSize: 16),
+          hintStyle: TextStyle(color: context.onSurfaceVariantColor, fontSize: 16),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 20,
@@ -516,13 +528,13 @@ class _AiMessageInputState extends State<AiMessageInput>
                   child: Container(
                     margin: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.grey[300],
+                      color: context.outlineColor.withValues(alpha: 0.3),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.close,
                       size: 18,
-                      color: Colors.grey,
+                      color: context.outlineColor,
                     ),
                   ),
                 )
@@ -550,7 +562,9 @@ class _AiMessageInputState extends State<AiMessageInput>
                 end: Alignment.bottomRight,
               )
             : null,
-        color: _isComposing ? null : Colors.grey[300],
+        color: _isComposing
+            ? null
+            : context.outlineColor.withValues(alpha: 0.3),
         shape: BoxShape.circle,
         boxShadow: _isComposing
             ? [
@@ -568,7 +582,7 @@ class _AiMessageInputState extends State<AiMessageInput>
           child: Icon(
             _isComposing ? Icons.send_rounded : Icons.mic_rounded,
             key: ValueKey(_isComposing),
-            color: _isComposing ? Colors.white : Colors.grey[600],
+            color: _isComposing ? Colors.white : context.onSurfaceVariantColor,
             size: 22,
           ),
         ),
@@ -606,7 +620,7 @@ class _AiMessageInputState extends State<AiMessageInput>
                   _buildAttachmentOption(
                     icon: Icons.videocam_rounded,
                     label: 'Video',
-                    color: Colors.red,
+                    color: context.errorColor,
                     onTap: widget.onVideoCamera,
                   ),
                   const SizedBox(width: 16),
@@ -660,7 +674,7 @@ class _AiMessageInputState extends State<AiMessageInput>
             ),
           ],
         ),
-        child: Icon(icon, color: Colors.white, size: 24),
+        child: Icon(icon, color: context.onSurfaceColor, size: 24),
       ),
     );
   }

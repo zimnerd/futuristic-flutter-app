@@ -246,7 +246,7 @@ class ErrorService {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('• '),
+                      Text('• '),
                       Expanded(
                         child: Text(
                           '${_humanizeFieldName(entry.key)}: ${entry.value}',
@@ -277,14 +277,14 @@ class ErrorService {
                 Navigator.of(context).pop();
                 onRetry();
               },
-              child: const Text('Retry'),
+              child: Text('Retry'),
             ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
             style: TextButton.styleFrom(
               foregroundColor: PulseColors.primary,
             ),
-            child: const Text('OK'),
+            child: Text('OK'),
           ),
         ],
       ),

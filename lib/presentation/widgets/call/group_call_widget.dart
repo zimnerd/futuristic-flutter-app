@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/services/group_call_service.dart';
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Group Call Management Widget for creating and managing group video calls
 class GroupCallWidget extends StatefulWidget {
@@ -247,9 +248,9 @@ class _GroupCallWidgetState extends State<GroupCallWidget>
                     color: PulseColors.primary,
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.groups,
-                    color: Colors.white,
+                    color: context.onSurfaceColor,
                     size: 20,
                   ),
                 ),
@@ -410,7 +411,7 @@ class _GroupCallWidgetState extends State<GroupCallWidget>
                                   ? participant.firstName![0]
                                   : participant.username[0])
                               .toUpperCase(),
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: PulseColors.primary,
                             fontWeight: FontWeight.bold,
                           ),
@@ -429,7 +430,7 @@ class _GroupCallWidgetState extends State<GroupCallWidget>
                         children: [
                           Text(
                             '${participant.firstName} ${participant.lastName}',
-                            style: const TextStyle(fontWeight: FontWeight.w600),
+                            style: TextStyle(fontWeight: FontWeight.w600),
                           ),
                           if (isCurrentUser) ...[
                             const SizedBox(width: 8),
@@ -493,10 +494,10 @@ class _GroupCallWidgetState extends State<GroupCallWidget>
                   ),
                   IconButton(
                     onPressed: () => _removeParticipant(participant.id),
-                    icon: const Icon(
+                    icon:  Icon(
                       Icons.person_remove,
                       size: 20,
-                      color: Colors.red,
+                      color: context.errorColor,
                     ),
                     tooltip: 'Remove',
                   ),
@@ -521,13 +522,13 @@ class _GroupCallWidgetState extends State<GroupCallWidget>
           ),
           child: Row(
             children: [
-              const Icon(Icons.analytics, color: PulseColors.primary),
+              Icon(Icons.analytics, color: PulseColors.primary),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Call Analytics',
                       style: TextStyle(fontWeight: FontWeight.w600),
                     ),
@@ -573,7 +574,7 @@ class _GroupCallWidgetState extends State<GroupCallWidget>
               _buildActionButton(
                 icon: Icons.call_end,
                 label: 'End Call',
-                color: Colors.red,
+                color: context.errorColor,
                 onTap: _endGroupCall,
               ),
             ],
@@ -628,7 +629,7 @@ class _GroupCallWidgetState extends State<GroupCallWidget>
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1A1F3A),
-        title: const Text(
+        title: Text(
           'Invite to Call',
           style: TextStyle(color: Colors.white),
         ),
@@ -638,7 +639,7 @@ class _GroupCallWidgetState extends State<GroupCallWidget>
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'This feature allows you to:',
                 style: TextStyle(
                   color: Colors.white70,
@@ -646,20 +647,20 @@ class _GroupCallWidgetState extends State<GroupCallWidget>
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 '• Search for users',
                 style: TextStyle(color: Colors.white70),
               ),
-              const Text(
+              Text(
                 '• Invite them to join this call',
                 style: TextStyle(color: Colors.white70),
               ),
-              const Text(
+              Text(
                 '• Send real-time notifications',
                 style: TextStyle(color: Colors.white70),
               ),
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 'Integration ready - UI can be enhanced based on your design preferences.',
                 style: TextStyle(color: Colors.white54, fontSize: 12),
               ),
@@ -669,7 +670,7 @@ class _GroupCallWidgetState extends State<GroupCallWidget>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+            child: Text('Close'),
           ),
         ],
       ),

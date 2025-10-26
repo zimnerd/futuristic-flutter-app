@@ -4,6 +4,7 @@ import 'package:photo_view/photo_view_gallery.dart';
 
 import '../../../domain/entities/user_profile.dart';
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Full-screen photo gallery with swipe and zoom capabilities
 ///
@@ -72,13 +73,13 @@ class _PhotoGalleryScreenState extends State<PhotoGalleryScreen> {
               backgroundColor: Colors.black.withValues(alpha: 0.5),
               elevation: 0,
               leading: IconButton(
-                icon: const Icon(Icons.close, color: Colors.white),
+                icon: Icon(Icons.close, color: Colors.white),
                 onPressed: () => Navigator.of(context).pop(),
               ),
               title: Text(
                 '${_currentIndex + 1} / ${widget.photos.length}',
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: context.onSurfaceColor,
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
@@ -87,9 +88,9 @@ class _PhotoGalleryScreenState extends State<PhotoGalleryScreen> {
               actions: widget.showDetails
                   ? [
                       IconButton(
-                        icon: const Icon(
+                        icon: Icon(
                           Icons.info_outline,
-                          color: Colors.white,
+                          color: context.onSurfaceColor,
                         ),
                         onPressed: () => _showPhotoDetails(),
                       ),
@@ -120,12 +121,15 @@ class _PhotoGalleryScreenState extends State<PhotoGalleryScreen> {
                       Icon(
                         Icons.broken_image,
                         size: 64,
-                        color: Colors.grey[600],
+                        color: context.onSurfaceVariantColor,
                       ),
                       const SizedBox(height: 16),
                       Text(
                         'Failed to load image',
-                        style: TextStyle(color: Colors.grey[400], fontSize: 14),
+                        style: TextStyle(
+                          color: context.outlineColor.withValues(alpha: 0.2),
+                          fontSize: 14,
+                        ),
                       ),
                     ],
                   ),
@@ -145,7 +149,7 @@ class _PhotoGalleryScreenState extends State<PhotoGalleryScreen> {
               ),
             ),
           ),
-          backgroundDecoration: const BoxDecoration(color: Colors.black),
+          backgroundDecoration: BoxDecoration(color: Colors.black),
           pageController: _pageController,
           onPageChanged: _onPageChanged,
         ),
@@ -204,7 +208,7 @@ class _PhotoGalleryScreenState extends State<PhotoGalleryScreen> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.grey[300],
+                  color: context.outlineColor.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -218,7 +222,7 @@ class _PhotoGalleryScreenState extends State<PhotoGalleryScreen> {
                 const SizedBox(width: 12),
                 Text(
                   'Photo ${_currentIndex + 1}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
@@ -234,13 +238,13 @@ class _PhotoGalleryScreenState extends State<PhotoGalleryScreen> {
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: Colors.grey[600],
+                  color: context.onSurfaceVariantColor,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
                 currentPhoto.description!,
-                style: const TextStyle(fontSize: 16),
+                style: TextStyle(fontSize: 16),
               ),
               const SizedBox(height: 16),
             ],

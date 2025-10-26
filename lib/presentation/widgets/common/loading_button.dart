@@ -197,26 +197,26 @@ class _LoadingButtonState extends State<LoadingButton>
           return Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.check_circle, size: 20),
+              Icon(Icons.check_circle, size: 20),
               const SizedBox(width: 8),
               Text(widget.successMessage!),
             ],
           );
         }
-        return const Icon(Icons.check_circle, size: 20);
+        return Icon(Icons.check_circle, size: 20);
 
       case LoadingButtonState.error:
         if (widget.errorMessage != null) {
           return Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.error, size: 20),
+              Icon(Icons.error, size: 20),
               const SizedBox(width: 8),
               Text(widget.errorMessage!),
             ],
           );
         }
-        return const Icon(Icons.error, size: 20);
+        return Icon(Icons.error, size: 20);
 
       case LoadingButtonState.idle:
         return widget.child;

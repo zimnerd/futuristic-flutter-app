@@ -7,6 +7,7 @@ import '../../../data/services/live_streaming_service.dart';
 import '../../../core/network/api_client.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/pulse_toast.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Screen for broadcasting a live stream (host view)
 class LiveStreamBroadcasterScreen extends StatefulWidget {
@@ -175,17 +176,17 @@ class _LiveStreamBroadcasterScreenState
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('End Stream'),
-        content: const Text('Are you sure you want to end this live stream?'),
+        title: Text('End Stream'),
+        content: Text('Are you sure you want to end this live stream?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('End Stream'),
+            child: Text('End Stream'),
           ),
         ],
       ),
@@ -238,7 +239,7 @@ class _LiveStreamBroadcasterScreenState
               ),
             )
           else
-            const Center(
+            Center(
               child: CircularProgressIndicator(color: PulseColors.primary),
             ),
 
@@ -251,12 +252,12 @@ class _LiveStreamBroadcasterScreenState
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.red.withValues(alpha: 0.9),
+                  color: context.errorColor.withValues(alpha: 0.9),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   _errorMessage!,
-                  style: const TextStyle(color: Colors.white),
+                  style: TextStyle(color: Colors.white),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -292,13 +293,13 @@ class _LiveStreamBroadcasterScreenState
                             vertical: 6,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.red,
+                            color: context.errorColor,
                             borderRadius: BorderRadius.circular(4),
                           ),
-                          child: const Text(
+                          child: Text(
                             'LIVE',
                             style: TextStyle(
-                              color: Colors.white,
+                              color: context.onSurfaceColor,
                               fontWeight: FontWeight.bold,
                               fontSize: 12,
                             ),
@@ -317,16 +318,16 @@ class _LiveStreamBroadcasterScreenState
                           ),
                           child: Row(
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.remove_red_eye,
-                                color: Colors.white,
+                                color: context.onSurfaceColor,
                                 size: 16,
                               ),
                               const SizedBox(width: 4),
                               Text(
                                 _viewerCount.toString(),
-                                style: const TextStyle(
-                                  color: Colors.white,
+                                style: TextStyle(
+                                  color: context.onSurfaceColor,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 12,
                                 ),
@@ -347,8 +348,8 @@ class _LiveStreamBroadcasterScreenState
                           ),
                           child: Text(
                             _connectionQuality,
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: context.onSurfaceColor,
                               fontSize: 12,
                             ),
                           ),
@@ -357,7 +358,7 @@ class _LiveStreamBroadcasterScreenState
                         // Close button
                         IconButton(
                           onPressed: _endStream,
-                          icon: const Icon(Icons.close, color: Colors.white),
+                          icon: Icon(Icons.close, color: Colors.white),
                         ),
                       ],
                     ),
@@ -365,8 +366,8 @@ class _LiveStreamBroadcasterScreenState
                     // Stream title
                     Text(
                       widget.title,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: context.onSurfaceColor,
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
@@ -425,7 +426,7 @@ class _LiveStreamBroadcasterScreenState
                       icon: Icons.call_end,
                       label: 'End',
                       onPressed: _endStream,
-                      color: Colors.red,
+                      color: context.errorColor,
                     ),
                   ],
                 ),
@@ -453,14 +454,14 @@ class _LiveStreamBroadcasterScreenState
                 color ??
                 (isActive
                     ? PulseColors.primary.withValues(alpha: 0.2)
-                    : Colors.grey.withValues(alpha: 0.2)),
+                    : context.outlineColor.withValues(alpha: 0.2)),
             shape: BoxShape.circle,
           ),
           child: IconButton(
             onPressed: onPressed,
             icon: Icon(
               icon,
-              color: color ?? (isActive ? Colors.white : Colors.grey),
+              color: color ?? (isActive ? Colors.white : context.outlineColor),
               size: 28,
             ),
             padding: const EdgeInsets.all(16),
@@ -470,7 +471,7 @@ class _LiveStreamBroadcasterScreenState
         Text(
           label,
           style: TextStyle(
-            color: color ?? (isActive ? Colors.white : Colors.grey),
+            color: color ?? (isActive ? Colors.white : context.outlineColor),
             fontSize: 12,
           ),
         ),

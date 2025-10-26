@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../domain/entities/conversation.dart';
 import '../../theme/pulse_colors.dart';
 import '../common/robust_network_image.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Conversation Picker Sheet
 ///
@@ -102,7 +103,7 @@ class _ConversationPickerSheetState extends State<ConversationPickerSheet> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.grey.shade300,
+              color: context.outlineColor.shade300,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -112,13 +113,13 @@ class _ConversationPickerSheetState extends State<ConversationPickerSheet> {
             padding: const EdgeInsets.all(16.0),
             child: Row(
               children: [
-                const Expanded(
+                Expanded(
                   child: Text(
                     'Forward to...',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: context.onSurfaceColor,
                     ),
                   ),
                 ),
@@ -135,8 +136,8 @@ class _ConversationPickerSheetState extends State<ConversationPickerSheet> {
                     ),
                     child: Text(
                       '${_selectedConversationIds.length} selected',
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: context.onSurfaceColor,
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
@@ -144,7 +145,7 @@ class _ConversationPickerSheetState extends State<ConversationPickerSheet> {
                   ),
                 const SizedBox(width: 8),
                 IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white),
+                  icon: Icon(Icons.close, color: Colors.white),
                   onPressed: () => Navigator.pop(context),
                 ),
               ],
@@ -157,13 +158,16 @@ class _ConversationPickerSheetState extends State<ConversationPickerSheet> {
             child: TextField(
               controller: _searchController,
               onChanged: _filterConversations,
-              style: const TextStyle(color: Colors.white),
+              style: TextStyle(color: Colors.white),
               decoration: InputDecoration(
                 hintText: 'Search conversations...',
-                hintStyle: TextStyle(color: Colors.grey.shade400),
-                prefixIcon: Icon(Icons.search, color: Colors.grey.shade400),
+                hintStyle: TextStyle(color: context.outlineColor.shade400),
+                prefixIcon: Icon(
+                  Icons.search,
+                  color: context.outlineColor.shade400,
+                ),
                 filled: true,
-                fillColor: Colors.grey.shade800,
+                fillColor: context.outlineColor.shade800,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
@@ -184,7 +188,7 @@ class _ConversationPickerSheetState extends State<ConversationPickerSheet> {
                           ? 'No conversations yet'
                           : 'No conversations found',
                       style: TextStyle(
-                        color: Colors.grey.shade400,
+                        color: context.outlineColor.shade400,
                         fontSize: 16,
                       ),
                     ),
@@ -216,7 +220,8 @@ class _ConversationPickerSheetState extends State<ConversationPickerSheet> {
                                 children: [
                                   CircleAvatar(
                                     radius: 24,
-                                    backgroundColor: Colors.grey.shade800,
+                                    backgroundColor:
+                                        context.outlineColor.shade800,
                                     child: RobustNetworkImage(
                                       imageUrl: conversation.otherUserAvatar,
                                       blurhash:
@@ -227,7 +232,7 @@ class _ConversationPickerSheetState extends State<ConversationPickerSheet> {
                                       borderRadius: BorderRadius.circular(24),
                                       errorWidget: Icon(
                                         Icons.person,
-                                        color: Colors.grey.shade400,
+                                        color: context.outlineColor.shade400,
                                       ),
                                     ),
                                   ),
@@ -243,8 +248,8 @@ class _ConversationPickerSheetState extends State<ConversationPickerSheet> {
                                   children: [
                                     Text(
                                       conversation.otherUserName,
-                                      style: const TextStyle(
-                                        color: Colors.white,
+                                      style: TextStyle(
+                                        color: context.onSurfaceColor,
                                         fontSize: 16,
                                         fontWeight: FontWeight.w600,
                                       ),
@@ -255,7 +260,7 @@ class _ConversationPickerSheetState extends State<ConversationPickerSheet> {
                                     Text(
                                       conversation.lastMessage,
                                       style: TextStyle(
-                                        color: Colors.grey.shade400,
+                                        color: context.outlineColor.shade400,
                                         fontSize: 14,
                                       ),
                                       maxLines: 1,
@@ -312,7 +317,7 @@ class _ConversationPickerSheetState extends State<ConversationPickerSheet> {
                         : _confirmSelection,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: PulseColors.primary,
-                      disabledBackgroundColor: Colors.grey.shade700,
+                      disabledBackgroundColor: context.outlineColor.shade700,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -322,10 +327,10 @@ class _ConversationPickerSheetState extends State<ConversationPickerSheet> {
                       _selectedConversationIds.isEmpty
                           ? 'Select conversations'
                           : 'Forward to ${_selectedConversationIds.length} conversation${_selectedConversationIds.length > 1 ? 's' : ''}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: Colors.white,
+                        color: context.onSurfaceColor,
                       ),
                     ),
                   ),

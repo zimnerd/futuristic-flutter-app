@@ -8,7 +8,7 @@ import '../../animations/pulse_animations.dart';
 import '../../navigation/app_router.dart';
 import '../../screens/common/photo_preview_screen.dart';
 import '../../screens/profile/profile_details_screen.dart';
-import '../../theme/theme_extensions.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 import '../common/robust_network_image.dart';
 import '../verification/verification_badge.dart';
 import '../dialogs/report_user_dialog.dart';
@@ -362,7 +362,7 @@ class _UserInfoOverlay extends StatelessWidget {
           horizontal: _SwipeCardConstants.userInfoHorizontalPadding,
           vertical: _SwipeCardConstants.userInfoVerticalPadding,
         ),
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -382,8 +382,8 @@ class _UserInfoOverlay extends StatelessWidget {
                 Expanded(
                   child: Text(
                     '${user.name}, ${user.age}',
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: context.onSurfaceColor,
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
@@ -418,16 +418,16 @@ class _UserInfoOverlay extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.favorite,
-                          color: Colors.white,
+                          color: context.onSurfaceColor,
                           size: 14,
                         ),
                         const SizedBox(width: 4),
                         Text(
                           '${compatibilityScore!.toInt()}%',
-                          style: const TextStyle(
-                            color: Colors.white,
+                          style: TextStyle(
+                            color: context.onSurfaceColor,
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
                           ),
@@ -447,7 +447,7 @@ class _UserInfoOverlay extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 user.bio,
-                style: const TextStyle(color: Colors.white70, fontSize: 14),
+                style: TextStyle(color: Colors.white70, fontSize: 14),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -462,12 +462,14 @@ class _UserInfoOverlay extends StatelessWidget {
                   // Occupation badge
                   if (user.occupation != null)
                     _buildBadgePill(
+                      context: context,
                       icon: Icons.work_outline,
                       label: user.occupation!,
                     ),
                   // Education badge
                   if (user.education != null)
                     _buildBadgePill(
+                      context: context,
                       icon: Icons.school_outlined,
                       label: user.education!,
                     ),
@@ -478,7 +480,7 @@ class _UserInfoOverlay extends StatelessWidget {
               const SizedBox(height: 4),
               Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.location_on,
                     color: Colors.white70,
                     size: 14,
@@ -486,7 +488,7 @@ class _UserInfoOverlay extends StatelessWidget {
                   const SizedBox(width: 4),
                   Text(
                     user.distanceString,
-                    style: const TextStyle(color: Colors.white70, fontSize: 12),
+                    style: TextStyle(color: Colors.white70, fontSize: 12),
                   ),
                 ],
               ),
@@ -523,15 +525,19 @@ class _UserInfoOverlay extends StatelessWidget {
                       width: 1,
                     ),
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.info_outline, color: Colors.white, size: 14),
-                      SizedBox(width: 6),
+                      Icon(
+                        Icons.info_outline,
+                        color: context.onSurfaceColor,
+                        size: 14,
+                      ),
+                      const SizedBox(width: 6),
                       Text(
                         'Why matched?',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: context.onSurfaceColor,
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                         ),
@@ -548,7 +554,11 @@ class _UserInfoOverlay extends StatelessWidget {
   }
 
   /// Builds a badge pill for displaying profile attributes (occupation, education, etc.)
-  Widget _buildBadgePill({required IconData icon, required String label}) {
+  Widget _buildBadgePill({
+    required BuildContext context,
+    required IconData icon,
+    required String label,
+  }) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
@@ -569,14 +579,14 @@ class _UserInfoOverlay extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: Colors.white, size: 12),
+          Icon(icon, color: context.onSurfaceColor, size: 12),
           const SizedBox(width: 5),
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w600,
-              color: Colors.white,
+              color: context.onSurfaceColor,
               shadows: [
                 Shadow(
                   color: Colors.black45,
@@ -701,14 +711,14 @@ class _SwipeOverlay extends StatelessWidget {
               children: [
                 Icon(
                   config.icon,
-                  color: Colors.white,
+                  color: context.onSurfaceColor,
                   size: _SwipeCardConstants.swipeIconSize,
                 ),
                 SizedBox(width: _SwipeCardConstants.swipeIconSpacing),
                 Text(
                   config.label,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: context.onSurfaceColor,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),

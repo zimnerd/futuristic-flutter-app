@@ -3,6 +3,8 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../widgets/app_button.dart';
 import '../../data/models/subscription_plan.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
+
 
 /// Widget to display subscription plan information and actions
 class SubscriptionPlanCard extends StatelessWidget {
@@ -24,14 +26,14 @@ class SubscriptionPlanCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.surfaceColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isCurrentPlan
               ? AppColors.primary
               : isPopular
               ? AppColors.warning
-              : AppColors.border,
+              : context.outlineColor,
           width: isCurrentPlan || isPopular ? 2 : 1,
         ),
         boxShadow: isPopular
@@ -53,11 +55,11 @@ class SubscriptionPlanCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildHeader(),
+                _buildHeader(context),
                 const SizedBox(height: 16),
-                _buildPricing(),
+                _buildPricing(context),
                 const SizedBox(height: 20),
-                _buildFeatures(),
+                _buildFeatures(context),
                 const SizedBox(height: 20),
                 _buildActionButton(),
               ],
@@ -91,7 +93,7 @@ class SubscriptionPlanCard extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -101,7 +103,7 @@ class SubscriptionPlanCard extends StatelessWidget {
               child: Text(
                 plan.name,
                 style: AppTextStyles.heading4.copyWith(
-                  color: AppColors.textPrimary,
+                  color: context.onSurfaceColor,
                 ),
               ),
             ),
@@ -126,21 +128,21 @@ class SubscriptionPlanCard extends StatelessWidget {
         Text(
           plan.description,
           style: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.textSecondary,
+            color: context.onSurfaceVariantColor,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildPricing() {
+  Widget _buildPricing(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Text(
           '\$${plan.amount.toStringAsFixed(0)}',
           style: AppTextStyles.heading2.copyWith(
-            color: AppColors.textPrimary,
+            color: context.onSurfaceColor,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -150,7 +152,7 @@ class SubscriptionPlanCard extends StatelessWidget {
           child: Text(
             '/${_getBillingPeriodText()}',
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
+              color: context.onSurfaceVariantColor,
             ),
           ),
         ),
@@ -158,15 +160,15 @@ class SubscriptionPlanCard extends StatelessWidget {
     );
   }
 
-  Widget _buildFeatures() {
+  Widget _buildFeatures(BuildContext context) {
     return Column(
       children: plan.features
-          .map((feature) => _buildFeatureItem(feature.name))
+          .map((feature) => _buildFeatureItem(context, feature.name))
           .toList(),
     );
   }
 
-  Widget _buildFeatureItem(String feature) {
+  Widget _buildFeatureItem(BuildContext context, String feature) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
@@ -177,7 +179,7 @@ class SubscriptionPlanCard extends StatelessWidget {
             child: Text(
               feature,
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textPrimary,
+                color: context.onSurfaceColor,
               ),
             ),
           ),

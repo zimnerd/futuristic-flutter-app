@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../domain/entities/user_profile.dart';
 import '../../theme/pulse_colors.dart' hide PulseTextStyles;
 import '../../theme/pulse_theme.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Match Explanation Screen
 ///
@@ -28,7 +29,7 @@ class MatchExplanationScreen extends StatelessWidget {
     final reasons = matchReasons ?? {};
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Match Breakdown'), centerTitle: true),
+      appBar: AppBar(title: Text('Match Breakdown'), centerTitle: true),
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -93,7 +94,7 @@ class MatchExplanationScreen extends StatelessWidget {
                 ? NetworkImage(profile.photos.first.url)
                 : null,
             child: profile.photos.isEmpty
-                ? const Icon(Icons.person, size: 50)
+                ? Icon(Icons.person, size: 50)
                 : null,
           ),
 
@@ -108,15 +109,15 @@ class MatchExplanationScreen extends StatelessWidget {
           const SizedBox(height: 24),
 
           // Overall compatibility score
-          _buildOverallScore(),
+          _buildOverallScore(context),
         ],
       ),
     );
   }
 
-  Widget _buildOverallScore() {
+  Widget _buildOverallScore(BuildContext context) {
     final percentage = (compatibilityScore * 100).round();
-    final color = _getScoreColor(compatibilityScore);
+    final color = _getScoreColor(context, compatibilityScore);
 
     return Column(
       children: [
@@ -129,7 +130,7 @@ class MatchExplanationScreen extends StatelessWidget {
               child: CircularProgressIndicator(
                 value: compatibilityScore,
                 strokeWidth: 12,
-                backgroundColor: Colors.grey.shade200,
+                backgroundColor: context.outlineColor.shade200,
                 valueColor: AlwaysStoppedAnimation<Color>(color),
               ),
             ),
@@ -145,7 +146,7 @@ class MatchExplanationScreen extends StatelessWidget {
                 Text(
                   'Match',
                   style: PulseTextStyles.bodyMedium.copyWith(
-                    color: Colors.grey.shade600,
+                    color: context.outlineColor.shade600,
                   ),
                 ),
               ],
@@ -221,13 +222,16 @@ class MatchExplanationScreen extends StatelessWidget {
 
           const SizedBox(height: 16),
 
-          ...categories.map((category) => _buildCategoryBar(category)),
+          ...categories.map((category) => _buildCategoryBar(context, category)),
         ],
       ),
     );
   }
 
-  Widget _buildCategoryBar(_CompatibilityCategory category) {
+  Widget _buildCategoryBar(
+    BuildContext context,
+    _CompatibilityCategory category,
+  ) {
     final percentage = (category.score * 100).round();
 
     return Padding(
@@ -263,7 +267,7 @@ class MatchExplanationScreen extends StatelessWidget {
             child: LinearProgressIndicator(
               value: category.score,
               minHeight: 8,
-              backgroundColor: Colors.grey.shade200,
+              backgroundColor: context.outlineColor.shade200,
               valueColor: AlwaysStoppedAnimation<Color>(category.color),
             ),
           ),
@@ -287,7 +291,11 @@ class MatchExplanationScreen extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(Icons.favorite, color: Colors.red.shade400, size: 24),
+              Icon(
+                Icons.favorite,
+                color: context.errorColor.shade400,
+                size: 24,
+              ),
               const SizedBox(width: 8),
               Text('Shared Interests', style: PulseTextStyles.headlineSmall),
             ],
@@ -348,11 +356,13 @@ class MatchExplanationScreen extends StatelessWidget {
 
               if (distance != null)
                 _buildInfoRow(
+                  context,
                   'Distance',
                   '${distance.toStringAsFixed(1)} km away',
                 ),
 
               _buildInfoRow(
+                context,
                 'Compatibility',
                 _getLocationCompatibilityText(locationScore),
               ),
@@ -389,6 +399,7 @@ class MatchExplanationScreen extends StatelessWidget {
               const SizedBox(height: 16),
 
               _buildInfoRow(
+                context,
                 'Compatibility',
                 _getLifestyleCompatibilityText(lifestyleScore),
               ),
@@ -402,7 +413,7 @@ class MatchExplanationScreen extends StatelessWidget {
                     padding: const EdgeInsets.only(bottom: 8),
                     child: Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.check_circle,
                           size: 16,
                           color: Colors.green,
@@ -456,6 +467,7 @@ class MatchExplanationScreen extends StatelessWidget {
               const SizedBox(height: 16),
 
               _buildInfoRow(
+                context,
                 'Match Level',
                 _getActivityCompatibilityText(activityScore),
               ),
@@ -469,7 +481,7 @@ class MatchExplanationScreen extends StatelessWidget {
                     padding: const EdgeInsets.only(bottom: 8),
                     child: Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.check_circle,
                           size: 16,
                           color: Colors.green,
@@ -493,7 +505,7 @@ class MatchExplanationScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoRow(String label, String value) {
+  Widget _buildInfoRow(BuildContext context, String label, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
@@ -502,7 +514,7 @@ class MatchExplanationScreen extends StatelessWidget {
           Text(
             label,
             style: PulseTextStyles.bodyMedium.copyWith(
-              color: Colors.grey.shade600,
+              color: context.outlineColor.shade600,
             ),
           ),
           Text(
@@ -516,10 +528,10 @@ class MatchExplanationScreen extends StatelessWidget {
     );
   }
 
-  Color _getScoreColor(double score) {
+  Color _getScoreColor(BuildContext context, double score) {
     if (score >= 0.8) return Colors.green;
     if (score >= 0.6) return Colors.orange;
-    return Colors.grey;
+    return context.outlineColor;
   }
 
   String _getScoreLabel(double score) {

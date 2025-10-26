@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../domain/entities/event.dart';
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Widget to display event analytics indicators including:
 /// - Attendance health badges
@@ -35,21 +36,22 @@ class EventAnalyticsIndicators extends StatelessWidget {
       spacing: compact ? 6 : 8,
       runSpacing: compact ? 6 : 8,
       children: [
-        if (showAttendance && event.attendanceRate > 0) _buildAttendanceBadge(),
+        if (showAttendance && event.attendanceRate > 0)
+          _buildAttendanceBadge(context),
         if (showEngagement && event.engagementScore > 20)
-          _buildEngagementBadge(),
-        if (showQuality) _buildQualityBadge(),
-        if (showPopularity) _buildPopularityBadge(),
-        if (showSuccess && event.isSuccessfulEvent) _buildSuccessBadge(),
-        if (event.viewCount > 100) _buildPopularViewsBadge(),
-        if (event.satisfactionScore >= 4.0) _buildHighRatingBadge(),
+          _buildEngagementBadge(context),
+        if (showQuality) _buildQualityBadge(context),
+        if (showPopularity) _buildPopularityBadge(context),
+        if (showSuccess && event.isSuccessfulEvent) _buildSuccessBadge(context),
+        if (event.viewCount > 100) _buildPopularViewsBadge(context),
+        if (event.satisfactionScore >= 4.0) _buildHighRatingBadge(context),
       ],
     );
   }
 
   /// Build attendance health badge with color-coded indicators
   /// Shows: excellent (≥90%), good (70-89%), moderate (50-69%), poor (<50%)
-  Widget _buildAttendanceBadge() {
+  Widget _buildAttendanceBadge(BuildContext context) {
     final health = event.attendanceHealth;
     final config = _getAttendanceConfig(health);
 
@@ -72,12 +74,16 @@ class EventAnalyticsIndicators extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(config.icon, color: Colors.white, size: compact ? 12 : 14),
+          Icon(
+            config.icon,
+            color: Theme.of(context).colorScheme.onSurface,
+            size: compact ? 12 : 14,
+          ),
           SizedBox(width: compact ? 3 : 4),
           Text(
             config.label,
             style: TextStyle(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.onSurface,
               fontSize: compact ? 10 : 12,
               fontWeight: FontWeight.w600,
             ),
@@ -88,7 +94,7 @@ class EventAnalyticsIndicators extends StatelessWidget {
   }
 
   /// Build engagement score badge with percentage
-  Widget _buildEngagementBadge() {
+  Widget _buildEngagementBadge(BuildContext context) {
     final score = event.engagementScore.round();
     final color = _getEngagementColor(score);
 
@@ -133,7 +139,7 @@ class EventAnalyticsIndicators extends StatelessWidget {
 
   /// Build event quality tier badge
   /// Shows: premium (≥80), great (60-79), good (40-59), standard (<40)
-  Widget _buildQualityBadge() {
+  Widget _buildQualityBadge(BuildContext context) {
     final quality = event.eventQualityDisplay;
     final config = _getQualityConfig(quality);
 
@@ -149,12 +155,16 @@ class EventAnalyticsIndicators extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(config.icon, color: Colors.white, size: compact ? 12 : 14),
+          Icon(
+            config.icon,
+            color: Theme.of(context).colorScheme.onSurface,
+            size: compact ? 12 : 14,
+          ),
           SizedBox(width: compact ? 3 : 4),
           Text(
             config.label,
             style: TextStyle(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.onSurface,
               fontSize: compact ? 10 : 12,
               fontWeight: FontWeight.w600,
             ),
@@ -166,7 +176,7 @@ class EventAnalyticsIndicators extends StatelessWidget {
 
   /// Build popularity level badge
   /// Shows: viral (≥90), trending (70-89), popular (50-69), growing (<50)
-  Widget _buildPopularityBadge() {
+  Widget _buildPopularityBadge(BuildContext context) {
     final popularity = event.popularityLevel;
     final config = _getPopularityConfig(popularity);
 
@@ -201,7 +211,7 @@ class EventAnalyticsIndicators extends StatelessWidget {
   }
 
   /// Build successful event badge (green checkmark)
-  Widget _buildSuccessBadge() {
+  Widget _buildSuccessBadge(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: compact ? 8 : 12,
@@ -216,13 +226,17 @@ class EventAnalyticsIndicators extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.verified, color: Colors.white, size: compact ? 12 : 14),
+          Icon(
+            Icons.verified,
+            color: Theme.of(context).colorScheme.onSurface,
+            size: compact ? 12 : 14,
+          ),
           if (!compact) ...[
             const SizedBox(width: 4),
-            const Text(
+            Text(
               'Success',
               style: TextStyle(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.onSurface,
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
               ),
@@ -234,7 +248,7 @@ class EventAnalyticsIndicators extends StatelessWidget {
   }
 
   /// Build popular views badge (100+ views)
-  Widget _buildPopularViewsBadge() {
+  Widget _buildPopularViewsBadge(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: compact ? 8 : 12,
@@ -257,7 +271,7 @@ class EventAnalyticsIndicators extends StatelessWidget {
             const SizedBox(width: 4),
             Text(
               '${_formatCount(event.viewCount)} views',
-              style: const TextStyle(
+              style: TextStyle(
                 color: PulseColors.primary,
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
@@ -270,7 +284,7 @@ class EventAnalyticsIndicators extends StatelessWidget {
   }
 
   /// Build high rating badge (4+ stars)
-  Widget _buildHighRatingBadge() {
+  Widget _buildHighRatingBadge(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: compact ? 8 : 12,
@@ -285,12 +299,16 @@ class EventAnalyticsIndicators extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.star, color: Colors.white, size: 14),
+          Icon(
+            Icons.star,
+            color: Theme.of(context).colorScheme.onSurface,
+            size: 14,
+          ),
           const SizedBox(width: 4),
           Text(
             event.satisfactionScore.toStringAsFixed(1),
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
               fontSize: 12,
               fontWeight: FontWeight.w700,
             ),
@@ -439,13 +457,13 @@ class EventAnalyticsCard extends StatelessWidget {
             // Header
             Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.analytics_outlined,
                   color: PulseColors.primary,
                   size: 24,
                 ),
                 const SizedBox(width: 8),
-                const Text(
+                Text(
                   'Event Analytics',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
@@ -461,7 +479,7 @@ class EventAnalyticsCard extends StatelessWidget {
                   ),
                   child: Text(
                     event.eventQualityDisplay.toUpperCase(),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
                       color: PulseColors.primary,
@@ -514,12 +532,12 @@ class EventAnalyticsCard extends StatelessWidget {
 
             // Conversion Funnel Summary
             if (event.conversionRate != null) ...[
-              const Text(
+              Text(
                 'Conversion Funnel',
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 12),
-              _buildFunnelVisual(),
+              _buildFunnelVisual(context),
             ],
 
             // View Stats
@@ -529,16 +547,19 @@ class EventAnalyticsCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   _buildStatBox(
+                    context,
                     'Views',
                     _formatCount(event.viewCount),
                     Icons.visibility,
                   ),
                   _buildStatBox(
+                    context,
                     'Unique',
                     _formatCount(event.uniqueViewers),
                     Icons.person,
                   ),
                   _buildStatBox(
+                    context,
                     'Shares',
                     _formatCount(event.shareCount),
                     Icons.share,
@@ -562,7 +583,7 @@ class EventAnalyticsCard extends StatelessWidget {
       children: [
         Icon(icon, color: color, size: 20),
         const SizedBox(width: 8),
-        Expanded(child: Text(label, style: const TextStyle(fontSize: 14))),
+        Expanded(child: Text(label, style: TextStyle(fontSize: 14))),
         Text(
           value,
           style: TextStyle(
@@ -575,7 +596,7 @@ class EventAnalyticsCard extends StatelessWidget {
     );
   }
 
-  Widget _buildFunnelVisual() {
+  Widget _buildFunnelVisual(BuildContext context) {
     final funnel = event.conversionFunnelSummary;
     final viewToClick = funnel['viewToClick'] ?? '0%';
     final clickToReg = funnel['clickToRegister'] ?? '0%';
@@ -584,11 +605,11 @@ class EventAnalyticsCard extends StatelessWidget {
 
     return Column(
       children: [
-        _buildFunnelStage('View → Click', viewToClick, 1.0),
+        _buildFunnelStage(context, 'View → Click', viewToClick, 1.0),
         const SizedBox(height: 8),
-        _buildFunnelStage('Click → Register', clickToReg, 0.8),
+        _buildFunnelStage(context, 'Click → Register', clickToReg, 0.8),
         const SizedBox(height: 8),
-        _buildFunnelStage('Register → Attend', regToAttend, 0.6),
+        _buildFunnelStage(context, 'Register → Attend', regToAttend, 0.6),
         const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -621,6 +642,7 @@ class EventAnalyticsCard extends StatelessWidget {
   }
 
   Widget _buildFunnelStage(
+    BuildContext context,
     String label,
     String percentage,
     double widthFactor,
@@ -629,7 +651,7 @@ class EventAnalyticsCard extends StatelessWidget {
       children: [
         SizedBox(
           width: 120,
-          child: Text(label, style: const TextStyle(fontSize: 12)),
+          child: Text(label, style: TextStyle(fontSize: 12)),
         ),
         Expanded(
           child: Stack(
@@ -637,7 +659,7 @@ class EventAnalyticsCard extends StatelessWidget {
               Container(
                 height: 24,
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade200,
+                  color: Theme.of(context).colorScheme.outline.shade200,
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
@@ -662,7 +684,7 @@ class EventAnalyticsCard extends StatelessWidget {
                 padding: const EdgeInsets.only(right: 8),
                 child: Text(
                   percentage,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
                     color: Colors.black87,
@@ -676,18 +698,26 @@ class EventAnalyticsCard extends StatelessWidget {
     );
   }
 
-  Widget _buildStatBox(String label, String value, IconData icon) {
+  Widget _buildStatBox(
+    BuildContext context,
+    String label,
+    String value,
+    IconData icon,
+  ) {
     return Column(
       children: [
         Icon(icon, color: PulseColors.primary, size: 24),
         const SizedBox(height: 4),
         Text(
           value,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
         ),
         Text(
           label,
-          style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+          style: TextStyle(
+            fontSize: 11,
+            color: Theme.of(context).colorScheme.outline.shade600,
+          ),
         ),
       ],
     );

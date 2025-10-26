@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../data/models/chat_model.dart';
 import '../../theme/pulse_colors.dart';
-import '../../theme/theme_extensions.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// WhatsApp-style call message widget for chat bubbles
 /// Displays call history with type, status, duration, and action buttons

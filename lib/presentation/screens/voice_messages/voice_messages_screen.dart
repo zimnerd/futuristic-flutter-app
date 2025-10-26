@@ -43,7 +43,7 @@ class _VoiceMessagesScreenState extends State<VoiceMessagesScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Voice Messages'),
+        title: Text('Voice Messages'),
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
@@ -119,7 +119,7 @@ class _VoiceMessagesScreenState extends State<VoiceMessagesScreen>
           ),
           const SizedBox(height: 20),
           if (state.status == VoiceMessageStatus.recording)
-            const Text(
+            Text(
               'Recording...',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
             ),

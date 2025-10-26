@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../theme/pulse_colors.dart';
 import '../../../services/profile_draft_service.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Dialog for handling profile creation exit with draft saving
 class ProfileExitDialog extends StatelessWidget {
@@ -48,7 +49,7 @@ class ProfileExitDialog extends StatelessWidget {
             child: Text(
               hasProgress ? 'Save Your Progress?' : 'Exit Profile Creation?',
               style: PulseTextStyles.titleLarge.copyWith(
-                color: PulseColors.onSurface,
+                color: context.textPrimary,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -63,16 +64,16 @@ class ProfileExitDialog extends StatelessWidget {
             Text(
               'You\'ve made progress on your profile! We can save your work so you can continue later.',
               style: PulseTextStyles.bodyMedium.copyWith(
-                color: PulseColors.onSurfaceVariant,
+                color: context.textSecondary,
               ),
             ),
             const SizedBox(height: PulseSpacing.lg),
-            _buildProgressSummary(),
+            _buildProgressSummary(context),
           ] else ...[
             Text(
               'Are you sure you want to exit? Any progress will be lost.',
               style: PulseTextStyles.bodyMedium.copyWith(
-                color: PulseColors.onSurfaceVariant,
+                color: context.textSecondary,
               ),
             ),
           ],
@@ -96,11 +97,11 @@ class ProfileExitDialog extends StatelessWidget {
           ),
           ElevatedButton.icon(
             onPressed: onSaveAndExit,
-            icon: const Icon(Icons.save),
-            label: const Text('Save & Exit'),
+            icon: Icon(Icons.save),
+            label: Text('Save & Exit'),
             style: ElevatedButton.styleFrom(
               backgroundColor: PulseColors.warning,
-              foregroundColor: Colors.white,
+              foregroundColor: context.onSurfaceColor,
             ),
           ),
         ] else ...[
@@ -115,16 +116,16 @@ class ProfileExitDialog extends StatelessWidget {
             onPressed: onExitWithoutSaving,
             style: ElevatedButton.styleFrom(
               backgroundColor: PulseColors.error,
-              foregroundColor: Colors.white,
+              foregroundColor: context.onSurfaceColor,
             ),
-            child: const Text('Exit'),
+            child: Text('Exit'),
           ),
         ],
       ],
     );
   }
 
-  Widget _buildProgressSummary() {
+  Widget _buildProgressSummary(BuildContext context) {
     if (currentDraft == null) return const SizedBox.shrink();
 
     final progress = (currentDraft!.completionPercentage * 100).round();
@@ -145,7 +146,7 @@ class ProfileExitDialog extends StatelessWidget {
               Text(
                 'Profile Progress',
                 style: PulseTextStyles.bodyMedium.copyWith(
-                  color: PulseColors.onSurface,
+                  color: context.textPrimary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -172,7 +173,7 @@ class ProfileExitDialog extends StatelessWidget {
           Text(
             'Step ${currentDraft!.currentStep + 1} of 5',
             style: PulseTextStyles.bodySmall.copyWith(
-              color: PulseColors.onSurfaceVariant,
+              color: context.textSecondary,
             ),
           ),
         ],
@@ -209,7 +210,7 @@ class ProfileDraftRestoreDialog extends StatelessWidget {
               color: PulseColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(PulseRadii.md),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.restore,
               color: PulseColors.primary,
               size: 24,
@@ -220,7 +221,7 @@ class ProfileDraftRestoreDialog extends StatelessWidget {
             child: Text(
               'Continue Where You Left Off?',
               style: PulseTextStyles.titleLarge.copyWith(
-                color: PulseColors.onSurface,
+                color: context.textPrimary,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -234,11 +235,11 @@ class ProfileDraftRestoreDialog extends StatelessWidget {
           Text(
             'We found your saved progress from ${draft.timeSinceLastSave}. Would you like to continue where you left off?',
             style: PulseTextStyles.bodyMedium.copyWith(
-              color: PulseColors.onSurfaceVariant,
+              color: context.textSecondary,
             ),
           ),
           const SizedBox(height: PulseSpacing.lg),
-          _buildDraftSummary(),
+          _buildDraftSummary(context),
         ],
       ),
       actions: [
@@ -251,18 +252,18 @@ class ProfileDraftRestoreDialog extends StatelessWidget {
         ),
         ElevatedButton.icon(
           onPressed: onRestore,
-          icon: const Icon(Icons.restore),
-          label: const Text('Continue'),
+          icon: Icon(Icons.restore),
+          label: Text('Continue'),
           style: ElevatedButton.styleFrom(
             backgroundColor: PulseColors.primary,
-            foregroundColor: Colors.white,
+            foregroundColor: context.onSurfaceColor,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildDraftSummary() {
+  Widget _buildDraftSummary(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(PulseSpacing.md),
       decoration: BoxDecoration(
@@ -279,7 +280,7 @@ class ProfileDraftRestoreDialog extends StatelessWidget {
               Text(
                 'Saved Progress',
                 style: PulseTextStyles.bodyMedium.copyWith(
-                  color: PulseColors.onSurface,
+                  color: context.textPrimary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -303,13 +304,13 @@ class ProfileDraftRestoreDialog extends StatelessWidget {
             ),
           ),
           const SizedBox(height: PulseSpacing.md),
-          _buildCompletedItems(),
+          _buildCompletedItems(context),
         ],
       ),
     );
   }
 
-  Widget _buildCompletedItems() {
+  Widget _buildCompletedItems(BuildContext context) {
     final List<String> completedItems = [];
 
     if (draft.name?.isNotEmpty == true) completedItems.add('Name');
@@ -334,7 +335,7 @@ class ProfileDraftRestoreDialog extends StatelessWidget {
       return Text(
         'Step ${draft.currentStep + 1} of 5',
         style: PulseTextStyles.bodySmall.copyWith(
-          color: PulseColors.onSurfaceVariant,
+          color: context.textSecondary,
         ),
       );
     }
@@ -345,7 +346,7 @@ class ProfileDraftRestoreDialog extends StatelessWidget {
         Text(
           'Completed:',
           style: PulseTextStyles.bodySmall.copyWith(
-            color: PulseColors.onSurfaceVariant,
+            color: context.textSecondary,
             fontWeight: FontWeight.w600,
           ),
         ),

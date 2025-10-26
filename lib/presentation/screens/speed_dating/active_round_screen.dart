@@ -7,6 +7,7 @@ import '../../../data/services/audio_call_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_state.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 import '../../widgets/common/pulse_toast.dart';
 import 'round_transition_screen.dart';
 
@@ -267,20 +268,20 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen>
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('End Round Early?'),
-        content: const Text(
+        title: Text('End Round Early?'),
+        content: Text(
           'Are you sure you want to end this round early? '
           'You can still rate your partner.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('End Round'),
+            style: TextButton.styleFrom(foregroundColor: context.errorColor),
+            child: Text('End Round'),
           ),
         ],
       ),
@@ -327,19 +328,21 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen>
         final confirmed = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text('Leave Round?'),
-            content: const Text(
+            title: Text('Leave Round?'),
+            content: Text(
               'Are you sure you want to leave this speed dating round?',
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text('Stay'),
+                child: Text('Stay'),
               ),
               TextButton(
                 onPressed: () => Navigator.pop(context, true),
-                style: TextButton.styleFrom(foregroundColor: Colors.red),
-                child: const Text('Leave'),
+                style: TextButton.styleFrom(
+                  foregroundColor: context.errorColor,
+                ),
+                child: Text('Leave'),
               ),
             ],
           ),
@@ -358,7 +361,7 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen>
 
   Widget _buildBody() {
     if (_isLoading) {
-      return const Center(
+      return Center(
         child: CircularProgressIndicator(color: Colors.white),
       );
     }
@@ -368,17 +371,17 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline, size: 64, color: Colors.red),
+            Icon(Icons.error_outline, size: 64, color: context.errorColor),
             const SizedBox(height: 16),
             Text(
               _error!,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 16, color: Colors.white),
+              style: TextStyle(fontSize: 16, color: Colors.white),
             ),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Back to Lobby'),
+              child: Text('Back to Lobby'),
             ),
           ],
         ),
@@ -386,10 +389,10 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen>
     }
 
     if (_partnerProfile == null || _currentSession == null) {
-      return const Center(
+      return Center(
         child: Text(
           'No partner profile available',
-          style: TextStyle(color: Colors.white, fontSize: 16),
+          style: TextStyle(color: context.onSurfaceColor, fontSize: 16),
         ),
       );
     }
@@ -425,7 +428,9 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen>
                   child: CircularProgressIndicator(
                     value: _remainingSeconds / 180.0,
                     strokeWidth: 4,
-                    backgroundColor: Colors.white.withValues(alpha: 0.2),
+                    backgroundColor: context.surfaceColor.withValues(
+                      alpha: 0.2,
+                    ),
                     valueColor: AlwaysStoppedAnimation(
                       _remainingSeconds < 30
                           ? Colors.red
@@ -438,8 +443,8 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen>
                 // Timer text
                 Text(
                   _formatTime(_remainingSeconds),
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: context.onSurfaceColor,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
@@ -453,7 +458,7 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Speed Dating',
                   style: TextStyle(color: Colors.white70, fontSize: 14),
                 ),
@@ -466,14 +471,14 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen>
                         child: Container(
                           width: 8,
                           height: 8,
-                          decoration: const BoxDecoration(
+                          decoration: BoxDecoration(
                             color: Colors.green,
                             shape: BoxShape.circle,
                           ),
                         ),
                       ),
                       const SizedBox(width: 8),
-                      const Text(
+                      Text(
                         'Connected',
                         style: TextStyle(
                           color: Colors.green,
@@ -482,7 +487,7 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen>
                         ),
                       ),
                     ] else ...[
-                      const Text(
+                      Text(
                         'Connecting...',
                         style: TextStyle(
                           color: Colors.orange,
@@ -499,7 +504,7 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen>
           // End round button
           IconButton(
             onPressed: _endRoundEarly,
-            icon: const Icon(Icons.close, color: Colors.white),
+            icon: Icon(Icons.close, color: Colors.white),
             iconSize: 28,
           ),
         ],
@@ -542,14 +547,14 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen>
                       fit: BoxFit.cover,
                       placeholder: (context, url) => Container(
                         color: Colors.grey[800],
-                        child: const Center(child: CircularProgressIndicator()),
+                        child: Center(child: CircularProgressIndicator()),
                       ),
                       errorWidget: (context, url, error) => Container(
                         color: Colors.grey[800],
-                        child: const Icon(
+                        child: Icon(
                           Icons.person,
                           size: 80,
-                          color: Colors.white,
+                          color: context.onSurfaceColor,
                         ),
                       ),
                     )
@@ -558,9 +563,9 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen>
                       child: Center(
                         child: Text(
                           name[0].toUpperCase(),
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 64,
-                            color: Colors.white,
+                            color: context.onSurfaceColor,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -572,8 +577,8 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen>
           // Name and age
           Text(
             age != null ? '$name, $age' : name,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: context.onSurfaceColor,
               fontSize: 32,
               fontWeight: FontWeight.bold,
             ),
@@ -584,11 +589,11 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen>
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.location_on, color: Colors.white70, size: 18),
+                Icon(Icons.location_on, color: Colors.white70, size: 18),
                 const SizedBox(width: 4),
                 Text(
                   location,
-                  style: const TextStyle(color: Colors.white70, fontSize: 16),
+                  style: TextStyle(color: Colors.white70, fontSize: 16),
                 ),
               ],
             ),
@@ -604,8 +609,8 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen>
               ),
               child: Text(
                 bio,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: context.onSurfaceColor,
                   fontSize: 16,
                   height: 1.5,
                 ),
@@ -632,7 +637,10 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen>
                   ),
                   child: Text(
                     interest.toString(),
-                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                    style: TextStyle(
+                      color: context.onSurfaceColor,
+                      fontSize: 14,
+                    ),
                   ),
                 );
               }).toList(),
@@ -653,7 +661,7 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen>
               ),
               child: Column(
                 children: [
-                  const Text(
+                  Text(
                     'Next Partner',
                     style: TextStyle(color: Colors.white70, fontSize: 14),
                   ),
@@ -699,7 +707,7 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen>
           child: photoUrl == null
               ? Text(
                   name[0].toUpperCase(),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
@@ -709,8 +717,8 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen>
         const SizedBox(width: 12),
         Text(
           name,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: context.onSurfaceColor,
             fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
@@ -749,7 +757,7 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen>
           _buildControlButton(
             icon: Icons.call_end,
             label: 'End',
-            color: Colors.white,
+            color: context.onSurfaceColor,
             backgroundColor: Colors.red,
             onPressed: _endRoundEarly,
           ),

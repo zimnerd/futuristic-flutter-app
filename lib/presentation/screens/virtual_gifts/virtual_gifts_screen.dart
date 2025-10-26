@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 import '../../../data/models/virtual_gift.dart';
 import '../../blocs/virtual_gift/virtual_gift_bloc.dart';
@@ -59,7 +60,7 @@ class _VirtualGiftsScreenState extends State<VirtualGiftsScreen>
       appBar: AppBar(
         title: widget.recipientName != null
             ? Text('Send Gift to ${widget.recipientName}')
-            : const Text('Virtual Gifts'),
+            : Text('Virtual Gifts'),
         backgroundColor: Colors.transparent,
         elevation: 0,
         foregroundColor: Theme.of(context).primaryColor,
@@ -79,7 +80,7 @@ class _VirtualGiftsScreenState extends State<VirtualGiftsScreen>
             ? TabBar(
                 controller: _tabController,
                 labelColor: PulseColors.primary,
-                unselectedLabelColor: Colors.grey,
+                unselectedLabelColor: context.outlineColor,
                 indicatorColor: PulseColors.primary,
                 tabs: const [
                   Tab(icon: Icon(Icons.card_giftcard), text: 'Send Gifts'),
@@ -207,7 +208,7 @@ class _VirtualGiftsScreenState extends State<VirtualGiftsScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Send Gift?'),
+        title: Text('Send Gift?'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -243,7 +244,7 @@ class _VirtualGiftsScreenState extends State<VirtualGiftsScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () {
@@ -254,9 +255,9 @@ class _VirtualGiftsScreenState extends State<VirtualGiftsScreen>
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: PulseColors.primary,
-              foregroundColor: Colors.white,
+              foregroundColor: context.onSurfaceColor,
             ),
-            child: const Text('Send Gift'),
+            child: Text('Send Gift'),
           ),
         ],
       ),

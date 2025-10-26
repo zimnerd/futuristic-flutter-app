@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Message input widget with text field and action buttons
 class MessageInput extends StatefulWidget {
@@ -87,7 +88,7 @@ class _MessageInputState extends State<MessageInput>
               icon: Icons.add,
               onPressed: widget.onAttachment!,
               backgroundColor: Colors.grey[100]!,
-              iconColor: Colors.grey[600]!,
+              iconColor: context.onSurfaceVariantColor!,
             ),
 
           if (widget.onAttachment != null) const SizedBox(width: 8),
@@ -113,7 +114,7 @@ class _MessageInputState extends State<MessageInput>
                 textCapitalization: TextCapitalization.sentences,
                 decoration: InputDecoration(
                   hintText: widget.placeholder,
-                  hintStyle: TextStyle(color: Colors.grey[600]),
+                  hintStyle: TextStyle(color: context.onSurfaceVariantColor),
                   border: InputBorder.none,
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -145,7 +146,7 @@ class _MessageInputState extends State<MessageInput>
                       icon: Icons.mic,
                       onPressed: widget.onVoiceMessage ?? () {},
                       backgroundColor: Colors.grey[100]!,
-                      iconColor: Colors.grey[600]!,
+                      iconColor: context.onSurfaceVariantColor!,
                     );
             },
           ),

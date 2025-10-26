@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../theme/pulse_colors.dart';
 import '../common/pulse_toast.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Notification preferences and settings widget
 class NotificationPreferencesWidget extends StatefulWidget {
@@ -26,86 +27,96 @@ class _NotificationPreferencesWidgetState
     'quiet_hours': false,
   };
 
-  final Map<String, NotificationCategory> _categories = {
-    'Dating Activity': NotificationCategory(
-      title: 'Dating Activity',
-      description: 'Get notified about your dating activity',
-      icon: Icons.favorite,
-      color: Colors.red,
-      items: [
-        NotificationItem(
-          key: 'new_matches',
-          title: 'New Matches',
-          description: 'When someone matches with you',
-        ),
-        NotificationItem(
-          key: 'new_messages',
-          title: 'New Messages',
-          description: 'When you receive a new message',
-        ),
-        NotificationItem(
-          key: 'super_likes',
-          title: 'Super Likes',
-          description: 'When someone super likes you',
-        ),
-        NotificationItem(
-          key: 'profile_views',
-          title: 'Profile Views',
-          description: 'When someone views your profile',
-        ),
-      ],
-    ),
-    'App Updates': NotificationCategory(
-      title: 'App Updates',
-      description: 'Stay updated with app features and promotions',
-      icon: Icons.notifications,
-      color: Colors.blue,
-      items: [
-        NotificationItem(
-          key: 'promotions',
-          title: 'Promotions & Offers',
-          description: 'Special deals and premium offers',
-        ),
-      ],
-    ),
-    'Delivery Methods': NotificationCategory(
-      title: 'Delivery Methods',
-      description: 'How you receive notifications',
-      icon: Icons.settings,
-      color: Colors.grey,
-      items: [
-        NotificationItem(
-          key: 'push_notifications',
-          title: 'Push Notifications',
-          description: 'Receive notifications on your device',
-        ),
-        NotificationItem(
-          key: 'email_notifications',
-          title: 'Email Notifications',
-          description: 'Receive notifications via email',
-        ),
-      ],
-    ),
-    'Advanced': NotificationCategory(
-      title: 'Advanced Settings',
-      description: 'Fine-tune your notification experience',
-      icon: Icons.tune,
-      color: PulseColors.primary,
-      items: [
-        NotificationItem(
-          key: 'quiet_hours',
-          title: 'Quiet Hours (10 PM - 8 AM)',
-          description: 'Disable notifications during quiet hours',
-        ),
-      ],
-    ),
-  };
+  late Map<String, NotificationCategory> _categories;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeCategories();
+  }
+
+  void _initializeCategories() {
+    _categories = {
+      'Dating Activity': NotificationCategory(
+        title: 'Dating Activity',
+        description: 'Get notified about your dating activity',
+        icon: Icons.favorite,
+        color: context.errorColor,
+        items: [
+          NotificationItem(
+            key: 'new_matches',
+            title: 'New Matches',
+            description: 'When someone matches with you',
+          ),
+          NotificationItem(
+            key: 'new_messages',
+            title: 'New Messages',
+            description: 'When you receive a new message',
+          ),
+          NotificationItem(
+            key: 'super_likes',
+            title: 'Super Likes',
+            description: 'When someone super likes you',
+          ),
+          NotificationItem(
+            key: 'profile_views',
+            title: 'Profile Views',
+            description: 'When someone views your profile',
+          ),
+        ],
+      ),
+      'App Updates': NotificationCategory(
+        title: 'App Updates',
+        description: 'Stay updated with app features and promotions',
+        icon: Icons.notifications,
+        color: Colors.blue,
+        items: [
+          NotificationItem(
+            key: 'promotions',
+            title: 'Promotions & Offers',
+            description: 'Special deals and premium offers',
+          ),
+        ],
+      ),
+      'Delivery Methods': NotificationCategory(
+        title: 'Delivery Methods',
+        description: 'How you receive notifications',
+        icon: Icons.settings,
+        color: context.borderColor,
+        items: [
+          NotificationItem(
+            key: 'push_notifications',
+            title: 'Push Notifications',
+            description: 'Receive notifications on your device',
+          ),
+          NotificationItem(
+            key: 'email_notifications',
+            title: 'Email Notifications',
+            description: 'Receive notifications via email',
+          ),
+        ],
+      ),
+      'Advanced': NotificationCategory(
+        title: 'Advanced Settings',
+        description: 'Fine-tune your notification experience',
+        icon: Icons.tune,
+        color: PulseColors.primary,
+        items: [
+          NotificationItem(
+            key: 'quiet_hours',
+            title: 'Quiet Hours (10 PM - 8 AM)',
+            description: 'Disable notifications during quiet hours',
+          ),
+        ],
+      ),
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.surfaceColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -137,7 +148,7 @@ class _NotificationPreferencesWidgetState
                   ),
                 ),
                 const SizedBox(width: 16),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -146,11 +157,15 @@ class _NotificationPreferencesWidgetState
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
+                          color: context.textPrimary,
                         ),
                       ),
                       Text(
                         'Customize how you stay connected',
-                        style: TextStyle(fontSize: 14, color: Colors.grey),
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: context.textSecondary,
+                        ),
                       ),
                     ],
                   ),
@@ -170,7 +185,7 @@ class _NotificationPreferencesWidgetState
             itemBuilder: (context, index) {
               final categoryName = _categories.keys.elementAt(index);
               final category = _categories[categoryName]!;
-              return _buildNotificationCategory(category);
+              return _buildNotificationCategory(context, category);
             },
           ),
 
@@ -178,7 +193,7 @@ class _NotificationPreferencesWidgetState
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.grey.shade50,
+              color: context.borderColor.withValues(alpha: 0.05),
               borderRadius: const BorderRadius.only(
                 bottomLeft: Radius.circular(16),
                 bottomRight: Radius.circular(16),
@@ -188,6 +203,7 @@ class _NotificationPreferencesWidgetState
               children: [
                 Expanded(
                   child: _buildQuickAction(
+                    context: context,
                     icon: Icons.volume_off,
                     label: 'Mute All',
                     onTap: _muteAll,
@@ -196,6 +212,7 @@ class _NotificationPreferencesWidgetState
                 const SizedBox(width: 16),
                 Expanded(
                   child: _buildQuickAction(
+                    context: context,
                     icon: Icons.volume_up,
                     label: 'Enable All',
                     onTap: _enableAll,
@@ -204,6 +221,7 @@ class _NotificationPreferencesWidgetState
                 const SizedBox(width: 16),
                 Expanded(
                   child: _buildQuickAction(
+                    context: context,
                     icon: Icons.refresh,
                     label: 'Reset',
                     onTap: _resetToDefaults,
@@ -217,7 +235,10 @@ class _NotificationPreferencesWidgetState
     );
   }
 
-  Widget _buildNotificationCategory(NotificationCategory category) {
+  Widget _buildNotificationCategory(
+    BuildContext context,
+    NotificationCategory category,
+  ) {
     return ExpansionTile(
       leading: Container(
         width: 32,
@@ -230,19 +251,23 @@ class _NotificationPreferencesWidgetState
       ),
       title: Text(
         category.title,
-        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          color: context.textPrimary,
+        ),
       ),
       subtitle: Text(
         category.description,
-        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+        style: TextStyle(fontSize: 12, color: context.textSecondary),
       ),
       children: category.items
-          .map((item) => _buildNotificationItem(item))
+          .map((item) => _buildNotificationItem(context, item))
           .toList(),
     );
   }
 
-  Widget _buildNotificationItem(NotificationItem item) {
+  Widget _buildNotificationItem(BuildContext context, NotificationItem item) {
     return Padding(
       padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
       child: Row(
@@ -254,14 +279,15 @@ class _NotificationPreferencesWidgetState
               children: [
                 Text(
                   item.title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
+                    color: context.textPrimary,
                   ),
                 ),
                 Text(
                   item.description,
-                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  style: TextStyle(fontSize: 12, color: context.textSecondary),
                 ),
               ],
             ),
@@ -278,6 +304,7 @@ class _NotificationPreferencesWidgetState
   }
 
   Widget _buildQuickAction({
+    required BuildContext context,
     required IconData icon,
     required String label,
     required VoidCallback onTap,
@@ -287,19 +314,19 @@ class _NotificationPreferencesWidgetState
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.surfaceColor,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey.shade300),
+          border: Border.all(color: context.borderColor.withValues(alpha: 0.2)),
         ),
         child: Column(
           children: [
-            Icon(icon, color: Colors.grey[600], size: 20),
+            Icon(icon, color: context.textSecondary, size: 20),
             const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
                 fontSize: 12,
-                color: Colors.grey[600],
+                color: context.textSecondary,
                 fontWeight: FontWeight.w500,
               ),
             ),

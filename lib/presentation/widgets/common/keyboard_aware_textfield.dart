@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:io' show Platform;
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// A wrapper around TextField/TextFormField that provides automatic keyboard handling
 /// including scroll-to-field on focus, especially optimized for iOS.
@@ -192,7 +193,10 @@ class _KeyboardAwareTextFieldState extends State<KeyboardAwareTextField> {
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
+                borderSide: BorderSide(
+                  color: context.outlineColor.withValues(alpha: 0.5),
+                  width: 1,
+                ),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -203,11 +207,11 @@ class _KeyboardAwareTextFieldState extends State<KeyboardAwareTextField> {
               ),
               errorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Colors.red, width: 1),
+                borderSide: BorderSide(color: context.errorColor, width: 1),
               ),
               focusedErrorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Colors.red, width: 2),
+                borderSide: BorderSide(color: context.errorColor, width: 2),
               ),
             ),
         onFieldSubmitted: (value) {

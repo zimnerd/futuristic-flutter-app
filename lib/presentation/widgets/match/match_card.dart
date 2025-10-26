@@ -4,6 +4,7 @@ import '../../../data/models/match_model.dart';
 import '../../../domain/entities/user_profile.dart';
 import '../common/robust_network_image.dart';
 import 'match_quality_indicators.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Card widget for displaying match information with user details
 class MatchCard extends StatelessWidget {
@@ -90,7 +91,7 @@ class MatchCard extends StatelessWidget {
                               ),
                               child: Text(
                                 '${(match.compatibilityScore * 100).round()}% match',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   color: Colors.green,
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
@@ -156,6 +157,7 @@ class MatchCard extends StatelessWidget {
                     margin: const EdgeInsets.only(right: 8),
                     decoration: BoxDecoration(
                       color: _getStatusColor(
+                        context,
                         match.status,
                       ).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
@@ -163,7 +165,7 @@ class MatchCard extends StatelessWidget {
                     child: Text(
                       match.status.toUpperCase(),
                       style: TextStyle(
-                        color: _getStatusColor(match.status),
+                        color: _getStatusColor(context, match.status),
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
                       ),
@@ -231,13 +233,17 @@ class MatchCard extends StatelessWidget {
                         ),
                       ),
                     if (onViewProfile != null)
-                      const PopupMenuItem<String>(
+                      PopupMenuItem<String>(
                         value: 'view_profile',
                         child: Row(
                           children: [
-                            Icon(Icons.person, size: 20, color: Colors.grey),
-                            SizedBox(width: 12),
-                            Text('View Profile'),
+                            Icon(
+                              Icons.person,
+                              size: 20,
+                              color: context.outlineColor,
+                            ),
+                            const SizedBox(width: 12),
+                            const Text('View Profile'),
                           ],
                         ),
                       ),
@@ -259,24 +265,32 @@ class MatchCard extends StatelessWidget {
                       ),
                     ],
                     if (onBlock != null)
-                      const PopupMenuItem<String>(
+                      PopupMenuItem<String>(
                         value: 'block',
                         child: Row(
                           children: [
-                            Icon(Icons.block, size: 20, color: Colors.red),
-                            SizedBox(width: 12),
-                            Text('Block'),
+                            Icon(
+                              Icons.block,
+                              size: 20,
+                              color: context.errorColor,
+                            ),
+                            const SizedBox(width: 12),
+                            const Text('Block'),
                           ],
                         ),
                       ),
                     if (onReport != null)
-                      const PopupMenuItem<String>(
+                      PopupMenuItem<String>(
                         value: 'report',
                         child: Row(
                           children: [
-                            Icon(Icons.flag, size: 20, color: Colors.red),
-                            SizedBox(width: 12),
-                            Text('Report'),
+                            Icon(
+                              Icons.flag,
+                              size: 20,
+                              color: context.errorColor,
+                            ),
+                            const SizedBox(width: 12),
+                            const Text('Report'),
                           ],
                         ),
                       ),
@@ -432,7 +446,7 @@ class MatchCard extends StatelessWidget {
     }
   }
 
-  Color _getStatusColor(String status) {
+  Color _getStatusColor(BuildContext context, String status) {
     switch (status.toLowerCase()) {
       case 'matched':
         return Colors.green;
@@ -441,7 +455,7 @@ class MatchCard extends StatelessWidget {
       case 'rejected':
         return Colors.red;
       case 'expired':
-        return Colors.grey;
+        return context.outlineColor;
       default:
         return Colors.blue;
     }

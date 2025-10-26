@@ -9,6 +9,7 @@ import '../../blocs/auth/auth_state.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../widgets/common/pulse_toast.dart';
 import '../chat/chat_screen.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 class SpeedDatingMatchesScreen extends StatefulWidget {
   final String eventId;
@@ -114,25 +115,25 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.surfaceColor,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.surfaceColor,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text(
+        title: Text(
           'Your Matches',
           style: TextStyle(
-            color: Colors.white,
+            color: context.onSurfaceColor,
             fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.white),
+            icon: Icon(Icons.refresh, color: Colors.white),
             onPressed: _loadMatches,
           ),
         ],
@@ -143,7 +144,7 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
 
   Widget _buildBody() {
     if (_isLoading) {
-      return const Center(
+      return Center(
         child: CircularProgressIndicator(
           valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
         ),
@@ -155,12 +156,12 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline, color: Colors.red, size: 60),
+            Icon(Icons.error_outline, color: context.errorColor, size: 60),
             const SizedBox(height: 16),
             Text(
               'Error Loading Matches',
               style: TextStyle(
-                color: Colors.white,
+                color: context.onSurfaceColor,
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
@@ -180,11 +181,11 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
             const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: _loadMatches,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
+              icon: Icon(Icons.refresh),
+              label: Text('Retry'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
+                foregroundColor: context.onSurfaceColor,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
                   vertical: 12,
@@ -231,17 +232,17 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
                 ],
               ),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.favorite_border,
               size: 60,
               color: AppColors.primary,
             ),
           ),
           const SizedBox(height: 24),
-          const Text(
+          Text(
             'No Matches Yet',
             style: TextStyle(
-              color: Colors.white,
+              color: context.onSurfaceColor,
               fontSize: 24,
               fontWeight: FontWeight.bold,
             ),
@@ -261,11 +262,11 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
           const SizedBox(height: 32),
           ElevatedButton.icon(
             onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.arrow_back),
-            label: const Text('Back to Event'),
+            icon: Icon(Icons.arrow_back),
+            label: Text('Back to Event'),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
+              foregroundColor: context.onSurfaceColor,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
           ),
@@ -295,7 +296,10 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [AppColors.surface, AppColors.surface.withValues(alpha: 0.8)],
+          colors: [
+            context.surfaceColor,
+            context.surfaceColor.withValues(alpha: 0.8),
+          ],
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
@@ -330,7 +334,7 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
                           child: Container(
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: AppColors.surface,
+                              color: context.surfaceColor,
                             ),
                             child: ClipOval(
                               child: profilePhoto != null
@@ -338,19 +342,19 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
                                       imageUrl: profilePhoto,
                                       fit: BoxFit.cover,
                                       placeholder: (context, url) =>
-                                          const Center(
+                                          Center(
                                             child: CircularProgressIndicator(
                                               strokeWidth: 2,
                                             ),
                                           ),
                                       errorWidget: (context, url, error) =>
-                                          const Icon(
+                                          Icon(
                                             Icons.person,
                                             size: 40,
                                             color: Colors.white54,
                                           ),
                                     )
-                                  : const Icon(
+                                  : Icon(
                                       Icons.person,
                                       size: 40,
                                       color: Colors.white54,
@@ -377,12 +381,15 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
                                 ],
                               ),
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: Colors.white, width: 2),
+                              border: Border.all(
+                                color: context.onSurfaceColor,
+                                width: 2,
+                              ),
                             ),
                             child: Text(
                               '$matchPercentage%',
-                              style: const TextStyle(
-                                color: Colors.white,
+                              style: TextStyle(
+                                color: context.onSurfaceColor,
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -402,8 +409,8 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
                               Flexible(
                                 child: Text(
                                   name,
-                                  style: const TextStyle(
-                                    color: Colors.white,
+                                  style: TextStyle(
+                                    color: context.onSurfaceColor,
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -522,11 +529,11 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
                   width: double.infinity,
                   child: ElevatedButton.icon(
                     onPressed: () => _startChat(match),
-                    icon: const Icon(Icons.chat_bubble_outline),
-                    label: const Text('Start Chat'),
+                    icon: Icon(Icons.chat_bubble_outline),
+                    label: Text('Start Chat'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
+                      foregroundColor: context.onSurfaceColor,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -577,7 +584,10 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [AppColors.surface, AppColors.background],
+              colors: [
+                context.surfaceColor,
+                context.surfaceColor.withValues(alpha: 0.9),
+              ],
             ),
             borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(24),
@@ -615,25 +625,25 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
                   child: Container(
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: AppColors.surface,
+                      color: context.surfaceColor,
                     ),
                     child: ClipOval(
                       child: profilePhoto != null
                           ? CachedNetworkImage(
                               imageUrl: profilePhoto,
                               fit: BoxFit.cover,
-                              placeholder: (context, url) => const Center(
+                              placeholder: (context, url) => Center(
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
                                 ),
                               ),
-                              errorWidget: (context, url, error) => const Icon(
+                              errorWidget: (context, url, error) => Icon(
                                 Icons.person,
                                 size: 60,
                                 color: Colors.white54,
                               ),
                             )
-                          : const Icon(
+                          : Icon(
                               Icons.person,
                               size: 60,
                               color: Colors.white54,
@@ -647,8 +657,8 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
               Text(
                 age != null ? '$name, $age' : name,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: context.onSurfaceColor,
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                 ),
@@ -684,10 +694,10 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
                 ),
                 child: Column(
                   children: [
-                    const Text(
+                    Text(
                       'Match Ratings',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: context.onSurfaceColor,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
@@ -764,10 +774,10 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Your Notes',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: context.onSurfaceColor,
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
                         ),
@@ -786,10 +796,10 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
               ],
               if (bio != null && bio.isNotEmpty) ...[
                 const SizedBox(height: 16),
-                const Text(
+                Text(
                   'About',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: context.onSurfaceColor,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
@@ -805,10 +815,10 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
               ],
               if (interests != null && interests.isNotEmpty) ...[
                 const SizedBox(height: 16),
-                const Text(
+                Text(
                   'Interests',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: context.onSurfaceColor,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
@@ -837,8 +847,8 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
                       ),
                       child: Text(
                         interest.toString(),
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: context.onSurfaceColor,
                           fontSize: 12,
                         ),
                       ),
@@ -853,10 +863,10 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(Icons.close),
-                      label: const Text('Close'),
+                      icon: Icon(Icons.close),
+                      label: Text('Close'),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.white,
+                        foregroundColor: context.onSurfaceColor,
                         side: BorderSide(
                           color: Colors.white.withValues(alpha: 0.3),
                         ),
@@ -875,11 +885,11 @@ class _SpeedDatingMatchesScreenState extends State<SpeedDatingMatchesScreen> {
                         Navigator.of(context).pop();
                         _startChat(match);
                       },
-                      icon: const Icon(Icons.chat_bubble),
-                      label: const Text('Start Chat'),
+                      icon: Icon(Icons.chat_bubble),
+                      label: Text('Start Chat'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
+                        foregroundColor: context.onSurfaceColor,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),

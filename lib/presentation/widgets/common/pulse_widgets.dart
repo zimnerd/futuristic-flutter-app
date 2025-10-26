@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 import 'pulse_toast.dart';
 
 /// Reusable card widget with Pulse branding
@@ -100,7 +101,7 @@ class PulseBottomSheet {
                     ),
                     if (isDismissible)
                       IconButton(
-                        icon: const Icon(Icons.close),
+                        icon: Icon(Icons.close),
                         onPressed: () => Navigator.of(context).pop(),
                       ),
                   ],
@@ -217,7 +218,7 @@ class PulseDialog {
             style: isDestructive
                 ? ElevatedButton.styleFrom(
                     backgroundColor: PulseColors.error,
-                    foregroundColor: Colors.white,
+                    foregroundColor: context.onSurfaceColor,
                   )
                 : null,
             child: Text(confirmText),

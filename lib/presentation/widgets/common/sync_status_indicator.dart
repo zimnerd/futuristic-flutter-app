@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/pulse_design_system.dart';
 import '../../../data/services/websocket_service_impl.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Sync Status Indicator Widget
 ///
@@ -191,9 +192,9 @@ class _SyncStatusIndicatorState extends State<SyncStatusIndicator>
             ),
             if (_status != ConnectionStatus.connected) ...[
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 'Messages and notifications will sync when connection is restored.',
-                style: TextStyle(fontSize: 12, color: Colors.grey),
+                style: TextStyle(fontSize: 12, color: context.outlineColor),
               ),
             ],
           ],
@@ -214,11 +215,11 @@ class _SyncStatusIndicatorState extends State<SyncStatusIndicator>
                   // Error state is handled by the connectionState stream
                 }
               },
-              child: const Text('Retry Connection'),
+              child: Text('Retry Connection'),
             ),
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+            child: Text('Close'),
           ),
         ],
       ),
@@ -231,12 +232,12 @@ class _SyncStatusIndicatorState extends State<SyncStatusIndicator>
       children: [
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontWeight: FontWeight.w500,
             color: Colors.black87,
           ),
         ),
-        Text(value, style: TextStyle(color: Colors.grey[600])),
+        Text(value, style: TextStyle(color: context.onSurfaceVariantColor)),
       ],
     );
   }

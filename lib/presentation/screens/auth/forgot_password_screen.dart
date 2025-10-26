@@ -10,6 +10,7 @@ import '../../theme/pulse_colors.dart';
 import '../../widgets/common/common_widgets.dart';
 import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 import '../../widgets/common/pulse_toast.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Enhanced forgot password screen
 class ForgotPasswordScreen extends StatefulWidget {
@@ -61,7 +62,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [PulseColors.surface, const Color(0xFFF8F9FA)],
+              colors: [Theme.of(context).colorScheme.surface, Theme.of(context).colorScheme.surfaceContainerHighest],
             ),
           ),
           child: SafeArea(
@@ -90,7 +91,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           // Back button
           IconButton(
             onPressed: () => context.go(AppRoutes.login),
-            icon: const Icon(Icons.arrow_back),
+            icon: Icon(Icons.arrow_back),
             padding: EdgeInsets.zero,
             alignment: Alignment.centerLeft,
           ),
@@ -100,7 +101,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           Text(
             'Reset Password',
             style: PulseTextStyles.displayMedium.copyWith(
-              color: PulseColors.onSurface,
+              color: Theme.of(context).colorScheme.onSurface,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -108,7 +109,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           Text(
             'Enter your email address and we\'ll send you a link to reset your password',
             style: PulseTextStyles.bodyLarge.copyWith(
-              color: PulseColors.onSurfaceVariant,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: PulseSpacing.xxl),
@@ -118,7 +119,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             controller: _emailController,
             hintText: 'Email Address',
             keyboardType: TextInputType.emailAddress,
-            prefixIcon: const Icon(Icons.email),
+            prefixIcon: Icon(Icons.email),
             validator: (value) {
               if (value?.isEmpty == true) {
                 return 'Email is required';
@@ -152,7 +153,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               Text(
                 'Remember your password? ',
                 style: PulseTextStyles.bodyMedium.copyWith(
-                  color: PulseColors.onSurfaceVariant,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
               TextButton(
@@ -183,14 +184,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             color: PulseColors.success,
             shape: BoxShape.circle,
           ),
-          child: const Icon(Icons.check, color: Colors.white, size: 40),
+          child: Icon(Icons.check, color: context.onSurfaceColor, size: 40),
         ),
         const SizedBox(height: PulseSpacing.xl),
 
         Text(
           'Check your email',
           style: PulseTextStyles.headlineLarge.copyWith(
-            color: PulseColors.onSurface,
+            color: Theme.of(context).colorScheme.onSurface,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -198,7 +199,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         Text(
           'We\'ve sent a password reset link to\n${_emailController.text}',
           style: PulseTextStyles.bodyLarge.copyWith(
-            color: PulseColors.onSurfaceVariant,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
           textAlign: TextAlign.center,
         ),

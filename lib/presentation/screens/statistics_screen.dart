@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 import '../../data/services/statistics_service.dart';
 
 // BLoC Events
@@ -141,13 +142,13 @@ class _StatisticsScreenState extends State<StatisticsScreen>
             color: Colors.white.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: const Icon(Icons.arrow_back, color: Colors.white),
+          child: Icon(Icons.arrow_back, color: Colors.white),
         ),
       ),
-      title: const Text(
+      title: Text(
         'Your Stats',
         style: TextStyle(
-          color: Colors.white,
+          color: context.onSurfaceColor,
           fontSize: 20,
           fontWeight: FontWeight.bold,
         ),
@@ -166,7 +167,7 @@ class _StatisticsScreenState extends State<StatisticsScreen>
                   color: const Color(0xFF6E3BFF).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.refresh, color: Color(0xFF6E3BFF)),
+                child: Icon(Icons.refresh, color: Color(0xFF6E3BFF)),
               ),
             );
           },
@@ -178,14 +179,14 @@ class _StatisticsScreenState extends State<StatisticsScreen>
 
   Widget _buildLoadingState() {
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [Color(0xFF0A0A0A), Color(0xFF1A1A1A)],
         ),
       ),
-      child: const Center(
+      child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -207,7 +208,7 @@ class _StatisticsScreenState extends State<StatisticsScreen>
     return FadeTransition(
       opacity: _fadeAnimation,
       child: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -259,7 +260,7 @@ class _StatisticsScreenState extends State<StatisticsScreen>
         children: [
           Row(
             children: [
-              const Text('✨', style: TextStyle(fontSize: 32)),
+              Text('✨', style: TextStyle(fontSize: 32)),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
@@ -267,8 +268,8 @@ class _StatisticsScreenState extends State<StatisticsScreen>
                   children: [
                     Text(
                       'Your Dating Journey',
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: context.onSurfaceColor,
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
@@ -314,12 +315,12 @@ class _StatisticsScreenState extends State<StatisticsScreen>
   Widget _buildSummaryItem(String label, String value, String emoji) {
     return Column(
       children: [
-        Text(emoji, style: const TextStyle(fontSize: 24)),
+        Text(emoji, style: TextStyle(fontSize: 24)),
         const SizedBox(height: 8),
         Text(
           value,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: context.onSurfaceColor,
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
@@ -347,10 +348,10 @@ class _StatisticsScreenState extends State<StatisticsScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Detailed Statistics',
           style: TextStyle(
-            color: Colors.white,
+            color: context.onSurfaceColor,
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
@@ -391,12 +392,12 @@ class _StatisticsScreenState extends State<StatisticsScreen>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(stat['icon'], style: const TextStyle(fontSize: 32)),
+          Text(stat['icon'], style: TextStyle(fontSize: 32)),
           const SizedBox(height: 12),
           Text(
             stat['value'].toString(),
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: context.onSurfaceColor,
               fontSize: 24,
               fontWeight: FontWeight.bold,
             ),
@@ -452,14 +453,14 @@ class _StatisticsScreenState extends State<StatisticsScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
               Text('💡', style: TextStyle(fontSize: 24)),
               SizedBox(width: 12),
               Text(
                 'Insights & Tips',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: context.onSurfaceColor,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
@@ -477,7 +478,7 @@ class _StatisticsScreenState extends State<StatisticsScreen>
                     width: 6,
                     height: 6,
                     margin: const EdgeInsets.only(top: 6, right: 12),
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       color: Color(0xFF6E3BFF),
                       shape: BoxShape.circle,
                     ),
@@ -520,14 +521,14 @@ class _StatisticsScreenState extends State<StatisticsScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
               Text('📈', style: TextStyle(fontSize: 24)),
               SizedBox(width: 12),
               Text(
                 'Performance Metrics',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: context.onSurfaceColor,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
@@ -577,8 +578,8 @@ class _StatisticsScreenState extends State<StatisticsScreen>
             Text(label, style: TextStyle(color: Colors.white70, fontSize: 14)),
             Text(
               displayValue,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: context.onSurfaceColor,
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
               ),
@@ -610,7 +611,7 @@ class _StatisticsScreenState extends State<StatisticsScreen>
 
   Widget _buildErrorState(BuildContext context, StatisticsError state) {
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
@@ -621,12 +622,12 @@ class _StatisticsScreenState extends State<StatisticsScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline, color: Colors.red, size: 64),
+            Icon(Icons.error_outline, color: context.errorColor, size: 64),
             const SizedBox(height: 24),
-            const Text(
+            Text(
               'Oops! Something went wrong',
               style: TextStyle(
-                color: Colors.white,
+                color: context.onSurfaceColor,
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
@@ -655,9 +656,9 @@ class _StatisticsScreenState extends State<StatisticsScreen>
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text(
+              child: Text(
                 'Try Again',
-                style: TextStyle(color: Colors.white, fontSize: 16),
+                style: TextStyle(color: context.onSurfaceColor, fontSize: 16),
               ),
             ),
           ],
@@ -668,7 +669,7 @@ class _StatisticsScreenState extends State<StatisticsScreen>
 
   Widget _buildInitialState(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
@@ -687,9 +688,9 @@ class _StatisticsScreenState extends State<StatisticsScreen>
               borderRadius: BorderRadius.circular(12),
             ),
           ),
-          child: const Text(
+          child: Text(
             'Load Statistics',
-            style: TextStyle(color: Colors.white, fontSize: 16),
+            style: TextStyle(color: context.onSurfaceColor, fontSize: 16),
           ),
         ),
       ),

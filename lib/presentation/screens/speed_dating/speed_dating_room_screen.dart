@@ -4,6 +4,7 @@ import 'package:logger/logger.dart';
 import '../../theme/pulse_colors.dart';
 import '../../../data/services/audio_call_service.dart';
 import '../../widgets/common/pulse_toast.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Speed dating room screen for audio chat
 /// Integrates Agora RTC Engine for real-time audio communication
@@ -141,26 +142,26 @@ class _SpeedDatingRoomScreenState extends State<SpeedDatingRoomScreen> {
     switch (_connectionQuality) {
       case QualityType.qualityExcellent:
       case QualityType.qualityGood:
-        return const Icon(
+        return Icon(
           Icons.signal_cellular_alt,
           color: Colors.green,
           size: 20,
         );
       case QualityType.qualityPoor:
-        return const Icon(
+        return Icon(
           Icons.signal_cellular_alt_2_bar,
           color: Colors.orange,
           size: 20,
         );
       case QualityType.qualityBad:
       case QualityType.qualityVbad:
-        return const Icon(
+        return Icon(
           Icons.signal_cellular_alt_1_bar,
-          color: Colors.red,
+          color: context.errorColor,
           size: 20,
         );
       default:
-        return const Icon(
+        return Icon(
           Icons.signal_cellular_null,
           color: Colors.grey,
           size: 20,
@@ -201,17 +202,17 @@ class _SpeedDatingRoomScreenState extends State<SpeedDatingRoomScreen> {
                             backgroundColor: PulseColors.primary.withValues(
                               alpha: 0.3,
                             ),
-                            child: const Icon(
+                            child: Icon(
                               Icons.person,
                               size: 50,
-                              color: Colors.white,
+                              color: context.onSurfaceColor,
                             ),
                           ),
                           const SizedBox(height: 16),
                           Text(
                             partnerName,
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: context.onSurfaceColor,
                               fontSize: 20,
                               fontWeight: FontWeight.w600,
                             ),
@@ -233,7 +234,7 @@ class _SpeedDatingRoomScreenState extends State<SpeedDatingRoomScreen> {
                                   ),
                                 ),
                                 const SizedBox(width: 8),
-                                const Text(
+                                Text(
                                   'Connecting audio...',
                                   style: TextStyle(
                                     color: Colors.white70,
@@ -252,7 +253,7 @@ class _SpeedDatingRoomScreenState extends State<SpeedDatingRoomScreen> {
                                   color: PulseColors.primary,
                                 ),
                                 const SizedBox(width: 4),
-                                const Text(
+                                Text(
                                   'Audio connected',
                                   style: TextStyle(
                                     color: Colors.white70,
@@ -287,17 +288,17 @@ class _SpeedDatingRoomScreenState extends State<SpeedDatingRoomScreen> {
                                   radius: 40,
                                   backgroundColor: PulseColors.secondary
                                       .withValues(alpha: 0.3),
-                                  child: const Icon(
+                                  child: Icon(
                                     Icons.videocam_off,
                                     size: 40,
-                                    color: Colors.white,
+                                    color: context.onSurfaceColor,
                                   ),
                                 ),
                                 const SizedBox(height: 12),
-                                const Text(
+                                Text(
                                   'Camera Off',
                                   style: TextStyle(
-                                    color: Colors.white,
+                                    color: context.onSurfaceColor,
                                     fontSize: 16,
                                   ),
                                 ),
@@ -310,11 +311,11 @@ class _SpeedDatingRoomScreenState extends State<SpeedDatingRoomScreen> {
                                 ),
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              child: const Center(
+                              child: Center(
                                 child: Text(
                                   'Your Video',
                                   style: TextStyle(
-                                    color: Colors.white,
+                                    color: context.onSurfaceColor,
                                     fontSize: 16,
                                   ),
                                 ),
@@ -353,8 +354,8 @@ class _SpeedDatingRoomScreenState extends State<SpeedDatingRoomScreen> {
                       ),
                       child: Text(
                         timeRemaining,
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: context.onSurfaceColor,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -363,8 +364,8 @@ class _SpeedDatingRoomScreenState extends State<SpeedDatingRoomScreen> {
                     Expanded(
                       child: Text(
                         'Speed Dating with $partnerName',
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: context.onSurfaceColor,
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
                         ),
@@ -402,7 +403,7 @@ class _SpeedDatingRoomScreenState extends State<SpeedDatingRoomScreen> {
                       ),
                       child: Icon(
                         _isMuted ? Icons.mic_off : Icons.mic,
-                        color: Colors.white,
+                        color: context.onSurfaceColor,
                         size: 24,
                       ),
                     ),
@@ -418,13 +419,13 @@ class _SpeedDatingRoomScreenState extends State<SpeedDatingRoomScreen> {
                     },
                     child: Container(
                       padding: const EdgeInsets.all(20),
-                      decoration: const BoxDecoration(
-                        color: Colors.red,
+                      decoration: BoxDecoration(
+                        color: context.errorColor,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.call_end,
-                        color: Colors.white,
+                        color: context.onSurfaceColor,
                         size: 28,
                       ),
                     ),
@@ -447,7 +448,7 @@ class _SpeedDatingRoomScreenState extends State<SpeedDatingRoomScreen> {
                       ),
                       child: Icon(
                         _isCameraOff ? Icons.videocam_off : Icons.videocam,
-                        color: Colors.white,
+                        color: context.onSurfaceColor,
                         size: 24,
                       ),
                     ),
@@ -477,9 +478,9 @@ class _SpeedDatingRoomScreenState extends State<SpeedDatingRoomScreen> {
                           ),
                         ],
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.favorite,
-                        color: Colors.white,
+                        color: context.onSurfaceColor,
                         size: 24,
                       ),
                     ),
@@ -500,9 +501,9 @@ class _SpeedDatingRoomScreenState extends State<SpeedDatingRoomScreen> {
                           ),
                         ],
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.close,
-                        color: Colors.white,
+                        color: context.onSurfaceColor,
                         size: 24,
                       ),
                     ),
@@ -532,7 +533,7 @@ class _SpeedDatingRoomScreenState extends State<SpeedDatingRoomScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Continue'),
+            child: Text('Continue'),
           ),
         ],
       ),

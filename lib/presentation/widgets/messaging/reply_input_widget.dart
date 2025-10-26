@@ -5,6 +5,7 @@ import '../../../data/models/message.dart';
 import '../../../domain/entities/message.dart' show MessageType;
 import '../../../blocs/chat_bloc.dart';
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Reply input widget for threaded conversations
 class ReplyInputWidget extends StatefulWidget {
@@ -108,7 +109,7 @@ class _ReplyInputWidgetState extends State<ReplyInputWidget>
       position: _slideAnimation,
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.onSurfaceColor,
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.1),
@@ -137,13 +138,13 @@ class _ReplyInputWidgetState extends State<ReplyInputWidget>
                     child: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Colors.grey[200],
+                        color: context.outlineColor.withValues(alpha: 0.15),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.close,
                         size: 20,
-                        color: Colors.grey,
+                        color: context.outlineColor,
                       ),
                     ),
                   ),
@@ -156,7 +157,9 @@ class _ReplyInputWidgetState extends State<ReplyInputWidget>
                       decoration: BoxDecoration(
                         color: Colors.grey[100],
                         borderRadius: BorderRadius.circular(25),
-                        border: Border.all(color: Colors.grey[300]!),
+                        border: Border.all(
+                          color: context.outlineColor.withValues(alpha: 0.3),
+                        ),
                       ),
                       child: TextField(
                         controller: _textController,
@@ -167,7 +170,7 @@ class _ReplyInputWidgetState extends State<ReplyInputWidget>
                         decoration: InputDecoration(
                           hintText: 'Reply to ${_getSenderName()}...',
                           hintStyle: TextStyle(
-                            color: Colors.grey[500],
+                            color: context.onSurfaceVariantColor.withValues(alpha: 0.6),
                             fontSize: 15,
                           ),
                           border: InputBorder.none,
@@ -191,10 +194,10 @@ class _ReplyInputWidgetState extends State<ReplyInputWidget>
                         color: PulseColors.primary,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.send,
                         size: 20,
-                        color: Colors.white,
+                        color: context.onSurfaceColor,
                       ),
                     ),
                   ),
@@ -213,7 +216,11 @@ class _ReplyInputWidgetState extends State<ReplyInputWidget>
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.grey[50],
-        border: Border(bottom: BorderSide(color: Colors.grey[200]!)),
+        border: Border(
+          bottom: BorderSide(
+            color: context.outlineColor.withValues(alpha: 0.15)!,
+          ),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -236,7 +243,7 @@ class _ReplyInputWidgetState extends State<ReplyInputWidget>
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: context.onSurfaceColor,
               borderRadius: BorderRadius.circular(12),
               border: Border(
                 left: BorderSide(color: PulseColors.primary, width: 3),
@@ -247,14 +254,20 @@ class _ReplyInputWidgetState extends State<ReplyInputWidget>
               children: [
                 Text(
                   _getPreviewContent(),
-                  style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: context.onSurfaceVariantColor,
+                  ),
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
                 Text(
                   _formatTimestamp(widget.originalMessage.createdAt),
-                  style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: context.onSurfaceVariantColor.withValues(alpha: 0.6),
+                  ),
                 ),
               ],
             ),

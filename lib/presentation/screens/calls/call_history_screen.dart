@@ -6,6 +6,7 @@ import '../../blocs/call_history/call_history_barrel.dart';
 import '../../widgets/common/loading_indicator.dart';
 import '../../widgets/common/pulse_toast.dart';
 import 'call_details_screen.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Screen for displaying call history with filters and pagination
 class CallHistoryScreen extends StatefulWidget {
@@ -89,10 +90,10 @@ class _CallHistoryScreenState extends State<CallHistoryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Call History'),
+        title: Text('Call History'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.filter_list),
+            icon: Icon(Icons.filter_list),
             onPressed: _showFilterDialog,
             tooltip: 'Filter calls',
           ),
@@ -108,7 +109,7 @@ class _CallHistoryScreenState extends State<CallHistoryScreen> {
         },
         builder: (context, state) {
           if (state is CallHistoryLoading) {
-            return const Center(child: LoadingIndicator());
+            return Center(child: LoadingIndicator());
           }
 
           if (state is CallHistoryLoaded) {
@@ -142,7 +143,7 @@ class _CallHistoryScreenState extends State<CallHistoryScreen> {
           }
 
           // Initial state
-          return const Center(child: Text('Pull down to refresh call history'));
+          return Center(child: Text('Pull down to refresh call history'));
         },
       ),
     );
@@ -161,13 +162,20 @@ class _CallHistoryScreenState extends State<CallHistoryScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.call_end, size: 64, color: Colors.grey[400]),
+                    Icon(
+                      Icons.call_end,
+                      size: 64,
+                      color: context.outlineColor.withValues(alpha: 0.2),
+                    ),
                     const SizedBox(height: 16),
                     Text(
                       _currentFilters != null
                           ? 'No calls found with current filters'
                           : 'No call history yet',
-                      style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: context.onSurfaceVariantColor,
+                      ),
                     ),
                     if (_currentFilters != null) ...[
                       const SizedBox(height: 8),
@@ -180,7 +188,7 @@ class _CallHistoryScreenState extends State<CallHistoryScreen> {
                             const ApplyCallHistoryFilters(),
                           );
                         },
-                        child: const Text('Clear filters'),
+                        child: Text('Clear filters'),
                       ),
                     ],
                   ],
@@ -229,7 +237,11 @@ class _CallHistoryScreenState extends State<CallHistoryScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
-        border: Border(bottom: BorderSide(color: Colors.grey[300]!)),
+        border: Border(
+          bottom: BorderSide(
+            color: context.outlineColor.withValues(alpha: 0.3),
+          ),
+        ),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -279,7 +291,10 @@ class _CallHistoryScreenState extends State<CallHistoryScreen> {
             color: color,
           ),
         ),
-        Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+        Text(
+          label,
+          style: TextStyle(fontSize: 12, color: context.onSurfaceVariantColor),
+        ),
       ],
     );
   }
@@ -310,7 +325,7 @@ class _CallHistoryScreenState extends State<CallHistoryScreen> {
                 const ApplyCallHistoryFilters(),
               );
             },
-            child: const Text('Clear'),
+            child: Text('Clear'),
           ),
         ],
       ),
@@ -333,26 +348,28 @@ class _CallHistoryScreenState extends State<CallHistoryScreen> {
       background: Container(
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
-        color: Colors.red,
-        child: const Icon(Icons.delete, color: Colors.white),
+        color: context.errorColor,
+        child: Icon(Icons.delete, color: Colors.white),
       ),
       confirmDismiss: (direction) async {
         return await showDialog<bool>(
           context: context,
           builder: (dialogContext) => AlertDialog(
-            title: const Text('Delete Call'),
-            content: const Text(
+            title: Text('Delete Call'),
+            content: Text(
               'Are you sure you want to delete this call from your history?',
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(dialogContext, false),
-                child: const Text('Cancel'),
+                child: Text('Cancel'),
               ),
               TextButton(
                 onPressed: () => Navigator.pop(dialogContext, true),
-                style: TextButton.styleFrom(foregroundColor: Colors.red),
-                child: const Text('Delete'),
+                style: TextButton.styleFrom(
+                  foregroundColor: context.errorColor,
+                ),
+                child: Text('Delete'),
               ),
             ],
           ),
@@ -372,7 +389,7 @@ class _CallHistoryScreenState extends State<CallHistoryScreen> {
         ),
         title: Text(
           otherParticipant.user.displayName,
-          style: const TextStyle(fontWeight: FontWeight.w500),
+          style: TextStyle(fontWeight: FontWeight.w500),
         ),
         subtitle: Row(
           children: [
@@ -380,7 +397,10 @@ class _CallHistoryScreenState extends State<CallHistoryScreen> {
             const SizedBox(width: 4),
             Text(
               _formatCallInfo(call),
-              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+              style: TextStyle(
+                fontSize: 12,
+                color: context.onSurfaceVariantColor,
+              ),
             ),
             if (call.averageQuality != null) ...[
               const SizedBox(width: 8),
@@ -425,7 +445,7 @@ class _CallHistoryScreenState extends State<CallHistoryScreen> {
       case 'FAILED':
         return Colors.red;
       default:
-        return Colors.grey;
+        return context.outlineColor;
     }
   }
 
@@ -492,13 +512,13 @@ class _FilterDialogState extends State<_FilterDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Filter Calls'),
+      title: Text('Filter Calls'),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Call Type',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
@@ -507,19 +527,19 @@ class _FilterDialogState extends State<_FilterDialog> {
               spacing: 8,
               children: [
                 ChoiceChip(
-                  label: const Text('All'),
+                  label: Text('All'),
                   selected: _selectedType == null,
                   onSelected: (selected) =>
                       setState(() => _selectedType = null),
                 ),
                 ChoiceChip(
-                  label: const Text('Video'),
+                  label: Text('Video'),
                   selected: _selectedType == 'VIDEO',
                   onSelected: (selected) =>
                       setState(() => _selectedType = selected ? 'VIDEO' : null),
                 ),
                 ChoiceChip(
-                  label: const Text('Audio'),
+                  label: Text('Audio'),
                   selected: _selectedType == 'AUDIO',
                   onSelected: (selected) =>
                       setState(() => _selectedType = selected ? 'AUDIO' : null),
@@ -527,33 +547,33 @@ class _FilterDialogState extends State<_FilterDialog> {
               ],
             ),
             const SizedBox(height: 16),
-            const Text('Status', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text('Status', style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
               children: [
                 ChoiceChip(
-                  label: const Text('All'),
+                  label: Text('All'),
                   selected: _selectedStatus == null,
                   onSelected: (selected) =>
                       setState(() => _selectedStatus = null),
                 ),
                 ChoiceChip(
-                  label: const Text('Completed'),
+                  label: Text('Completed'),
                   selected: _selectedStatus == 'ANSWERED',
                   onSelected: (selected) => setState(
                     () => _selectedStatus = selected ? 'ANSWERED' : null,
                   ),
                 ),
                 ChoiceChip(
-                  label: const Text('Missed'),
+                  label: Text('Missed'),
                   selected: _selectedStatus == 'MISSED',
                   onSelected: (selected) => setState(
                     () => _selectedStatus = selected ? 'MISSED' : null,
                   ),
                 ),
                 ChoiceChip(
-                  label: const Text('Rejected'),
+                  label: Text('Rejected'),
                   selected: _selectedStatus == 'REJECTED',
                   onSelected: (selected) => setState(
                     () => _selectedStatus = selected ? 'REJECTED' : null,
@@ -562,7 +582,7 @@ class _FilterDialogState extends State<_FilterDialog> {
               ],
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'Date Range',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
@@ -582,12 +602,12 @@ class _FilterDialogState extends State<_FilterDialog> {
                         setState(() => _startDate = date);
                       }
                     },
-                    icon: const Icon(Icons.calendar_today, size: 16),
+                    icon: Icon(Icons.calendar_today, size: 16),
                     label: Text(
                       _startDate != null
                           ? DateFormat('MMM d, y').format(_startDate!)
                           : 'Start Date',
-                      style: const TextStyle(fontSize: 12),
+                      style: TextStyle(fontSize: 12),
                     ),
                   ),
                 ),
@@ -605,12 +625,12 @@ class _FilterDialogState extends State<_FilterDialog> {
                         setState(() => _endDate = date);
                       }
                     },
-                    icon: const Icon(Icons.calendar_today, size: 16),
+                    icon: Icon(Icons.calendar_today, size: 16),
                     label: Text(
                       _endDate != null
                           ? DateFormat('MMM d, y').format(_endDate!)
                           : 'End Date',
-                      style: const TextStyle(fontSize: 12),
+                      style: TextStyle(fontSize: 12),
                     ),
                   ),
                 ),
@@ -629,11 +649,11 @@ class _FilterDialogState extends State<_FilterDialog> {
               _endDate = null;
             });
           },
-          child: const Text('Clear All'),
+          child: Text('Clear All'),
         ),
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text('Cancel'),
         ),
         ElevatedButton(
           onPressed: () {
@@ -652,7 +672,7 @@ class _FilterDialogState extends State<_FilterDialog> {
             widget.onApplyFilters(filters);
             Navigator.pop(context);
           },
-          child: const Text('Apply'),
+          child: Text('Apply'),
         ),
       ],
     );

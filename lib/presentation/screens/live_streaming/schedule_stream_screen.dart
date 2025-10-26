@@ -10,6 +10,7 @@ import '../../blocs/live_streaming/live_streaming_bloc.dart';
 import '../../blocs/live_streaming/live_streaming_event.dart';
 import '../../blocs/live_streaming/live_streaming_state.dart';
 import '../../widgets/common/pulse_toast.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Screen for scheduling a future live stream
 /// Can also be used to edit an existing scheduled stream
@@ -302,15 +303,15 @@ class _ScheduleStreamScreenState extends State<ScheduleStreamScreen> {
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            icon: Icon(Icons.arrow_back, color: Colors.white),
             onPressed: () => Navigator.of(context).pop(),
           ),
           title: Text(
             widget.streamToEdit != null
                 ? 'Edit Scheduled Stream'
                 : 'Schedule Stream',
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: context.onSurfaceColor,
               fontSize: 20,
               fontWeight: FontWeight.w600,
             ),
@@ -326,12 +327,12 @@ class _ScheduleStreamScreenState extends State<ScheduleStreamScreen> {
                   // Title field
                   TextFormField(
                     controller: _titleController,
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(color: Colors.white),
                     decoration: InputDecoration(
                       labelText: 'Title *',
-                      labelStyle: const TextStyle(color: Colors.grey),
+                      labelStyle: TextStyle(color: context.outlineColor),
                       hintText: 'Enter stream title',
-                      hintStyle: const TextStyle(color: Colors.grey),
+                      hintStyle: TextStyle(color: context.outlineColor),
                       filled: true,
                       fillColor: _fieldFillColor,
                       border: OutlineInputBorder(
@@ -367,13 +368,13 @@ class _ScheduleStreamScreenState extends State<ScheduleStreamScreen> {
                   // Description field
                   TextFormField(
                     controller: _descriptionController,
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(color: Colors.white),
                     maxLines: 4,
                     decoration: InputDecoration(
                       labelText: 'Description',
-                      labelStyle: const TextStyle(color: Colors.grey),
+                      labelStyle: TextStyle(color: context.outlineColor),
                       hintText: 'Describe what your stream is about',
-                      hintStyle: const TextStyle(color: Colors.grey),
+                      hintStyle: TextStyle(color: context.outlineColor),
                       filled: true,
                       fillColor: _fieldFillColor,
                       border: OutlineInputBorder(
@@ -421,10 +422,10 @@ class _ScheduleStreamScreenState extends State<ScheduleStreamScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
+                                Text(
                                   'Scheduled Date & Time *',
                                   style: TextStyle(
-                                    color: Colors.grey,
+                                    color: context.outlineColor,
                                     fontSize: 12,
                                   ),
                                 ),
@@ -435,15 +436,18 @@ class _ScheduleStreamScreenState extends State<ScheduleStreamScreen> {
                                       : DateFormat(
                                           'MMM dd, yyyy • hh:mm a',
                                         ).format(_selectedDateTime!),
-                                  style: const TextStyle(
-                                    color: Colors.white,
+                                  style: TextStyle(
+                                    color: context.onSurfaceColor,
                                     fontSize: 16,
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                          const Icon(Icons.chevron_right, color: Colors.grey),
+                          Icon(
+                            Icons.chevron_right,
+                            color: context.outlineColor,
+                          ),
                         ],
                       ),
                     ),
@@ -461,9 +465,12 @@ class _ScheduleStreamScreenState extends State<ScheduleStreamScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'Stream Type',
-                          style: TextStyle(color: Colors.grey, fontSize: 12),
+                          style: TextStyle(
+                            color: context.outlineColor,
+                            fontSize: 12,
+                          ),
                         ),
                         const SizedBox(height: 8),
                         Row(
@@ -512,10 +519,10 @@ class _ScheduleStreamScreenState extends State<ScheduleStreamScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text(
+                            Text(
                               'Max Viewers',
                               style: TextStyle(
-                                color: Colors.grey,
+                                color: context.outlineColor,
                                 fontSize: 12,
                               ),
                             ),
@@ -532,7 +539,7 @@ class _ScheduleStreamScreenState extends State<ScheduleStreamScreen> {
                         SliderTheme(
                           data: SliderTheme.of(context).copyWith(
                             activeTrackColor: Theme.of(context).primaryColor,
-                            inactiveTrackColor: Colors.grey,
+                            inactiveTrackColor: context.outlineColor,
                             thumbColor: Theme.of(context).primaryColor,
                           ),
                           child: Slider(
@@ -562,20 +569,20 @@ class _ScheduleStreamScreenState extends State<ScheduleStreamScreen> {
                       ),
                       child:
                           _localThumbnailPath == null && _thumbnailUrl == null
-                          ? const Center(
+                          ? Center(
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Icon(
                                     Icons.add_photo_alternate,
-                                    color: Colors.grey,
+                                    color: context.outlineColor,
                                     size: 48,
                                   ),
                                   SizedBox(height: 8),
                                   Text(
                                     'Add Thumbnail (Optional)',
                                     style: TextStyle(
-                                      color: Colors.grey,
+                                      color: context.outlineColor,
                                       fontSize: 14,
                                     ),
                                   ),
@@ -594,10 +601,10 @@ class _ScheduleStreamScreenState extends State<ScheduleStreamScreen> {
                                           fit: BoxFit.cover,
                                           errorBuilder:
                                               (context, error, stackTrace) {
-                                                return const Center(
+                                                return Center(
                                                   child: Icon(
                                                     Icons.broken_image,
-                                                    color: Colors.grey,
+                                                    color: context.outlineColor,
                                                     size: 48,
                                                   ),
                                                 );
@@ -610,10 +617,10 @@ class _ScheduleStreamScreenState extends State<ScheduleStreamScreen> {
                                           fit: BoxFit.cover,
                                           errorBuilder:
                                               (context, error, stackTrace) {
-                                                return const Center(
+                                                return Center(
                                                   child: Icon(
                                                     Icons.broken_image,
-                                                    color: Colors.grey,
+                                                    color: context.outlineColor,
                                                     size: 48,
                                                   ),
                                                 );
@@ -629,7 +636,7 @@ class _ScheduleStreamScreenState extends State<ScheduleStreamScreen> {
                                         ),
                                         borderRadius: BorderRadius.circular(12),
                                       ),
-                                      child: const Center(
+                                      child: Center(
                                         child: Column(
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
@@ -643,7 +650,7 @@ class _ScheduleStreamScreenState extends State<ScheduleStreamScreen> {
                                             Text(
                                               'Uploading thumbnail...',
                                               style: TextStyle(
-                                                color: Colors.white,
+                                                color: context.onSurfaceColor,
                                                 fontSize: 14,
                                               ),
                                             ),
@@ -664,9 +671,9 @@ class _ScheduleStreamScreenState extends State<ScheduleStreamScreen> {
                                         shape: BoxShape.circle,
                                       ),
                                       child: IconButton(
-                                        icon: const Icon(
+                                        icon: Icon(
                                           Icons.close,
-                                          color: Colors.white,
+                                          color: context.onSurfaceColor,
                                           size: 20,
                                         ),
                                         onPressed: () {
@@ -687,12 +694,12 @@ class _ScheduleStreamScreenState extends State<ScheduleStreamScreen> {
                   // Tags field
                   TextFormField(
                     controller: _tagsController,
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(color: Colors.white),
                     decoration: InputDecoration(
                       labelText: 'Tags',
-                      labelStyle: const TextStyle(color: Colors.grey),
+                      labelStyle: TextStyle(color: context.outlineColor),
                       hintText: 'Enter tags separated by commas',
-                      hintStyle: const TextStyle(color: Colors.grey),
+                      hintStyle: TextStyle(color: context.outlineColor),
                       filled: true,
                       fillColor: _fieldFillColor,
                       border: OutlineInputBorder(
@@ -723,12 +730,15 @@ class _ScheduleStreamScreenState extends State<ScheduleStreamScreen> {
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.warning_amber, color: Colors.orange),
+                        Icon(Icons.warning_amber, color: Colors.orange),
                         const SizedBox(width: 12),
-                        const Expanded(
+                        Expanded(
                           child: Text(
                             'Adults Only (18+)',
-                            style: TextStyle(color: Colors.white, fontSize: 16),
+                            style: TextStyle(
+                              color: context.onSurfaceColor,
+                              fontSize: 16,
+                            ),
                           ),
                         ),
                         Switch(
@@ -758,7 +768,7 @@ class _ScheduleStreamScreenState extends State<ScheduleStreamScreen> {
                         : _scheduleStream,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Theme.of(context).primaryColor,
-                      foregroundColor: Colors.white,
+                      foregroundColor: context.onSurfaceColor,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -792,7 +802,7 @@ class _ScheduleStreamScreenState extends State<ScheduleStreamScreen> {
                             widget.streamToEdit != null
                                 ? 'Update Stream'
                                 : 'Schedule Stream',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                             ),
@@ -806,7 +816,7 @@ class _ScheduleStreamScreenState extends State<ScheduleStreamScreen> {
             if (_isLoading)
               Container(
                 color: Colors.black.withValues(alpha: 0.5),
-                child: const Center(child: CircularProgressIndicator()),
+                child: Center(child: CircularProgressIndicator()),
               ),
           ],
         ),
@@ -835,7 +845,9 @@ class _ScheduleStreamScreenState extends State<ScheduleStreamScreen> {
           children: [
             Icon(
               icon,
-              color: isSelected ? Theme.of(context).primaryColor : Colors.grey,
+              color: isSelected
+                  ? Theme.of(context).primaryColor
+                  : context.outlineColor,
               size: 24,
             ),
             const SizedBox(height: 4),
@@ -844,7 +856,7 @@ class _ScheduleStreamScreenState extends State<ScheduleStreamScreen> {
               style: TextStyle(
                 color: isSelected
                     ? Theme.of(context).primaryColor
-                    : Colors.grey,
+                    : context.outlineColor,
                 fontSize: 12,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),

@@ -13,6 +13,7 @@ import '../../../domain/entities/discovery_types.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/pulse_button.dart';
 import '../../widgets/common/pulse_toast.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Screen for managing dating filter preferences
 class FiltersScreen extends StatefulWidget {
@@ -35,7 +36,7 @@ class _FiltersScreenState extends State<FiltersScreen> {
       appBar: AppBar(
         title: Text('Filter Preferences', style: PulseTextStyles.titleLarge),
         backgroundColor: PulseColors.primary,
-        foregroundColor: Colors.white,
+        foregroundColor: context.onSurfaceColor,
         actions: [
           TextButton(
             onPressed: () {
@@ -44,7 +45,7 @@ class _FiltersScreenState extends State<FiltersScreen> {
             child: Text(
               'Reset',
               style: PulseTextStyles.bodyLarge.copyWith(
-                color: Colors.white,
+                color: context.onSurfaceColor,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -64,7 +65,7 @@ class _FiltersScreenState extends State<FiltersScreen> {
         },
         builder: (context, state) {
           if (state is FilterLoading) {
-            return const Center(
+            return Center(
               child: CircularProgressIndicator(color: PulseColors.primary),
             );
           }
@@ -219,12 +220,12 @@ class _FiltersScreenState extends State<FiltersScreen> {
                 ),
                 selected: isSelected,
                 selectedColor: PulseColors.primary,
-                backgroundColor: Colors.grey.shade200,
+                backgroundColor: context.outlineColor.withValues(alpha: 0.1),
                 checkmarkColor: Colors.white,
                 side: BorderSide(
                   color: isSelected
                       ? PulseColors.primary
-                      : Colors.grey.shade300,
+                      : context.outlineColor.withValues(alpha: 0.5),
                   width: 1.5,
                 ),
                 showCheckmark: true,
@@ -553,7 +554,7 @@ class _FiltersScreenState extends State<FiltersScreen> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.onSurfaceColor,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.1),
@@ -574,7 +575,7 @@ class _FiltersScreenState extends State<FiltersScreen> {
                   showHeatMapModal(context);
                 },
                 variant: PulseButtonVariant.secondary,
-                icon: const Icon(Icons.map, size: 20),
+                icon: Icon(Icons.map, size: 20),
               ),
             ),
             const SizedBox(height: 12),
@@ -603,7 +604,7 @@ class _FiltersScreenState extends State<FiltersScreen> {
         ),
         Container(
           color: Colors.black.withValues(alpha: 0.3),
-          child: const Center(
+          child: Center(
             child: Card(
               child: Padding(
                 padding: EdgeInsets.all(PulseSpacing.lg),

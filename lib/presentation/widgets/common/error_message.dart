@@ -34,8 +34,8 @@ class ErrorMessage extends StatelessWidget {
           const SizedBox(height: 24),
           ElevatedButton.icon(
             onPressed: onRetry,
-            icon: const Icon(Icons.refresh),
-            label: const Text('Try Again'),
+            icon: Icon(Icons.refresh),
+            label: Text('Try Again'),
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               shape: RoundedRectangleBorder(

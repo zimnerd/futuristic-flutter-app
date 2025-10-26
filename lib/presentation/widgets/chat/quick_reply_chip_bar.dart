@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../theme/pulse_colors.dart';
 import '../../../core/utils/logger.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Quick Reply Chip Bar Widget
 ///
@@ -83,7 +84,12 @@ class _QuickReplyChipBarState extends State<QuickReplyChipBar>
         padding: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
           color: Colors.grey[50],
-          border: Border(top: BorderSide(color: Colors.grey[200]!, width: 1)),
+          border: Border(
+            top: BorderSide(
+              color: context.outlineColor.withValues(alpha: 0.15)!,
+              width: 1,
+            ),
+          ),
         ),
         child: widget.isLoading ? _buildShimmerLoading() : _buildChipList(),
       ),
@@ -99,13 +105,13 @@ class _QuickReplyChipBarState extends State<QuickReplyChipBar>
       separatorBuilder: (context, index) => const SizedBox(width: 8),
       itemBuilder: (context, index) {
         return Shimmer.fromColors(
-          baseColor: Colors.grey[300]!,
+          baseColor: context.outlineColor.withValues(alpha: 0.3),
           highlightColor: Colors.grey[100]!,
           child: Container(
             width: 120,
             height: 36,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: context.onSurfaceColor,
               borderRadius: BorderRadius.circular(18),
             ),
           ),
@@ -144,12 +150,12 @@ class _QuickReplyChipBarState extends State<QuickReplyChipBar>
       background: Container(
         alignment: Alignment.centerLeft,
         padding: const EdgeInsets.only(left: 16),
-        child: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+        child: Icon(Icons.delete_outline, color: context.errorColor, size: 20),
       ),
       secondaryBackground: Container(
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 16),
-        child: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+        child: Icon(Icons.delete_outline, color: context.errorColor, size: 20),
       ),
       child: _buildSuggestionChip(suggestion),
     );

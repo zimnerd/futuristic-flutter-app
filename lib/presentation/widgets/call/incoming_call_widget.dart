@@ -8,6 +8,7 @@ import '../../../data/services/messaging_service.dart';
 import '../../../core/network/api_client.dart';
 import '../common/robust_network_image.dart';
 import '../common/pulse_toast.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Widget for displaying incoming call UI
 class IncomingCallWidget extends StatefulWidget {
@@ -67,7 +68,7 @@ class _IncomingCallWidgetState extends State<IncomingCallWidget>
       body: SlideTransition(
         position: _slideAnimation,
         child: Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -103,8 +104,8 @@ class _IncomingCallWidgetState extends State<IncomingCallWidget>
         children: [
           Text(
             'Incoming ${widget.call.type.name.toUpperCase()} call',
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: context.onSurfaceColor,
               fontSize: 16,
               fontWeight: FontWeight.w500,
             ),
@@ -122,16 +123,16 @@ class _IncomingCallWidgetState extends State<IncomingCallWidget>
                 Container(
                   width: 8,
                   height: 8,
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: Colors.greenAccent,
                   ),
                 ),
                 const SizedBox(width: 8),
-                const Text(
+                Text(
                   'Ringing...',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: context.onSurfaceColor,
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),
@@ -186,8 +187,8 @@ class _IncomingCallWidgetState extends State<IncomingCallWidget>
           // Caller name
           Text(
             callerProfile?.name ?? 'Unknown Caller',
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: context.onSurfaceColor,
               fontSize: 28,
               fontWeight: FontWeight.w600,
             ),
@@ -239,7 +240,7 @@ class _IncomingCallWidgetState extends State<IncomingCallWidget>
   Widget _buildDefaultAvatar() {
     return Container(
       decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2)),
-      child: const Icon(Icons.person, size: 80, color: Colors.white),
+      child: Icon(Icons.person, size: 80, color: Colors.white),
     );
   }
 
@@ -252,7 +253,7 @@ class _IncomingCallWidgetState extends State<IncomingCallWidget>
           // Decline button
           _buildActionButton(
             icon: Icons.call_end,
-            color: Colors.red,
+            color: context.errorColor,
             onTap: () => _declineCall(),
             label: 'Decline',
           ),
@@ -317,8 +318,8 @@ class _IncomingCallWidgetState extends State<IncomingCallWidget>
         const SizedBox(height: 8),
         Text(
           label,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: context.onSurfaceColor,
             fontSize: 12,
             fontWeight: FontWeight.w500,
           ),
@@ -349,7 +350,7 @@ class _IncomingCallWidgetState extends State<IncomingCallWidget>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Send Quick Message'),
+        title: Text('Send Quick Message'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: quickMessages
@@ -368,7 +369,7 @@ class _IncomingCallWidgetState extends State<IncomingCallWidget>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
         ],
       ),

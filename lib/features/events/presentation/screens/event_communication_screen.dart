@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 import '../../../../presentation/theme/pulse_colors.dart';
 import '../../../../domain/entities/event.dart';
@@ -54,7 +55,7 @@ class _EventCommunicationScreenState extends State<EventCommunicationScreen>
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            icon: Icon(Icons.arrow_back, color: Colors.white),
             onPressed: () => context.pop(),
           ),
           title: Column(
@@ -77,8 +78,8 @@ class _EventCommunicationScreenState extends State<EventCommunicationScreen>
           bottom: TabBar(
             controller: _tabController,
             indicatorColor: PulseColors.secondary,
-            labelColor: Colors.white,
-            unselectedLabelColor: Colors.white70,
+            labelStyle: const TextStyle(color: Colors.white),
+            unselectedLabelStyle: const TextStyle(color: Colors.white70),
             tabs: const [
               Tab(icon: Icon(Icons.chat), text: 'Chat'),
               Tab(icon: Icon(Icons.call), text: 'Voice'),
@@ -122,14 +123,14 @@ class _EventCommunicationScreenState extends State<EventCommunicationScreen>
                         Icon(
                           Icons.error_outline,
                           size: 64,
-                          color: Colors.grey[400],
+                          color: context.outlineColor.withValues(alpha: 0.5),
                         ),
                         const SizedBox(height: 16),
                         Text(
                           state.message,
                           style: TextStyle(
                             fontSize: 16,
-                            color: Colors.grey[600],
+                            color: context.onSurfaceVariantColor,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -144,7 +145,7 @@ class _EventCommunicationScreenState extends State<EventCommunicationScreen>
                             backgroundColor: PulseColors.primary,
                             foregroundColor: Colors.white,
                           ),
-                          child: const Text('Retry'),
+                          child: Text('Retry'),
                         ),
                       ],
                     ),
@@ -163,7 +164,7 @@ class _EventCommunicationScreenState extends State<EventCommunicationScreen>
                           Icon(
                             Icons.chat_bubble_outline,
                             size: 64,
-                            color: Colors.grey[400],
+                            color: context.outlineColor.withValues(alpha: 0.5),
                           ),
                           const SizedBox(height: 16),
                           Text(
@@ -171,7 +172,7 @@ class _EventCommunicationScreenState extends State<EventCommunicationScreen>
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w500,
-                              color: Colors.grey[600],
+                              color: context.onSurfaceVariantColor,
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -179,7 +180,9 @@ class _EventCommunicationScreenState extends State<EventCommunicationScreen>
                             'Be the first to say something!',
                             style: TextStyle(
                               fontSize: 14,
-                              color: Colors.grey[500],
+                              color: context.onSurfaceVariantColor.withValues(
+                                alpha: 0.6,
+                              ),
                             ),
                           ),
                         ],
@@ -197,7 +200,10 @@ class _EventCommunicationScreenState extends State<EventCommunicationScreen>
                   return Center(
                     child: Text(
                       'Start a conversation!',
-                      style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: context.onSurfaceVariantColor,
+                      ),
                     ),
                   );
                 }
@@ -234,7 +240,7 @@ class _EventCommunicationScreenState extends State<EventCommunicationScreen>
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
-                  color: Colors.grey[600],
+                  color: context.onSurfaceVariantColor,
                 ),
               ),
             if (!message.isMe) const SizedBox(height: 4),
@@ -250,7 +256,9 @@ class _EventCommunicationScreenState extends State<EventCommunicationScreen>
               _formatMessageTime(message.createdAt),
               style: TextStyle(
                 fontSize: 10,
-                color: message.isMe ? Colors.white70 : Colors.grey[500],
+                color: message.isMe
+                    ? Colors.white70
+                    : context.onSurfaceVariantColor.withValues(alpha: 0.6),
               ),
             ),
           ],
@@ -264,7 +272,9 @@ class _EventCommunicationScreenState extends State<EventCommunicationScreen>
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(top: BorderSide(color: Colors.grey[200]!)),
+        border: Border(
+          top: BorderSide(color: context.outlineColor.withValues(alpha: 0.15)),
+        ),
       ),
       child: Row(
         children: [
@@ -276,7 +286,9 @@ class _EventCommunicationScreenState extends State<EventCommunicationScreen>
                 hintText: isSending ? 'Sending...' : 'Type a message...',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(24),
-                  borderSide: BorderSide(color: Colors.grey[300]!),
+                  borderSide: BorderSide(
+                    color: context.outlineColor.withValues(alpha: 0.3),
+                  ),
                 ),
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -289,7 +301,9 @@ class _EventCommunicationScreenState extends State<EventCommunicationScreen>
           const SizedBox(width: 12),
           Container(
             decoration: BoxDecoration(
-              color: isSending ? Colors.grey[400] : PulseColors.primary,
+              color: isSending
+                  ? context.outlineColor.withValues(alpha: 0.5)
+                  : PulseColors.primary,
               shape: BoxShape.circle,
             ),
             child: IconButton(
@@ -302,7 +316,7 @@ class _EventCommunicationScreenState extends State<EventCommunicationScreen>
                         strokeWidth: 2,
                       ),
                     )
-                  : const Icon(Icons.send, color: Colors.white),
+                  : Icon(Icons.send, color: Colors.white),
               onPressed: isSending ? null : _sendMessage,
             ),
           ),
@@ -355,10 +369,10 @@ class _EventCommunicationScreenState extends State<EventCommunicationScreen>
                 color: PulseColors.primary,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.mic, size: 64, color: Colors.white),
+              child: Icon(Icons.mic, size: 64, color: Colors.white),
             ),
             const SizedBox(height: 32),
-            const Text(
+            Text(
               'Voice Chat',
               style: TextStyle(
                 fontSize: 24,
@@ -369,7 +383,10 @@ class _EventCommunicationScreenState extends State<EventCommunicationScreen>
             const SizedBox(height: 8),
             Text(
               'Connect with other event participants',
-              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+              style: TextStyle(
+                fontSize: 16,
+                color: context.onSurfaceVariantColor,
+              ),
             ),
             const SizedBox(height: 32),
             ElevatedButton.icon(
@@ -418,8 +435,8 @@ class _EventCommunicationScreenState extends State<EventCommunicationScreen>
                   }
                 }
               },
-              icon: const Icon(Icons.call),
-              label: const Text('Start Voice Chat'),
+              icon: Icon(Icons.call),
+              label: Text('Start Voice Chat'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: PulseColors.primary,
                 foregroundColor: Colors.white,
@@ -457,10 +474,10 @@ class _EventCommunicationScreenState extends State<EventCommunicationScreen>
                 color: PulseColors.secondary,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.videocam, size: 64, color: Colors.white),
+              child: Icon(Icons.videocam, size: 64, color: Colors.white),
             ),
             const SizedBox(height: 32),
-            const Text(
+            Text(
               'Video Chat',
               style: TextStyle(
                 fontSize: 24,
@@ -471,7 +488,10 @@ class _EventCommunicationScreenState extends State<EventCommunicationScreen>
             const SizedBox(height: 8),
             Text(
               'Face-to-face conversation with participants',
-              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+              style: TextStyle(
+                fontSize: 16,
+                color: context.onSurfaceVariantColor,
+              ),
             ),
             const SizedBox(height: 32),
             ElevatedButton.icon(
@@ -520,8 +540,8 @@ class _EventCommunicationScreenState extends State<EventCommunicationScreen>
                   }
                 }
               },
-              icon: const Icon(Icons.videocam),
-              label: const Text('Start Video Chat'),
+              icon: Icon(Icons.videocam),
+              label: Text('Start Video Chat'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: PulseColors.secondary,
                 foregroundColor: Colors.white,

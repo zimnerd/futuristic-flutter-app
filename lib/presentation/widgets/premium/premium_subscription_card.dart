@@ -3,6 +3,7 @@ import '../../../data/models/premium.dart';
 import '../../theme/pulse_colors.dart';
 import '../common/pulse_button.dart';
 import '../common/pulse_toast.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Premium subscription card with features and pricing
 class PremiumSubscriptionCard extends StatefulWidget {
@@ -104,7 +105,7 @@ class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
                       ? Colors.transparent
                       : widget.plan.isPopular
                       ? PulseColors.primary
-                      : Colors.grey.shade300,
+                      : context.outlineColor.shade300,
                   width: widget.plan.isPopular ? 2 : 1,
                 ),
                 boxShadow: [
@@ -154,7 +155,7 @@ class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
                                         fontSize: 14,
                                         color: widget.isSelected
                                             ? Colors.white70
-                                            : Colors.grey[600],
+                                            : context.onSurfaceVariantColor,
                                       ),
                                     ),
                                 ],
@@ -208,7 +209,7 @@ class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
                                 fontSize: 16,
                                 color: widget.isSelected
                                     ? Colors.white70
-                                    : Colors.grey[600],
+                                    : context.onSurfaceVariantColor,
                               ),
                             ),
                             if (widget.showDiscount &&
@@ -220,15 +221,15 @@ class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
                                   vertical: 4,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Colors.red,
+                                  color: context.errorColor,
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Text(
                                   '-${widget.plan.discountPercent}%',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.white,
+                                    color: context.onSurfaceColor,
                                   ),
                                 ),
                               ),
@@ -243,7 +244,7 @@ class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
                               fontSize: 14,
                               color: widget.isSelected
                                   ? Colors.white60
-                                  : Colors.grey[500],
+                                  : context.onSurfaceVariantColor.withValues(alpha: 0.6),
                             ),
                           ),
 
@@ -275,12 +276,12 @@ class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
                       top: 15,
                       right: 15,
                       child: Container(
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
+                        decoration: BoxDecoration(
+                          color: context.onSurfaceColor,
                           shape: BoxShape.circle,
                         ),
                         padding: const EdgeInsets.all(4),
-                        child: const Icon(
+                        child: Icon(
                           Icons.check,
                           color: PulseColors.primary,
                           size: 16,
@@ -372,13 +373,13 @@ class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'Select Payment Method',
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.close),
+                    icon: Icon(Icons.close),
                   ),
                 ],
               ),
@@ -428,9 +429,9 @@ class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
     return Card(
       child: ListTile(
         leading: Icon(icon, size: 32, color: Colors.blue),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+        title: Text(title, style: TextStyle(fontWeight: FontWeight.w600)),
         subtitle: Text(subtitle),
-        trailing: const Icon(Icons.arrow_forward_ios),
+        trailing: Icon(Icons.arrow_forward_ios),
         onTap: onTap,
       ),
     );
@@ -458,14 +459,14 @@ class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Subscription'),
+        title: Text('Subscription'),
         content: Text(
           'Proceeding with ${widget.plan.name} subscription using $paymentMethodType',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
+            child: Text('OK'),
           ),
         ],
       ),

@@ -8,6 +8,7 @@ import '../../../core/network/api_client.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 import '../../widgets/common/pulse_toast.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Screen for viewing a live stream (audience view)
 class LiveStreamViewerScreen extends StatefulWidget {
@@ -230,7 +231,7 @@ class _LiveStreamViewerScreenState extends State<LiveStreamViewerScreen> {
                     _broadcasterUid == null
                         ? 'Waiting for broadcaster...'
                         : 'Connecting...',
-                    style: const TextStyle(color: Colors.white70, fontSize: 16),
+                    style: TextStyle(color: Colors.white70, fontSize: 16),
                   ),
                 ],
               ),
@@ -245,12 +246,12 @@ class _LiveStreamViewerScreenState extends State<LiveStreamViewerScreen> {
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.red.withValues(alpha: 0.9),
+                  color: context.errorColor.withValues(alpha: 0.9),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   _errorMessage!,
-                  style: const TextStyle(color: Colors.white),
+                  style: TextStyle(color: Colors.white),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -278,7 +279,7 @@ class _LiveStreamViewerScreenState extends State<LiveStreamViewerScreen> {
                   children: [
                     IconButton(
                       onPressed: _leaveStream,
-                      icon: const Icon(Icons.arrow_back, color: Colors.white),
+                      icon: Icon(Icons.arrow_back, color: Colors.white),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
@@ -287,8 +288,8 @@ class _LiveStreamViewerScreenState extends State<LiveStreamViewerScreen> {
                         children: [
                           Text(
                             title,
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: context.onSurfaceColor,
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
@@ -297,7 +298,7 @@ class _LiveStreamViewerScreenState extends State<LiveStreamViewerScreen> {
                           ),
                           Text(
                             streamerName,
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Colors.white70,
                               fontSize: 12,
                             ),
@@ -317,8 +318,8 @@ class _LiveStreamViewerScreenState extends State<LiveStreamViewerScreen> {
                       ),
                       child: Text(
                         _connectionQuality,
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: context.onSurfaceColor,
                           fontSize: 12,
                         ),
                       ),
@@ -355,14 +356,18 @@ class _LiveStreamViewerScreenState extends State<LiveStreamViewerScreen> {
                         topRight: Radius.circular(12),
                       ),
                     ),
-                    child: const Row(
+                    child: Row(
                       children: [
-                        Icon(Icons.chat, color: Colors.white, size: 16),
+                        Icon(
+                          Icons.chat,
+                          color: context.onSurfaceColor,
+                          size: 16,
+                        ),
                         SizedBox(width: 8),
                         Text(
                           'Live Chat',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: context.onSurfaceColor,
                             fontWeight: FontWeight.bold,
                             fontSize: 14,
                           ),
@@ -407,10 +412,10 @@ class _LiveStreamViewerScreenState extends State<LiveStreamViewerScreen> {
                     Expanded(
                       child: TextField(
                         controller: _messageController,
-                        style: const TextStyle(color: Colors.white),
+                        style: TextStyle(color: Colors.white),
                         decoration: InputDecoration(
                           hintText: 'Type a message...',
-                          hintStyle: const TextStyle(color: Colors.white54),
+                          hintStyle: TextStyle(color: Colors.white54),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(25),
                             borderSide: const BorderSide(color: Colors.white54),
@@ -434,7 +439,7 @@ class _LiveStreamViewerScreenState extends State<LiveStreamViewerScreen> {
                       mini: true,
                       onPressed: _sendMessage,
                       backgroundColor: PulseColors.primary,
-                      child: const Icon(Icons.send, color: Colors.white),
+                      child: Icon(Icons.send, color: Colors.white),
                     ),
                   ],
                 ),

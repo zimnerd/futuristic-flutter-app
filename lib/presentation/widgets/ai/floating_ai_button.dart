@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Floating AI Companion Button
 ///
@@ -92,17 +93,17 @@ class _FloatingAIButtonState extends State<FloatingAIButton>
                           color: Colors.white.withValues(alpha: 0.2),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.psychology,
-                          color: Colors.white,
+                          color: context.onSurfaceColor,
                           size: 20,
                         ),
                       ),
                       const SizedBox(width: 12),
-                      const Text(
+                      Text(
                         'Ask AI',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: context.onSurfaceColor,
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
@@ -148,9 +149,9 @@ class _FloatingAIButtonState extends State<FloatingAIButton>
               child: InkWell(
                 onTap: () => context.push('/ai-companion'),
                 customBorder: const CircleBorder(),
-                child: const Icon(
+                child:  Icon(
                   Icons.psychology,
-                  color: Colors.white,
+                  color: context.onSurfaceColor,
                   size: 28,
                 ),
               ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../data/models/ai_companion.dart';
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Widget for creating or editing AI companions
 class CompanionCreationWidget extends StatefulWidget {
@@ -127,7 +128,7 @@ class _CompanionCreationWidgetState extends State<CompanionCreationWidget> {
                 ),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close),
+                  icon: Icon(Icons.close),
                 ),
               ],
             ),
@@ -174,7 +175,7 @@ class _CompanionCreationWidgetState extends State<CompanionCreationWidget> {
                     const SizedBox(height: 24),
 
                     // Gender Selection
-                    const Text(
+                    Text(
                       'Choose Gender',
                       style: TextStyle(
                         fontSize: 18,
@@ -186,7 +187,7 @@ class _CompanionCreationWidgetState extends State<CompanionCreationWidget> {
                     const SizedBox(height: 24),
 
                     // Age Group Selection
-                    const Text(
+                    Text(
                       'Choose Age Group',
                       style: TextStyle(
                         fontSize: 18,
@@ -198,7 +199,7 @@ class _CompanionCreationWidgetState extends State<CompanionCreationWidget> {
                     const SizedBox(height: 24),
 
                     // Personality Selection
-                    const Text(
+                    Text(
                       'Choose Personality Type',
                       style: TextStyle(
                         fontSize: 18,
@@ -210,7 +211,7 @@ class _CompanionCreationWidgetState extends State<CompanionCreationWidget> {
                     const SizedBox(height: 24),
 
                     // Appearance Selection
-                    const Text(
+                    Text(
                       'Choose Avatar Style',
                       style: TextStyle(
                         fontSize: 18,
@@ -234,7 +235,7 @@ class _CompanionCreationWidgetState extends State<CompanionCreationWidget> {
                     const SizedBox(height: 24),
 
                     // Voice Settings
-                    const Text(
+                    Text(
                       'Voice Settings',
                       style: TextStyle(
                         fontSize: 18,
@@ -252,7 +253,7 @@ class _CompanionCreationWidgetState extends State<CompanionCreationWidget> {
                         onPressed: _createCompanion,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: PulseColors.primary,
-                          foregroundColor: Colors.white,
+                          foregroundColor: context.onSurfaceColor,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -262,7 +263,7 @@ class _CompanionCreationWidgetState extends State<CompanionCreationWidget> {
                           widget.existingCompanion != null
                               ? 'Update Companion'
                               : 'Create Companion',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),
@@ -307,7 +308,9 @@ class _CompanionCreationWidgetState extends State<CompanionCreationWidget> {
                   ? PulseColors.primary.withValues(alpha: 0.1)
                   : Colors.grey[100],
               border: Border.all(
-                color: isSelected ? PulseColors.primary : Colors.grey[300]!,
+                color: isSelected
+                    ? PulseColors.primary
+                    : context.outlineColor.withValues(alpha: 0.3),
                 width: isSelected ? 2 : 1,
               ),
               borderRadius: BorderRadius.circular(12),
@@ -317,7 +320,7 @@ class _CompanionCreationWidgetState extends State<CompanionCreationWidget> {
               children: [
                 Text(
                   personality.emoji,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 24,
                   ), // Slightly smaller emoji
                 ),
@@ -340,7 +343,7 @@ class _CompanionCreationWidgetState extends State<CompanionCreationWidget> {
                     personality.description,
                     style: TextStyle(
                       fontSize: 9, // Smaller font for description
-                      color: Colors.grey[600],
+                      color: context.onSurfaceVariantColor,
                     ),
                     textAlign: TextAlign.center,
                     maxLines: 3,
@@ -383,7 +386,9 @@ class _CompanionCreationWidgetState extends State<CompanionCreationWidget> {
                   ? PulseColors.secondary.withValues(alpha: 0.1)
                   : Colors.grey[100],
               border: Border.all(
-                color: isSelected ? PulseColors.secondary : Colors.grey[300]!,
+                color: isSelected
+                    ? PulseColors.secondary
+                    : context.outlineColor.withValues(alpha: 0.3),
                 width: isSelected ? 2 : 1,
               ),
               borderRadius: BorderRadius.circular(12),
@@ -394,7 +399,9 @@ class _CompanionCreationWidgetState extends State<CompanionCreationWidget> {
                 Icon(
                   style['icon'],
                   size: 32,
-                  color: isSelected ? PulseColors.secondary : Colors.grey[600],
+                  color: isSelected
+                      ? PulseColors.secondary
+                      : context.onSurfaceVariantColor,
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -473,14 +480,16 @@ class _CompanionCreationWidgetState extends State<CompanionCreationWidget> {
                       ? PulseColors.primary.withValues(alpha: 0.1)
                       : Colors.grey[100],
                   border: Border.all(
-                    color: isSelected ? PulseColors.primary : Colors.grey[300]!,
+                    color: isSelected
+                        ? PulseColors.primary
+                        : context.outlineColor.withValues(alpha: 0.3),
                     width: isSelected ? 2 : 1,
                   ),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Column(
                   children: [
-                    Text(gender.icon, style: const TextStyle(fontSize: 20)),
+                    Text(gender.icon, style: TextStyle(fontSize: 20)),
                     const SizedBox(height: 4),
                     Text(
                       gender.displayName,
@@ -523,14 +532,16 @@ class _CompanionCreationWidgetState extends State<CompanionCreationWidget> {
                     ? PulseColors.secondary.withValues(alpha: 0.1)
                     : Colors.grey[100],
                 border: Border.all(
-                  color: isSelected ? PulseColors.secondary : Colors.grey[300]!,
+                  color: isSelected
+                      ? PulseColors.secondary
+                      : context.outlineColor.withValues(alpha: 0.3),
                   width: isSelected ? 2 : 1,
                 ),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
                 children: [
-                  Text(age.icon, style: const TextStyle(fontSize: 20)),
+                  Text(age.icon, style: TextStyle(fontSize: 20)),
                   const SizedBox(width: 12),
                   Text(
                     age.displayName,
@@ -556,7 +567,7 @@ class _CompanionCreationWidgetState extends State<CompanionCreationWidget> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Voice Type Selection
-        const Text(
+        Text(
           'Voice Type',
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
         ),
@@ -584,7 +595,7 @@ class _CompanionCreationWidgetState extends State<CompanionCreationWidget> {
                   border: Border.all(
                     color: isSelected
                         ? PulseColors.secondary
-                        : Colors.grey[300]!,
+                        : context.outlineColor.withValues(alpha: 0.3),
                     width: isSelected ? 2 : 1,
                   ),
                   borderRadius: BorderRadius.circular(20),
@@ -604,7 +615,7 @@ class _CompanionCreationWidgetState extends State<CompanionCreationWidget> {
         const SizedBox(height: 16),
 
         // Speech Speed Selection
-        const Text(
+        Text(
           'Speech Speed',
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
         ),
@@ -630,7 +641,9 @@ class _CompanionCreationWidgetState extends State<CompanionCreationWidget> {
                       ? PulseColors.success.withValues(alpha: 0.1)
                       : Colors.grey[100],
                   border: Border.all(
-                    color: isSelected ? PulseColors.success : Colors.grey[300]!,
+                    color: isSelected
+                        ? PulseColors.success
+                        : context.outlineColor.withValues(alpha: 0.3),
                     width: isSelected ? 2 : 1,
                   ),
                   borderRadius: BorderRadius.circular(20),

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Widget for picking and managing profile photos
 class PhotoPickerWidget extends StatefulWidget {
@@ -114,11 +115,15 @@ class _PhotoPickerWidgetState extends State<PhotoPickerWidget> {
             itemCount: widget.maxPhotos,
             itemBuilder: (context, index) {
               if (index < widget.selectedPhotos.length) {
-                return _buildPhotoCard(widget.selectedPhotos[index], index);
+                return _buildPhotoCard(
+                  context,
+                  widget.selectedPhotos[index],
+                  index,
+                );
               } else if (index == widget.selectedPhotos.length) {
-                return _buildAddPhotoCard();
+                return _buildAddPhotoCard(context);
               } else {
-                return _buildEmptyPhotoCard();
+                return _buildEmptyPhotoCard(context);
               }
             },
           ),
@@ -129,20 +134,20 @@ class _PhotoPickerWidgetState extends State<PhotoPickerWidget> {
           'Tap + to add photos. Long press to reorder.',
           style: Theme.of(
             context,
-          ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+          ).textTheme.bodySmall?.copyWith(color: context.onSurfaceVariantColor),
           textAlign: TextAlign.center,
         ),
       ],
     );
   }
 
-  Widget _buildPhotoCard(File photo, int index) {
+  Widget _buildPhotoCard(BuildContext context, File photo, int index) {
     return GestureDetector(
       onLongPress: () => _showPhotoOptions(index),
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey[300]!),
+          border: Border.all(color: context.borderColor),
         ),
         child: Stack(
           children: [
@@ -165,7 +170,7 @@ class _PhotoPickerWidgetState extends State<PhotoPickerWidget> {
                     vertical: 2,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.blue,
+                    color: context.textOnPrimary,
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: const Text(
@@ -199,30 +204,33 @@ class _PhotoPickerWidgetState extends State<PhotoPickerWidget> {
     );
   }
 
-  Widget _buildAddPhotoCard() {
+  Widget _buildAddPhotoCard(BuildContext context) {
     return GestureDetector(
       onTap: _showImageSourceDialog,
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: Colors.grey[300]!,
+            color: context.borderColor,
             style: BorderStyle.solid,
           ),
-          color: Colors.grey[50],
+          color: context.surfaceColor,
         ),
-        child: const Column(
+        child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               Icons.add_photo_alternate_outlined,
               size: 32,
-              color: Colors.grey,
+              color: context.onSurfaceVariantColor,
             ),
-            SizedBox(height: 4),
+            const SizedBox(height: 4),
             Text(
               'Add Photo',
-              style: TextStyle(color: Colors.grey, fontSize: 12),
+              style: TextStyle(
+                color: context.onSurfaceVariantColor,
+                fontSize: 12,
+              ),
             ),
           ],
         ),
@@ -230,84 +238,93 @@ class _PhotoPickerWidgetState extends State<PhotoPickerWidget> {
     );
   }
 
-  Widget _buildEmptyPhotoCard() {
+  Widget _buildEmptyPhotoCard(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[200]!, style: BorderStyle.solid),
-        color: Colors.grey[50],
+        border: Border.all(
+          color: context.borderColor,
+          style: BorderStyle.solid,
+        ),
+        color: context.surfaceColor,
       ),
-      child: const Icon(Icons.image_outlined, color: Colors.grey, size: 24),
+      child: Icon(
+        Icons.image_outlined,
+        color: context.onSurfaceVariantColor,
+        size: 24,
+      ),
     );
   }
 
   void _showImageSourceDialog() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: context.surfaceColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => SafeArea(
+      builder: (modalContext) => SafeArea(
         child: Wrap(
           children: [
             ListTile(
-              leading: const Icon(
+              leading: Icon(
                 Icons.camera_alt,
-                color: Colors.black87,
+                color: context.textPrimary,
               ),
-              title: const Text(
+              title: Text(
                 'Camera',
                 style: TextStyle(
-                  color: Colors.black87,
+                  color: context.textPrimary,
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
                 ),
               ),
               onTap: () {
-                Navigator.pop(context);
+                Navigator.pop(modalContext);
                 _pickImage(ImageSource.camera);
               },
             ),
             ListTile(
-              leading: const Icon(Icons.photo_library, color: Colors.black87),
-              title: const Text(
+              leading: Icon(Icons.photo_library, color: context.textPrimary),
+              title: Text(
                 'Photo Library (Single)',
                 style: TextStyle(
-                  color: Colors.black87,
+                  color: context.textPrimary,
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
                 ),
               ),
               onTap: () {
-                Navigator.pop(context);
+                Navigator.pop(modalContext);
                 _pickImage(ImageSource.gallery, multiple: false);
               },
             ),
             ListTile(
-              leading: const Icon(
+              leading: Icon(
                 Icons.photo_library,
-                color: Colors.purple,
+                color: context.textOnPrimary,
               ),
-              title: const Text(
+              title: Text(
                 'Photo Library (Multiple)',
                 style: TextStyle(
-                  color: Colors.black87,
+                  color: context.textPrimary,
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              subtitle: const Text(
+              subtitle: Text(
                 'Select multiple photos at once',
-                style: TextStyle(color: Colors.grey, fontSize: 13,
+                style: TextStyle(
+                  color: context.onSurfaceVariantColor,
+                  fontSize: 13,
                 ),
               ),
               onTap: () {
-                Navigator.pop(context);
+                Navigator.pop(modalContext);
                 _pickImage(ImageSource.gallery, multiple: true);
               },
             ),
-            const Divider(height: 1),
+            Divider(height: 1, color: context.borderColor),
             ListTile(
               leading: const Icon(Icons.close, color: Colors.red),
               title: const Text(
@@ -318,7 +335,7 @@ class _PhotoPickerWidgetState extends State<PhotoPickerWidget> {
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              onTap: () => Navigator.pop(context),
+              onTap: () => Navigator.pop(modalContext),
             ),
           ],
         ),
@@ -327,65 +344,53 @@ class _PhotoPickerWidgetState extends State<PhotoPickerWidget> {
   }
 
   void _showPhotoOptions(int index) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
     showModalBottomSheet(
       context: context,
-      backgroundColor:
-          theme.bottomSheetTheme.backgroundColor ??
-          (isDark ? const Color(0xFF1E1E1E) : Colors.white),
+      backgroundColor: context.surfaceColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => SafeArea(
+      builder: (modalContext) => SafeArea(
         child: Wrap(
           children: [
             if (index > 0)
               ListTile(
-                leading: Icon(Icons.star, color: theme.colorScheme.primary),
+                leading: Icon(Icons.star, color: context.textOnPrimary),
                 title: Text(
                   'Make Primary',
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    color:
-                        theme.textTheme.bodyLarge?.color ??
-                        (isDark ? Colors.white : Colors.black87),
+                  style: TextStyle(color: context.textPrimary, fontSize: 16,
                   ),
                 ),
                 onTap: () {
-                  Navigator.pop(context);
+                  Navigator.pop(modalContext);
                   _makePrimary(index);
                 },
               ),
             ListTile(
-              leading: Icon(Icons.delete, color: theme.colorScheme.error),
+              leading: Icon(Icons.delete, color: context.errorColor),
               title: Text(
                 'Remove Photo',
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  color: theme.colorScheme.error,
+                style: TextStyle(color: context.errorColor, fontSize: 16,
                 ),
               ),
               onTap: () {
-                Navigator.pop(context);
+                Navigator.pop(modalContext);
                 _removePhoto(index);
               },
             ),
             ListTile(
               leading: Icon(
                 Icons.cancel,
-                color:
-                    theme.iconTheme.color ??
-                    (isDark ? Colors.white70 : Colors.black54),
+                color: context.onSurfaceVariantColor,
               ),
               title: Text(
                 'Cancel',
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  color:
-                      theme.textTheme.bodyLarge?.color ??
-                      (isDark ? Colors.white70 : Colors.black54),
+                style: TextStyle(
+                  color: context.onSurfaceVariantColor,
+                  fontSize: 16,
                 ),
               ),
-              onTap: () => Navigator.pop(context),
+              onTap: () => Navigator.pop(modalContext),
             ),
           ],
         ),

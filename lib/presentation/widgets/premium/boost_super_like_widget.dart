@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../theme/pulse_colors.dart';
 import '../common/pulse_button.dart';
 import '../common/pulse_toast.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Boost and Super Like features for premium users
 class BoostSuperLikeWidget extends StatefulWidget {
@@ -75,14 +76,14 @@ class _BoostSuperLikeWidgetState extends State<BoostSuperLikeWidget>
           // Header
           Row(
             children: [
-              const Icon(Icons.bolt, color: Colors.white, size: 24),
+              Icon(Icons.bolt, color: context.onSurfaceColor, size: 24),
               const SizedBox(width: 8),
-              const Text(
+              Text(
                 'Power Features',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: context.onSurfaceColor,
                 ),
               ),
               const Spacer(),
@@ -95,12 +96,12 @@ class _BoostSuperLikeWidgetState extends State<BoostSuperLikeWidget>
                   color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(15),
                 ),
-                child: const Text(
+                child: Text(
                   'PREMIUM',
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: context.onSurfaceColor,
                   ),
                 ),
               ),
@@ -136,7 +137,7 @@ class _BoostSuperLikeWidgetState extends State<BoostSuperLikeWidget>
                 color: Colors.white.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(16),
                 border: _isBoostActive
-                    ? Border.all(color: Colors.white, width: 2)
+                    ? Border.all(color: context.onSurfaceColor, width: 2)
                     : null,
               ),
               child: Column(
@@ -149,7 +150,7 @@ class _BoostSuperLikeWidgetState extends State<BoostSuperLikeWidget>
                       color: Colors.orange.withValues(alpha: 0.2),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.rocket_launch,
                       color: Colors.orange,
                       size: 30,
@@ -159,12 +160,12 @@ class _BoostSuperLikeWidgetState extends State<BoostSuperLikeWidget>
                   const SizedBox(height: 12),
 
                   // Title
-                  const Text(
+                  Text(
                     'Boost',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: context.onSurfaceColor,
                     ),
                   ),
 
@@ -193,12 +194,12 @@ class _BoostSuperLikeWidgetState extends State<BoostSuperLikeWidget>
                         color: Colors.orange,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Text(
+                      child: Text(
                         '29m left',
                         style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: context.onSurfaceColor,
                         ),
                       ),
                     )
@@ -212,12 +213,12 @@ class _BoostSuperLikeWidgetState extends State<BoostSuperLikeWidget>
                         color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Activate',
                         style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: context.onSurfaceColor,
                         ),
                       ),
                     ),
@@ -275,7 +276,7 @@ class _BoostSuperLikeWidgetState extends State<BoostSuperLikeWidget>
                         color: Colors.blue.withValues(alpha: 0.2),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.star,
                         color: Colors.blue,
                         size: 30,
@@ -285,19 +286,19 @@ class _BoostSuperLikeWidgetState extends State<BoostSuperLikeWidget>
                     const SizedBox(height: 12),
 
                     // Title
-                    const Text(
+                    Text(
                       'Super Like',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: context.onSurfaceColor,
                       ),
                     ),
 
                     const SizedBox(height: 4),
 
                     // Description
-                    const Text(
+                    Text(
                       'Stand out',
                       style: TextStyle(fontSize: 12, color: Colors.white70),
                       textAlign: TextAlign.center,
@@ -317,10 +318,10 @@ class _BoostSuperLikeWidgetState extends State<BoostSuperLikeWidget>
                       ),
                       child: Text(
                         '$_superLikesRemaining left',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: context.onSurfaceColor,
                         ),
                       ),
                     ),
@@ -347,14 +348,14 @@ class _BoostSuperLikeWidgetState extends State<BoostSuperLikeWidget>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Boost Activated!'),
-        content: const Text(
+        title: Text('Boost Activated!'),
+        content: Text(
           'Your profile will be shown to 10x more people for the next 30 minutes.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Got it!'),
+            child: Text('Got it!'),
           ),
         ],
       ),
@@ -402,8 +403,8 @@ class _BoostSuperLikeWidgetState extends State<BoostSuperLikeWidget>
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
         padding: const EdgeInsets.all(20),
-        decoration: const BoxDecoration(
-          color: Colors.white,
+        decoration: BoxDecoration(
+          color: context.onSurfaceColor,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: SafeArea(
@@ -415,7 +416,7 @@ class _BoostSuperLikeWidgetState extends State<BoostSuperLikeWidget>
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.grey[300],
+                  color: context.outlineColor.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -430,13 +431,13 @@ class _BoostSuperLikeWidgetState extends State<BoostSuperLikeWidget>
                   color: Colors.blue.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.star, color: Colors.blue, size: 40),
+                child: Icon(Icons.star, color: Colors.blue, size: 40),
               ),
 
               const SizedBox(height: 20),
 
               // Title
-              const Text(
+              Text(
                 'No Super Likes Left',
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
@@ -446,7 +447,10 @@ class _BoostSuperLikeWidgetState extends State<BoostSuperLikeWidget>
               // Description
               Text(
                 'Get more Super Likes with Pulse Premium or wait until tomorrow for your free daily Super Like.',
-                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                style: TextStyle(
+                  fontSize: 14,
+                  color: context.onSurfaceVariantColor,
+                ),
                 textAlign: TextAlign.center,
               ),
 
@@ -488,8 +492,8 @@ class _BoostSuperLikeWidgetState extends State<BoostSuperLikeWidget>
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
         height: MediaQuery.of(context).size.height * 0.7,
-        decoration: const BoxDecoration(
-          color: Colors.white,
+        decoration: BoxDecoration(
+          color: context.onSurfaceColor,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: Column(
@@ -498,18 +502,20 @@ class _BoostSuperLikeWidgetState extends State<BoostSuperLikeWidget>
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
+                border: Border(
+                  bottom: BorderSide(color: context.outlineColor.shade200),
+                ),
               ),
               child: Row(
                 children: [
-                  const Text(
+                  Text(
                     'Upgrade to Premium',
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   const Spacer(),
                   IconButton(
                     onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close),
+                    icon: Icon(Icons.close),
                   ),
                 ],
               ),
@@ -556,7 +562,10 @@ class _BoostSuperLikeWidgetState extends State<BoostSuperLikeWidget>
 
                     Text(
                       'Cancel anytime. No commitment.',
-                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: context.onSurfaceVariantColor,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -594,14 +603,17 @@ class _BoostSuperLikeWidgetState extends State<BoostSuperLikeWidget>
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 Text(
                   description,
-                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: context.onSurfaceVariantColor,
+                  ),
                 ),
               ],
             ),

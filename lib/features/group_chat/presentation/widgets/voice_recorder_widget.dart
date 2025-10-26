@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 import 'package:record/record.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
@@ -154,7 +155,7 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget> {
               // Cancel button
               IconButton(
                 onPressed: _cancelRecording,
-                icon: const Icon(Icons.close, size: 32),
+                icon: Icon(Icons.close, size: 32),
                 color: Colors.red,
               ),
 
@@ -166,13 +167,13 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget> {
                   color: Theme.of(context).primaryColor,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.mic, color: Colors.white, size: 32),
+                child: Icon(Icons.mic, color: Colors.white, size: 32),
               ),
 
               // Send button
               IconButton(
                 onPressed: _stopRecording,
-                icon: const Icon(Icons.send, size: 32),
+                icon: Icon(Icons.send, size: 32),
                 color: Theme.of(context).primaryColor,
               ),
             ],
@@ -183,7 +184,10 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget> {
           // Hint text
           Text(
             'Slide to cancel • Tap to send',
-            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+            style: TextStyle(
+              fontSize: 12,
+              color: context.onSurfaceVariantColor,
+            ),
           ),
         ],
       ),

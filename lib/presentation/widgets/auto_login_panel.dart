@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:logger/logger.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 import '../../core/config/test_credentials.dart';
 import '../../core/network/api_client.dart';
@@ -99,7 +100,7 @@ class _AutoLoginButton extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Text(account.avatar, style: const TextStyle(fontSize: 16)),
+                  Text(account.avatar, style: TextStyle(fontSize: 16)),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -277,29 +278,29 @@ class _TestApiButtonState extends State<_TestApiButton> {
                 : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: PulseColors.primary,
-              foregroundColor: Colors.white,
+              foregroundColor: context.onSurfaceColor,
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
             icon: _isTesting
-                ? const SizedBox(
+                ? SizedBox(
                     width: 16,
                     height: 16,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      color: Colors.white,
+                      color: context.onSurfaceColor,
                     ),
                   )
-                : const Icon(Icons.api, size: 18),
+                : Icon(Icons.api, size: 18),
             label: Text(
               _isTesting
                   ? 'Testing API...'
                   : isAuthenticated
                   ? 'Test Auth API Calls'
                   : 'Login Required',
-              style: const TextStyle(fontWeight: FontWeight.w500),
+              style: TextStyle(fontWeight: FontWeight.w500),
             ),
           ),
         );

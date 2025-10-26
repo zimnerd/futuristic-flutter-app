@@ -6,6 +6,7 @@ import '../../widgets/common/loading_overlay.dart';
 import '../../widgets/common/pulse_toast.dart';
 import '../../widgets/ai/ai_feature_card.dart';
 import '../../widgets/ai/ai_onboarding_dialog.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Main AI settings and preferences screen
 class AiSettingsScreen extends StatefulWidget {
@@ -141,9 +142,9 @@ class _AiSettingsScreenState extends State<AiSettingsScreen>
                 children: [
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.arrow_back,
-                      color: Colors.white,
+                      color: context.onSurfaceColor,
                       size: 24,
                     ),
                   ),
@@ -156,9 +157,9 @@ class _AiSettingsScreenState extends State<AiSettingsScreen>
                       ),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.psychology,
-                      color: Colors.white,
+                      color: context.onSurfaceColor,
                       size: 24,
                     ),
                   ),
@@ -171,7 +172,7 @@ class _AiSettingsScreenState extends State<AiSettingsScreen>
                           'AI Assistant',
                           style: Theme.of(context).textTheme.headlineSmall
                               ?.copyWith(
-                                color: Colors.white,
+                                color: context.onSurfaceColor,
                                 fontWeight: FontWeight.bold,
                               ),
                         ),
@@ -192,7 +193,9 @@ class _AiSettingsScreenState extends State<AiSettingsScreen>
                     },
                     activeThumbColor: Colors.cyan,
                     activeTrackColor: Colors.cyan.withValues(alpha: 0.3),
-                    inactiveTrackColor: Colors.grey.withValues(alpha: 0.3),
+                    inactiveTrackColor: context.outlineColor.withValues(
+                      alpha: 0.3,
+                    ),
                   ),
                 ],
               ),
@@ -219,23 +222,23 @@ class _AiSettingsScreenState extends State<AiSettingsScreen>
             padding: const EdgeInsets.all(32),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Colors.grey.shade800.withValues(alpha: 0.3),
+              color: context.outlineColor.shade800.withValues(alpha: 0.3),
               border: Border.all(
-                color: Colors.grey.shade600.withValues(alpha: 0.5),
+                color: context.outlineColor.shade600.withValues(alpha: 0.5),
                 width: 2,
               ),
             ),
             child: Icon(
               Icons.psychology_outlined,
               size: 64,
-              color: Colors.grey.shade400,
+              color: context.outlineColor.shade400,
             ),
           ),
           const SizedBox(height: 24),
           Text(
             'AI Assistant Disabled',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: Colors.white,
+              color: context.onSurfaceColor,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -258,7 +261,7 @@ class _AiSettingsScreenState extends State<AiSettingsScreen>
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.purple,
-              foregroundColor: Colors.white,
+              foregroundColor: context.onSurfaceColor,
               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -267,12 +270,12 @@ class _AiSettingsScreenState extends State<AiSettingsScreen>
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.auto_awesome),
+                Icon(Icons.auto_awesome),
                 const SizedBox(width: 8),
                 Text(
                   'Enable AI Assistant',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: Colors.white,
+                    color: context.onSurfaceColor,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -408,7 +411,10 @@ class _AiSettingsScreenState extends State<AiSettingsScreen>
           description: 'Control your AI data and privacy preferences',
           icon: Icons.security,
           iconGradient: LinearGradient(
-            colors: [Colors.grey.shade600, Colors.grey.shade400],
+            colors: [
+              context.outlineColor.shade600,
+              context.outlineColor.shade400,
+            ],
           ),
           enabled: true,
           onTap: () => _navigateToGeneralSettings(context, preferences),
@@ -425,10 +431,10 @@ class _AiSettingsScreenState extends State<AiSettingsScreen>
         Center(
           child: TextButton.icon(
             onPressed: () => _showResetDialog(context),
-            icon: const Icon(Icons.refresh, color: Colors.grey),
+            icon: Icon(Icons.refresh, color: context.outlineColor),
             label: Text(
               'Reset All AI Settings',
-              style: TextStyle(color: Colors.grey.shade400),
+              style: TextStyle(color: context.outlineColor.shade400),
             ),
           ),
         ),
@@ -450,26 +456,26 @@ class _AiSettingsScreenState extends State<AiSettingsScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: Colors.grey.shade900,
-        title: const Text(
+        backgroundColor: context.outlineColor.shade900,
+        title: Text(
           'Reset AI Settings',
           style: TextStyle(color: Colors.white),
         ),
-        content: const Text(
+        content: Text(
           'This will reset all AI preferences to default values. This action cannot be undone.',
           style: TextStyle(color: Colors.white70),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
               context.read<AiPreferencesBloc>().add(ResetAiPreferences());
             },
-            child: const Text('Reset', style: TextStyle(color: Colors.red)),
+            child: Text('Reset', style: TextStyle(color: context.errorColor)),
           ),
         ],
       ),

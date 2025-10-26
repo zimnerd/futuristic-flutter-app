@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 class CallControls extends StatelessWidget {
   final bool isVideoEnabled;
@@ -28,22 +29,26 @@ class CallControls extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         _buildControlButton(
+          context: context,
           icon: isSpeakerEnabled ? Icons.volume_up : Icons.volume_down,
           isEnabled: isSpeakerEnabled,
           onTap: onToggleSpeaker,
         ),
         _buildControlButton(
+          context: context,
           icon: isVideoEnabled ? Icons.videocam : Icons.videocam_off,
           isEnabled: isVideoEnabled,
           onTap: onToggleVideo,
         ),
-        _buildEndCallButton(),
+        _buildEndCallButton(context),
         _buildControlButton(
+          context: context,
           icon: isAudioEnabled ? Icons.mic : Icons.mic_off,
           isEnabled: isAudioEnabled,
           onTap: onToggleAudio,
         ),
         _buildControlButton(
+          context: context,
           icon: Icons.flip_camera_ios,
           isEnabled: isVideoEnabled,
           onTap:
@@ -57,6 +62,7 @@ class CallControls extends StatelessWidget {
   }
 
   Widget _buildControlButton({
+    required BuildContext context,
     required IconData icon,
     required bool isEnabled,
     required VoidCallback onTap,
@@ -76,22 +82,22 @@ class CallControls extends StatelessWidget {
             width: 1,
           ),
         ),
-        child: Icon(icon, color: Colors.white, size: 24),
+        child: Icon(icon, color: context.onSurfaceColor, size: 24),
       ),
     );
   }
 
-  Widget _buildEndCallButton() {
+  Widget _buildEndCallButton(BuildContext context) {
     return GestureDetector(
       onTap: onEndCall,
       child: Container(
         width: 64,
         height: 64,
-        decoration: const BoxDecoration(
-          color: Colors.red,
+        decoration: BoxDecoration(
+          color: context.errorColor,
           shape: BoxShape.circle,
         ),
-        child: const Icon(Icons.call_end, color: Colors.white, size: 28),
+        child: Icon(Icons.call_end, color: context.onSurfaceColor, size: 28),
       ),
     );
   }

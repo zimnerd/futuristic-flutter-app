@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import '../../../data/services/ai_feedback_service.dart';
 import '../../../core/network/api_client.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// AI Insights Dashboard - displays AI-generated analytics, compatibility scores,
 /// and personalized recommendations
@@ -194,14 +195,14 @@ class _AiInsightsDashboardState extends State<AiInsightsDashboard>
                 colors: [Color(0xFF6E3BFF), Color(0xFF00C2FF)],
               ),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.psychology_rounded,
-              color: Colors.white,
+              color: context.onSurfaceColor,
               size: 24,
             ),
           ),
           const SizedBox(width: 12),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -210,7 +211,7 @@ class _AiInsightsDashboardState extends State<AiInsightsDashboard>
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: context.onSurfaceColor,
                   ),
                 ),
                 Text(
@@ -252,15 +253,19 @@ class _AiInsightsDashboardState extends State<AiInsightsDashboard>
             colors: [Color(0xFF6E3BFF), Color(0xFF00C2FF)],
           ),
         ),
-        labelColor: Colors.white,
-        unselectedLabelColor: Colors.white60,
+        labelStyle: TextStyle(
+          color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white,
+        ),
+        unselectedLabelStyle: TextStyle(
+          color: (Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white).withValues(alpha: 0.6),
+        ),
         dividerColor: Colors.transparent,
       ),
     );
   }
 
   Widget _buildLoadingState() {
-    return const Center(
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -426,7 +431,7 @@ class _AiInsightsDashboardState extends State<AiInsightsDashboard>
               Expanded(
                 child: Text(
                   title,
-                  style: const TextStyle(color: Colors.white70, fontSize: 14),
+                  style: TextStyle(color: Colors.white70, fontSize: 14),
                 ),
               ),
             ],
@@ -442,7 +447,7 @@ class _AiInsightsDashboardState extends State<AiInsightsDashboard>
           ),
           Text(
             subtitle,
-            style: const TextStyle(color: Colors.white60, fontSize: 12),
+            style: TextStyle(color: Colors.white60, fontSize: 12),
           ),
         ],
       ),
@@ -472,7 +477,7 @@ class _AiInsightsDashboardState extends State<AiInsightsDashboard>
               Expanded(
                 child: Text(
                   title,
-                  style: const TextStyle(color: Colors.white70, fontSize: 14),
+                  style: TextStyle(color: Colors.white70, fontSize: 14),
                 ),
               ),
             ],
@@ -480,7 +485,7 @@ class _AiInsightsDashboardState extends State<AiInsightsDashboard>
           const SizedBox(height: 8),
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               color: Color(0xFF00C2FF),
               fontSize: 32,
               fontWeight: FontWeight.bold,
@@ -488,7 +493,7 @@ class _AiInsightsDashboardState extends State<AiInsightsDashboard>
           ),
           Text(
             subtitle,
-            style: const TextStyle(color: Colors.white60, fontSize: 12),
+            style: TextStyle(color: Colors.white60, fontSize: 12),
           ),
         ],
       ),
@@ -533,15 +538,15 @@ class _AiInsightsDashboardState extends State<AiInsightsDashboard>
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: context.onSurfaceColor,
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 Text(
                   description,
-                  style: const TextStyle(color: Colors.white70, fontSize: 14),
+                  style: TextStyle(color: Colors.white70, fontSize: 14),
                 ),
               ],
             ),
@@ -567,7 +572,7 @@ class _AiInsightsDashboardState extends State<AiInsightsDashboard>
         children: [
           Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.lightbulb_rounded,
                 color: Color(0xFFFFD700),
                 size: 20,
@@ -575,8 +580,8 @@ class _AiInsightsDashboardState extends State<AiInsightsDashboard>
               const SizedBox(width: 8),
               Text(
                 title,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: context.onSurfaceColor,
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
@@ -592,7 +597,7 @@ class _AiInsightsDashboardState extends State<AiInsightsDashboard>
                   Container(
                     width: 4,
                     height: 4,
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       color: Color(0xFF6E3BFF),
                       shape: BoxShape.circle,
                     ),
@@ -601,7 +606,7 @@ class _AiInsightsDashboardState extends State<AiInsightsDashboard>
                   Expanded(
                     child: Text(
                       recommendation,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white70,
                         fontSize: 14,
                       ),

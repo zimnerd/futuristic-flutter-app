@@ -5,6 +5,7 @@ import '../../../data/services/speed_dating_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_state.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 import '../../widgets/common/pulse_toast.dart';
 import 'active_round_screen.dart';
@@ -196,7 +197,7 @@ class _RoundTransitionScreenState extends State<RoundTransitionScreen>
             const SizedBox(height: 16),
             Text(
               _error!,
-              style: const TextStyle(color: Colors.red, fontSize: 14),
+              style: TextStyle(color: context.errorColor, fontSize: 14),
               textAlign: TextAlign.center,
             ),
           ],
@@ -219,8 +220,8 @@ class _RoundTransitionScreenState extends State<RoundTransitionScreen>
         const SizedBox(height: 16),
         Text(
           widget.nextSession != null ? 'Rate Your Match' : 'Final Rating',
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: context.onSurfaceColor,
             fontSize: 28,
             fontWeight: FontWeight.bold,
           ),
@@ -230,7 +231,7 @@ class _RoundTransitionScreenState extends State<RoundTransitionScreen>
           widget.nextSession != null
               ? 'How was your conversation?'
               : 'How was your last conversation?',
-          style: const TextStyle(color: Colors.white70, fontSize: 16),
+          style: TextStyle(color: Colors.white70, fontSize: 16),
         ),
       ],
     );
@@ -276,14 +277,14 @@ class _RoundTransitionScreenState extends State<RoundTransitionScreen>
                       fit: BoxFit.cover,
                       placeholder: (context, url) => Container(
                         color: Colors.grey[800],
-                        child: const Center(child: CircularProgressIndicator()),
+                        child: Center(child: CircularProgressIndicator()),
                       ),
                       errorWidget: (context, url, error) => Container(
                         color: Colors.grey[800],
-                        child: const Icon(
+                        child: Icon(
                           Icons.person,
                           size: 40,
-                          color: Colors.white,
+                          color: context.onSurfaceColor,
                         ),
                       ),
                     )
@@ -292,9 +293,9 @@ class _RoundTransitionScreenState extends State<RoundTransitionScreen>
                       child: Center(
                         child: Text(
                           name[0].toUpperCase(),
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 32,
-                            color: Colors.white,
+                            color: context.onSurfaceColor,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -310,8 +311,8 @@ class _RoundTransitionScreenState extends State<RoundTransitionScreen>
               children: [
                 Text(
                   age != null ? '$name, $age' : name,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: context.onSurfaceColor,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
@@ -320,7 +321,7 @@ class _RoundTransitionScreenState extends State<RoundTransitionScreen>
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.location_on,
                         color: Colors.white70,
                         size: 14,
@@ -329,7 +330,7 @@ class _RoundTransitionScreenState extends State<RoundTransitionScreen>
                       Expanded(
                         child: Text(
                           location,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: Colors.white70,
                             fontSize: 14,
                           ),
@@ -350,10 +351,10 @@ class _RoundTransitionScreenState extends State<RoundTransitionScreen>
   Widget _buildRatingSection() {
     return Column(
       children: [
-        const Text(
+        Text(
           'Your Rating',
           style: TextStyle(
-            color: Colors.white,
+            color: context.onSurfaceColor,
             fontSize: 18,
             fontWeight: FontWeight.w600,
           ),
@@ -445,10 +446,10 @@ class _RoundTransitionScreenState extends State<RoundTransitionScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Notes (Optional)',
           style: TextStyle(
-            color: Colors.white,
+            color: context.onSurfaceColor,
             fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
@@ -467,7 +468,7 @@ class _RoundTransitionScreenState extends State<RoundTransitionScreen>
             controller: _notesController,
             maxLines: 3,
             maxLength: 200,
-            style: const TextStyle(color: Colors.white),
+            style: TextStyle(color: Colors.white),
             decoration: const InputDecoration(
               hintText: 'Add any thoughts about this match...',
               hintStyle: TextStyle(color: Colors.white38),
@@ -525,13 +526,13 @@ class _RoundTransitionScreenState extends State<RoundTransitionScreen>
         children: [
           Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.arrow_forward,
                 color: AppColors.primary,
                 size: 20,
               ),
               const SizedBox(width: 8),
-              const Text(
+              Text(
                 'Up Next',
                 style: TextStyle(
                   color: Colors.white70,
@@ -552,7 +553,7 @@ class _RoundTransitionScreenState extends State<RoundTransitionScreen>
                 child: photoUrl == null
                     ? Text(
                         name[0].toUpperCase(),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),
@@ -566,14 +567,14 @@ class _RoundTransitionScreenState extends State<RoundTransitionScreen>
                   children: [
                     Text(
                       name,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: context.onSurfaceColor,
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 4),
-                    const Text(
+                    Text(
                       'Get ready for your next conversation!',
                       style: TextStyle(color: Colors.white60, fontSize: 12),
                     ),
@@ -597,11 +598,11 @@ class _RoundTransitionScreenState extends State<RoundTransitionScreen>
         elevation: 8,
       ),
       child: _isSubmitting
-          ? const SizedBox(
+          ? SizedBox(
               height: 24,
               width: 24,
               child: CircularProgressIndicator(
-                color: Colors.white,
+                color: context.onSurfaceColor,
                 strokeWidth: 2,
               ),
             )
@@ -612,10 +613,10 @@ class _RoundTransitionScreenState extends State<RoundTransitionScreen>
                   widget.nextSession != null
                       ? 'Continue to Next Round'
                       : 'View Matches',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: context.onSurfaceColor,
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -623,7 +624,7 @@ class _RoundTransitionScreenState extends State<RoundTransitionScreen>
                   widget.nextSession != null
                       ? Icons.arrow_forward
                       : Icons.emoji_events,
-                  color: Colors.white,
+                  color: context.onSurfaceColor,
                 ),
               ],
             ),
@@ -673,9 +674,9 @@ class _RoundTransitionScreenState extends State<RoundTransitionScreen>
                         ),
                       ],
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.favorite,
-                      color: Colors.white,
+                      color: context.onSurfaceColor,
                       size: 60,
                     ),
                   ),
@@ -683,22 +684,22 @@ class _RoundTransitionScreenState extends State<RoundTransitionScreen>
               },
             ),
             const SizedBox(height: 32),
-            const Text(
+            Text(
               "It's a Match!",
               style: TextStyle(
-                color: Colors.white,
+                color: context.onSurfaceColor,
                 fontSize: 48,
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'You both rated each other highly!',
               style: TextStyle(color: Colors.white70, fontSize: 18),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               "You'll see them in your matches",
               style: TextStyle(color: Colors.white60, fontSize: 14),
             ),

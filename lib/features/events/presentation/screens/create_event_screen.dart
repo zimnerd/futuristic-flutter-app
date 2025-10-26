@@ -62,9 +62,9 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Create Event'),
+          title: Text('Create Event'),
           leading: IconButton(
-            icon: const Icon(Icons.close),
+            icon: Icon(Icons.close),
             onPressed: () => context.pop(),
           ),
           actions: [
@@ -285,7 +285,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                             Text('Public Event'),
                           ],
                         ),
-                        subtitle: const Text(
+                        subtitle: Text(
                           'Anyone can see and join this event',
                         ),
                         tileColor: PulseColors.surface,
@@ -314,7 +314,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                             Text('Private Event'),
                           ],
                         ),
-                        subtitle: const Text(
+                        subtitle: Text(
                           'Only invited people can see and join',
                         ),
                         tileColor: PulseColors.surface,
@@ -365,7 +365,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                       ),
                       elevation: 0,
                     ),
-                    child: const Text(
+                    child: Text(
                       'Create Event',
                       style: TextStyle(
                         fontSize: 16,
@@ -392,7 +392,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text(
+                    child: Text(
                       'Cancel',
                       style: TextStyle(
                         fontSize: 16,

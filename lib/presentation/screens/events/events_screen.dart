@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 import '../../../core/utils/logger.dart';
 import '../../../domain/entities/event.dart';
@@ -554,11 +555,11 @@ class _EventsScreenState extends State<EventsScreen>
             const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: _loadEvents,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Try Again'),
+              icon: Icon(Icons.refresh),
+              label: Text('Try Again'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: PulseColors.primary,
-                foregroundColor: Colors.white,
+                foregroundColor: context.onSurfaceColor,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -605,11 +606,11 @@ class _EventsScreenState extends State<EventsScreen>
             const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: _onCreateEvent,
-              icon: const Icon(Icons.add),
-              label: const Text('Create Event'),
+              icon: Icon(Icons.add),
+              label: Text('Create Event'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: PulseColors.primary,
-                foregroundColor: Colors.white,
+                foregroundColor: context.onSurfaceColor,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -667,8 +668,8 @@ class _EventsScreenState extends State<EventsScreen>
                 );
                 context.read<EventBloc>().add(const SearchEvents(''));
               },
-              icon: const Icon(Icons.clear_all),
-              label: const Text('Clear Filters'),
+              icon: Icon(Icons.clear_all),
+              label: Text('Clear Filters'),
               style: TextButton.styleFrom(foregroundColor: PulseColors.primary),
             ),
           ],

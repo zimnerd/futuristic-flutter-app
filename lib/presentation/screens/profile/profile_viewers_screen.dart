@@ -10,6 +10,7 @@ import '../../blocs/premium/premium_state.dart';
 import '../../blocs/profile/profile_bloc.dart';
 import '../../widgets/common/robust_network_image.dart';
 import '../../widgets/verification/verification_badge.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Profile Viewers Screen - Premium Feature
 ///
@@ -55,7 +56,7 @@ class _ProfileViewersScreenState extends State<ProfileViewersScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Who Viewed You'),
+        title: Text('Who Viewed You'),
         backgroundColor: PulseColors.backgroundLight,
         elevation: 0,
       ),
@@ -123,7 +124,7 @@ class _ProfileViewersScreenState extends State<ProfileViewersScreen> {
                   '$totalCount ${totalCount == 1 ? 'person has' : 'people have'} viewed your profile',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     fontWeight: FontWeight.w600,
-                    color: PulseColors.grey900,
+                    color: context.borderColor.shade900,
                   ),
                 ),
               ],
@@ -181,7 +182,11 @@ class _ProfileViewersScreenState extends State<ProfileViewersScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.visibility_off, size: 80, color: Colors.grey[400]),
+            Icon(
+              Icons.visibility_off,
+              size: 80,
+              color: context.outlineColor.withValues(alpha: 0.2),
+            ),
             const SizedBox(height: 24),
             Text(
               'No profile views yet',
@@ -195,7 +200,9 @@ class _ProfileViewersScreenState extends State<ProfileViewersScreen> {
               'Complete your profile and stay active to get more views!',
               style: Theme.of(
                 context,
-              ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
+              ).textTheme.bodyLarge?.copyWith(
+                color: context.onSurfaceVariantColor,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
@@ -203,8 +210,8 @@ class _ProfileViewersScreenState extends State<ProfileViewersScreen> {
               onPressed: () {
                 context.pop();
               },
-              icon: const Icon(Icons.edit),
-              label: const Text('Edit Profile'),
+              icon: Icon(Icons.edit),
+              label: Text('Edit Profile'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: PulseColors.primary,
                 padding: const EdgeInsets.symmetric(
@@ -229,7 +236,11 @@ class _ProfileViewersScreenState extends State<ProfileViewersScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.error_outline, size: 80, color: Colors.grey[400]),
+            Icon(
+              Icons.error_outline,
+              size: 80,
+              color: context.outlineColor.withValues(alpha: 0.2),
+            ),
             const SizedBox(height: 24),
             Text(
               'Something went wrong',
@@ -243,14 +254,16 @@ class _ProfileViewersScreenState extends State<ProfileViewersScreen> {
               message,
               style: Theme.of(
                 context,
-              ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
+              ).textTheme.bodyLarge?.copyWith(
+                color: context.onSurfaceVariantColor,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
             ElevatedButton.icon(
               onPressed: _loadProfileViewers,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Try Again'),
+              icon: Icon(Icons.refresh),
+              label: Text('Try Again'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: PulseColors.primary,
                 padding: const EdgeInsets.symmetric(
@@ -290,10 +303,10 @@ class _ProfileViewersScreenState extends State<ProfileViewersScreen> {
                 ),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.workspace_premium,
                 size: 60,
-                color: Colors.white,
+                color: context.onSurfaceColor,
               ),
             ),
             const SizedBox(height: 32),
@@ -301,7 +314,7 @@ class _ProfileViewersScreenState extends State<ProfileViewersScreen> {
               'Premium Feature',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: PulseColors.grey900,
+                color: context.borderColor.shade900,
               ),
               textAlign: TextAlign.center,
             ),
@@ -319,7 +332,9 @@ class _ProfileViewersScreenState extends State<ProfileViewersScreen> {
               'Upgrade to premium to see who\'s checking you out and boost your matches!',
               style: Theme.of(
                 context,
-              ).textTheme.bodyLarge?.copyWith(color: PulseColors.grey600),
+              ).textTheme.bodyLarge?.copyWith(
+                color: context.borderColor.shade600,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 40),
@@ -353,12 +368,12 @@ class _ProfileViewersScreenState extends State<ProfileViewersScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.workspace_premium, size: 24),
+                    Icon(Icons.workspace_premium, size: 24),
                     const SizedBox(width: 12),
                     Text(
                       'Upgrade to Premium',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Colors.white,
+                        color: context.onSurfaceColor,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -375,7 +390,10 @@ class _ProfileViewersScreenState extends State<ProfileViewersScreen> {
               },
               child: Text(
                 'Maybe Later',
-                style: TextStyle(color: PulseColors.grey600, fontSize: 16),
+                style: TextStyle(
+                  color: context.borderColor.shade600,
+                  fontSize: 16,
+                ),
               ),
             ),
           ],
@@ -402,7 +420,7 @@ class _ProfileViewersScreenState extends State<ProfileViewersScreen> {
             text,
             style: TextStyle(
               fontSize: 16,
-              color: PulseColors.grey800,
+              color: context.borderColor.shade800,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -447,15 +465,15 @@ class _ViewerGridCard extends StatelessWidget {
                 width: double.infinity,
                 height: double.infinity,
                 placeholder: Container(
-                  color: Colors.grey[300],
-                  child: const Center(child: CircularProgressIndicator()),
+                  color: context.outlineColor.withValues(alpha: 0.3),
+                  child: Center(child: CircularProgressIndicator()),
                 ),
                 errorWidget: Container(
-                  color: Colors.grey[300],
-                  child: const Icon(
+                  color: context.outlineColor.withValues(alpha: 0.3),
+                  child: Icon(
                     Icons.person,
                     size: 60,
-                    color: Colors.white,
+                    color: context.onSurfaceColor,
                   ),
                 ),
               ),
@@ -494,8 +512,8 @@ class _ViewerGridCard extends StatelessWidget {
                         Expanded(
                           child: Text(
                             user.nameWithAge,
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: context.onSurfaceColor,
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
@@ -513,7 +531,7 @@ class _ViewerGridCard extends StatelessWidget {
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.location_on,
                             color: Colors.white70,
                             size: 14,
@@ -522,7 +540,7 @@ class _ViewerGridCard extends StatelessWidget {
                           Expanded(
                             child: Text(
                               user.distanceString,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: Colors.white70,
                                 fontSize: 12,
                               ),
@@ -552,10 +570,10 @@ class _LoadingCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.grey[300],
+        color: context.outlineColor.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(16),
       ),
-      child: const Center(child: CircularProgressIndicator()),
+      child: Center(child: CircularProgressIndicator()),
     );
   }
 }

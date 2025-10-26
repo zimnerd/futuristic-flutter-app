@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 import '../../data/services/heat_map_service.dart';
 import '../../core/services/location_service.dart';
 import '../../core/services/permission_service.dart';
@@ -383,7 +384,7 @@ class _HeatMapScreenState extends State<HeatMapScreen>
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text(
+          title: Text(
             '📊 User Statistics',
             style: TextStyle(
               fontSize: 20,
@@ -430,7 +431,7 @@ class _HeatMapScreenState extends State<HeatMapScreen>
                   _isStatisticsPopupVisible = false;
                 });
               },
-              child: const Text(
+              child: Text(
                 'Close',
                 style: TextStyle(color: Color(0xFF6E3BFF)),
               ),
@@ -473,7 +474,7 @@ class _HeatMapScreenState extends State<HeatMapScreen>
       child: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(color: Color(0xFF0A0A0A)),
+        decoration: BoxDecoration(color: Color(0xFF0A0A0A)),
         child: SafeArea(
           child: Column(
             children: [
@@ -502,21 +503,21 @@ class _HeatMapScreenState extends State<HeatMapScreen>
   Widget _buildModalHeader(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      decoration: const BoxDecoration(color: Color(0xFF0A0A0A)),
+      decoration: BoxDecoration(color: Color(0xFF0A0A0A)),
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.close, color: Colors.white),
+            icon: Icon(Icons.close, color: Colors.white),
             onPressed: () => Navigator.pop(context),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
           ),
-          const SizedBox(width: 16),
-          const Expanded(
+          SizedBox(width: 16),
+          Expanded(
             child: Text(
               'Map Coverage',
               style: TextStyle(
-                color: Colors.white,
+                color: context.onSurfaceColor,
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
@@ -530,7 +531,7 @@ class _HeatMapScreenState extends State<HeatMapScreen>
                 color: const Color(0xFF6E3BFF),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(Icons.tune, color: Colors.white, size: 20),
+              child: Icon(Icons.tune, color: context.onSurfaceColor, size: 20),
             ),
             onPressed: () => _showRadiusSelector(context),
             padding: EdgeInsets.zero,
@@ -543,14 +544,14 @@ class _HeatMapScreenState extends State<HeatMapScreen>
 
   Widget _buildLoadingState() {
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [Color(0xFF0A0A0A), Color(0xFF1A1A1A)],
         ),
       ),
-      child: const Center(
+      child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -605,9 +606,12 @@ class _HeatMapScreenState extends State<HeatMapScreen>
                       ),
                     ),
                     const SizedBox(width: 8),
-                    const Text(
+                    Text(
                       'Calculating clusters...',
-                      style: TextStyle(color: Colors.white, fontSize: 12),
+                      style: TextStyle(
+                        color: context.onSurfaceColor,
+                        fontSize: 12,
+                      ),
                     ),
                   ],
                 ),
@@ -1013,7 +1017,7 @@ class _HeatMapScreenState extends State<HeatMapScreen>
     textPainter.text = TextSpan(
       text: userCount.toString(),
       style: TextStyle(
-        color: Colors.white,
+        color: context.onSurfaceColor,
         fontSize: size > 60 ? 20 : (size > 50 ? 16 : 14),
         fontWeight: FontWeight.bold,
       ),
@@ -1049,14 +1053,14 @@ class _HeatMapScreenState extends State<HeatMapScreen>
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1E1E1E),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Row(
+        title: Row(
           children: [
             Icon(Icons.people, color: Color(0xFF6E3BFF), size: 24),
             SizedBox(width: 8),
             Text(
               'Cluster Details',
               style: TextStyle(
-                color: Colors.white,
+                color: context.onSurfaceColor,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -1074,21 +1078,21 @@ class _HeatMapScreenState extends State<HeatMapScreen>
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.group, color: Color(0xFF6E3BFF), size: 20),
+                  Icon(Icons.group, color: Color(0xFF6E3BFF), size: 20),
                   const SizedBox(width: 8),
                   Text(
                     'Total Users: ${cluster.userCount}',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
-                      color: Colors.white,
+                      color: context.onSurfaceColor,
                     ),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'Status Breakdown:',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
@@ -1110,7 +1114,7 @@ class _HeatMapScreenState extends State<HeatMapScreen>
               ),
               child: Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.location_on,
                     color: Color(0xFF00C2FF),
                     size: 16,
@@ -1119,7 +1123,7 @@ class _HeatMapScreenState extends State<HeatMapScreen>
                   Expanded(
                     child: Text(
                       '${cluster.latitude.toStringAsFixed(4)}, ${cluster.longitude.toStringAsFixed(4)}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
                         color: Colors.white70,
                       ),
@@ -1135,13 +1139,13 @@ class _HeatMapScreenState extends State<HeatMapScreen>
             onPressed: () => Navigator.pop(context),
             style: TextButton.styleFrom(
               backgroundColor: const Color(0xFF6E3BFF),
-              foregroundColor: Colors.white,
+              foregroundColor: context.onSurfaceColor,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            child: const Text('Close'),
+            child: Text('Close'),
           ),
         ],
       ),
@@ -1360,8 +1364,8 @@ class _HeatMapScreenState extends State<HeatMapScreen>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: Colors.grey)),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.w500)),
+          Text(label, style: TextStyle(color: context.outlineColor)),
+          Text(value, style: TextStyle(fontWeight: FontWeight.w500)),
         ],
       ),
     );
@@ -1384,8 +1388,8 @@ class _HeatMapScreenState extends State<HeatMapScreen>
           children: [
             Text(
               'Coverage: ${state.currentRadius} km radius',
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: context.onSurfaceColor,
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
@@ -1393,7 +1397,7 @@ class _HeatMapScreenState extends State<HeatMapScreen>
             const SizedBox(height: 4),
             Text(
               'Zoom Level: ${_currentZoom.toStringAsFixed(1)}x',
-              style: const TextStyle(color: Colors.white70, fontSize: 14),
+              style: TextStyle(color: Colors.white70, fontSize: 14),
             ),
             const SizedBox(height: 8),
             _buildLegend(),
@@ -1424,7 +1428,7 @@ class _HeatMapScreenState extends State<HeatMapScreen>
           decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(width: 4),
-        Text(emoji, style: const TextStyle(fontSize: 12)),
+        Text(emoji, style: TextStyle(fontSize: 12)),
         const SizedBox(width: 2),
         Text(label, style: TextStyle(color: Colors.white70, fontSize: 10)),
       ],
@@ -1464,16 +1468,20 @@ class _HeatMapScreenState extends State<HeatMapScreen>
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   'People in your area',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: context.onSurfaceColor,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.tune, color: Colors.white, size: 18),
+                  icon: Icon(
+                    Icons.tune,
+                    color: context.onSurfaceColor,
+                    size: 18,
+                  ),
                   onPressed: () => _showRadiusSelector(context),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(
@@ -1524,12 +1532,12 @@ class _HeatMapScreenState extends State<HeatMapScreen>
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, color: Colors.white, size: 20),
+        Icon(icon, color: context.onSurfaceColor, size: 20),
         const SizedBox(height: 4),
         Text(
           value.toString(),
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: context.onSurfaceColor,
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
@@ -1537,7 +1545,7 @@ class _HeatMapScreenState extends State<HeatMapScreen>
         const SizedBox(height: 2),
         Text(
           label,
-          style: const TextStyle(color: Colors.white70, fontSize: 10),
+          style: TextStyle(color: Colors.white70, fontSize: 10),
         ),
       ],
     );
@@ -1551,7 +1559,7 @@ class _HeatMapScreenState extends State<HeatMapScreen>
         state.message.contains('Unable to get current location');
 
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
@@ -1564,7 +1572,7 @@ class _HeatMapScreenState extends State<HeatMapScreen>
           children: [
             Icon(
               isLocationError ? Icons.location_off : Icons.error_outline,
-              color: Colors.red,
+              color: context.errorColor,
               size: 64,
             ),
             const SizedBox(height: 24),
@@ -1572,8 +1580,8 @@ class _HeatMapScreenState extends State<HeatMapScreen>
               isLocationError
                   ? 'Location Access Required'
                   : 'Oops! Something went wrong',
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: context.onSurfaceColor,
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
@@ -1586,7 +1594,7 @@ class _HeatMapScreenState extends State<HeatMapScreen>
                     ? 'The heat map needs location access to show people nearby and coverage areas. Please enable location permissions to continue.'
                     : state.message,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white70, fontSize: 16),
+                style: TextStyle(color: Colors.white70, fontSize: 16),
               ),
             ),
             const SizedBox(height: 32),
@@ -1615,9 +1623,9 @@ class _HeatMapScreenState extends State<HeatMapScreen>
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Text(
+                child: Text(
                   'Enable Location',
-                  style: TextStyle(color: Colors.white, fontSize: 16),
+                  style: TextStyle(color: context.onSurfaceColor, fontSize: 16),
                 ),
               ),
               const SizedBox(height: 16),
@@ -1628,7 +1636,7 @@ class _HeatMapScreenState extends State<HeatMapScreen>
                     context,
                   );
                 },
-                child: const Text(
+                child: Text(
                   'What features need location?',
                   style: TextStyle(color: Colors.white70, fontSize: 14),
                 ),
@@ -1650,9 +1658,9 @@ class _HeatMapScreenState extends State<HeatMapScreen>
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Text(
+                child: Text(
                   'Try Again',
-                  style: TextStyle(color: Colors.white, fontSize: 16),
+                  style: TextStyle(color: context.onSurfaceColor, fontSize: 16),
                 ),
               ),
             ],
@@ -1664,7 +1672,7 @@ class _HeatMapScreenState extends State<HeatMapScreen>
 
   Widget _buildInitialState(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
@@ -1683,9 +1691,9 @@ class _HeatMapScreenState extends State<HeatMapScreen>
               borderRadius: BorderRadius.circular(12),
             ),
           ),
-          child: const Text(
+          child: Text(
             'Load Map',
-            style: TextStyle(color: Colors.white, fontSize: 16),
+            style: TextStyle(color: context.onSurfaceColor, fontSize: 16),
           ),
         ),
       ),
@@ -1705,7 +1713,7 @@ class _HeatMapScreenState extends State<HeatMapScreen>
           maxChildSize: 0.8,
           minChildSize: 0.3,
           builder: (sheetContext, scrollController) => Container(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: Color(0xFF1A1A1A),
               borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
             ),
@@ -1733,10 +1741,10 @@ class _HeatMapScreenState extends State<HeatMapScreen>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'Search Radius',
                             style: TextStyle(
-                              color: Colors.white,
+                              color: context.onSurfaceColor,
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                             ),
@@ -1748,10 +1756,10 @@ class _HeatMapScreenState extends State<HeatMapScreen>
                                   contentPadding: EdgeInsets.zero,
                                   title: Text(
                                     option.displayText,
-                                    style: const TextStyle(color: Colors.white),
+                                    style: TextStyle(color: Colors.white),
                                   ),
                                   trailing: _currentRadius == option.distanceKm
-                                      ? const Icon(
+                                      ? Icon(
                                           Icons.check,
                                           color: Color(0xFF6E3BFF),
                                         )
@@ -1790,7 +1798,7 @@ class _HeatMapScreenState extends State<HeatMapScreen>
           // Map Type Selector
           Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: context.onSurfaceColor,
               borderRadius: BorderRadius.circular(8),
               boxShadow: [
                 BoxShadow(
@@ -1801,7 +1809,7 @@ class _HeatMapScreenState extends State<HeatMapScreen>
               ],
             ),
             child: PopupMenuButton<MapType>(
-              icon: const Icon(Icons.layers),
+              icon: Icon(Icons.layers),
               onSelected: (MapType type) {
                 setState(() {
                   _mapType = type;
@@ -1845,7 +1853,7 @@ class _HeatMapScreenState extends State<HeatMapScreen>
           // Zoom Controls
           Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: context.onSurfaceColor,
               borderRadius: BorderRadius.circular(8),
               boxShadow: [
                 BoxShadow(
@@ -1858,14 +1866,14 @@ class _HeatMapScreenState extends State<HeatMapScreen>
             child: Column(
               children: [
                 IconButton(
-                  icon: const Icon(Icons.add),
+                  icon: Icon(Icons.add),
                   onPressed: () {
                     _mapController?.animateCamera(CameraUpdate.zoomIn());
                   },
                 ),
                 const Divider(height: 1),
                 IconButton(
-                  icon: const Icon(Icons.remove),
+                  icon: Icon(Icons.remove),
                   onPressed: () {
                     _mapController?.animateCamera(CameraUpdate.zoomOut());
                   },
@@ -1956,7 +1964,7 @@ class _HeatMapScreenState extends State<HeatMapScreen>
           // Statistics Button
           Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: context.onSurfaceColor,
               borderRadius: BorderRadius.circular(8),
               boxShadow: [
                 BoxShadow(
@@ -1967,7 +1975,7 @@ class _HeatMapScreenState extends State<HeatMapScreen>
               ],
             ),
             child: IconButton(
-              icon: const Icon(Icons.analytics, color: Color(0xFF00D4AA)),
+              icon: Icon(Icons.analytics, color: Color(0xFF00D4AA)),
               onPressed: _showStatisticsPopup,
               tooltip: 'Show Statistics',
             ),
@@ -1976,7 +1984,7 @@ class _HeatMapScreenState extends State<HeatMapScreen>
           // My Location Button
           Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: context.onSurfaceColor,
               borderRadius: BorderRadius.circular(8),
               boxShadow: [
                 BoxShadow(
@@ -1987,7 +1995,7 @@ class _HeatMapScreenState extends State<HeatMapScreen>
               ],
             ),
             child: IconButton(
-              icon: const Icon(Icons.my_location),
+              icon: Icon(Icons.my_location),
               onPressed: () async {
                 final state = context.read<HeatMapBloc>().state;
                 if (state is HeatMapLoaded && state.userLocation != null) {

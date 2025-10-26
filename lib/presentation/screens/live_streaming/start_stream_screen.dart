@@ -6,6 +6,7 @@ import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 import '../../widgets/common/pulse_toast.dart';
 import '../../../data/services/live_streaming_service.dart';
 import '../../../core/network/api_client.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Screen for starting or editing a live stream
 class StartStreamScreen extends StatefulWidget {
@@ -64,7 +65,7 @@ class _StartStreamScreenState extends State<StartStreamScreen> {
             onPressed: _startStream,
             child: Text(
               isEditing ? 'Update' : 'Start',
-              style: const TextStyle(color: Colors.white),
+              style: TextStyle(color: Colors.white),
             ),
           ),
         ],
@@ -82,7 +83,7 @@ class _StartStreamScreenState extends State<StartStreamScreen> {
                 color: Colors.grey[900],
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Center(
+              child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -156,10 +157,10 @@ class _StartStreamScreenState extends State<StartStreamScreen> {
                 ),
                 child: Text(
                   isEditing ? 'Update Stream' : 'Go Live!',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: context.onSurfaceColor,
                   ),
                 ),
               ),

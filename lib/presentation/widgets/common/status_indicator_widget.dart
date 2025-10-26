@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Real-time status indicators for online presence, typing, etc.
 class StatusIndicatorWidget extends StatefulWidget {
@@ -188,7 +189,11 @@ class _StatusIndicatorWidgetState extends State<StatusIndicatorWidget>
             shape: BoxShape.circle,
             color: config.color,
           ),
-          child: Icon(Icons.schedule, color: Colors.white, size: size * 0.6),
+          child: Icon(
+            Icons.schedule,
+            color: context.onSurfaceColor,
+            size: size * 0.6,
+          ),
         );
 
       case UserStatus.busy:
@@ -201,7 +206,7 @@ class _StatusIndicatorWidgetState extends State<StatusIndicatorWidget>
           ),
           child: Icon(
             Icons.do_not_disturb,
-            color: Colors.white,
+            color: context.onSurfaceColor,
             size: size * 0.6,
           ),
         );
@@ -212,8 +217,8 @@ class _StatusIndicatorWidgetState extends State<StatusIndicatorWidget>
           height: size,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Colors.grey.shade300,
-            border: Border.all(color: Colors.white, width: 2),
+            color: context.outlineColor.withValues(alpha: 0.5),
+            border: Border.all(color: context.onSurfaceColor, width: 2),
           ),
         );
 
@@ -234,9 +239,9 @@ class _StatusIndicatorWidgetState extends State<StatusIndicatorWidget>
               child: Container(
                 width: size * 0.4,
                 height: size * 0.4,
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.white,
+                  color: context.onSurfaceColor,
                 ),
                 child: Icon(
                   Icons.schedule,
@@ -256,7 +261,11 @@ class _StatusIndicatorWidgetState extends State<StatusIndicatorWidget>
             shape: BoxShape.circle,
             color: config.color,
           ),
-          child: Icon(Icons.call, color: Colors.white, size: size * 0.6),
+          child: Icon(
+            Icons.call,
+            color: context.onSurfaceColor,
+            size: size * 0.6,
+          ),
         );
     }
   }
@@ -270,12 +279,12 @@ class _StatusIndicatorWidgetState extends State<StatusIndicatorWidget>
       case UserStatus.away:
         return StatusConfig(color: Colors.orange, label: 'Away');
       case UserStatus.busy:
-        return StatusConfig(color: Colors.red, label: 'Busy');
+        return StatusConfig(color: context.errorColor, label: 'Busy');
       case UserStatus.offline:
-        return StatusConfig(color: Colors.grey, label: 'Offline');
+        return StatusConfig(color: context.outlineColor, label: 'Offline');
       case UserStatus.recentlyActive:
         return StatusConfig(
-          color: Colors.green.shade300,
+          color: Colors.green.withValues(alpha: 0.7),
           label: 'Recently active',
         );
       case UserStatus.inCall:
@@ -370,7 +379,7 @@ class UserStatusIndicator extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             border: showBorder
-                ? Border.all(color: Colors.white, width: 2)
+                ? Border.all(color: context.onSurfaceColor, width: 2)
                 : null,
           ),
           child: ClipOval(
@@ -383,10 +392,10 @@ class UserStatusIndicator extends StatelessWidget {
                 return Container(
                   width: size,
                   height: size,
-                  color: Colors.grey.shade300,
+                  color: context.outlineColor.withValues(alpha: 0.2),
                   child: Icon(
                     Icons.person,
-                    color: Colors.grey.shade600,
+                    color: context.outlineColor.withValues(alpha: 0.4),
                     size: size * 0.6,
                   ),
                 );

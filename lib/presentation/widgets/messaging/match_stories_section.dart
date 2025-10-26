@@ -4,6 +4,7 @@ import '../../../domain/entities/user_profile.dart';
 import '../../../data/models/match_model.dart';
 import '../../theme/pulse_colors.dart';
 import '../common/robust_network_image.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Stories-like horizontal scrollable match thumbnails
 /// Shows matches that haven't been chatted with yet
@@ -159,7 +160,7 @@ class _MatchStoryAvatar extends StatelessWidget {
                   margin: const EdgeInsets.all(3),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2),
+                    border: Border.all(color: context.onSurfaceColor, width: 2),
                   ),
                   child: ClipOval(
                     child: RobustNetworkImage(

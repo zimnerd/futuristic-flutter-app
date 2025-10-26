@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 final logger = Logger();
 
@@ -91,6 +92,7 @@ class ProfileRelationshipGoalsSection extends StatelessWidget {
   /// Builds individual intent option widget
   /// Extracted to ensure proper tap handling and state synchronization
   Widget _buildGoalOption({
+    required BuildContext context,
     required Map<String, dynamic> option,
     required bool isSelected,
     required bool isDark,
@@ -123,20 +125,14 @@ class ProfileRelationshipGoalsSection extends StatelessWidget {
             color: isSelected
                 ? PulseColors.secondary.withValues(alpha: 0.2)
                 : isDisabled
-                ? (isDark
-                      ? Colors.white.withValues(alpha: 0.02)
-                      : Colors.grey.shade100)
-                : (isDark
-                      ? Colors.white.withValues(alpha: 0.05)
-                      : Colors.grey.shade50),
+                ? context.borderColor.withValues(alpha: 0.2)
+                : context.surfaceElevated.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isSelected
                   ? PulseColors.secondary
                   : isDisabled
-                  ? (isDark
-                        ? Colors.white.withValues(alpha: 0.05)
-                        : Colors.grey.shade200)
+                  ? context.borderLight
                   : borderColor,
               width: isSelected ? 2 : 1,
             ),
@@ -163,7 +159,7 @@ class ProfileRelationshipGoalsSection extends StatelessWidget {
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: isSelected
-                          ? (isDark ? Colors.white : Colors.black87)
+                          ? context.textOnPrimary
                           : isDisabled
                           ? textColor.withValues(alpha: 0.4)
                           : textColor,
@@ -184,7 +180,7 @@ class ProfileRelationshipGoalsSection extends StatelessWidget {
               ),
               if (isSelected) ...[
                 const SizedBox(width: 8),
-                const Icon(
+                Icon(
                   Icons.check_circle,
                   color: PulseColors.secondary,
                   size: 18,
@@ -202,10 +198,10 @@ class ProfileRelationshipGoalsSection extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final containerColor = isDark
         ? Colors.white.withValues(alpha: 0.05)
-        : Colors.grey.shade50;
+        : context.outlineColor.shade50;
     final borderColor = isDark
         ? Colors.white.withValues(alpha: 0.1)
-        : Colors.grey.withValues(alpha: 0.3);
+        : context.outlineColor.withValues(alpha: 0.3);
     final textColor =
         Theme.of(context).textTheme.bodyLarge?.color ??
         (isDark ? Colors.white : Colors.black87);
@@ -229,7 +225,7 @@ class ProfileRelationshipGoalsSection extends StatelessWidget {
                   color: PulseColors.secondary.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.favorite_border,
                   color: PulseColors.secondary,
                   size: 20,
@@ -299,6 +295,7 @@ class ProfileRelationshipGoalsSection extends StatelessWidget {
               final isSelected = selectedGoals.contains(optionValue);
 
               return _buildGoalOption(
+                context: context,
                 option: option,
                 isSelected: isSelected,
                 isDark: isDark,
@@ -319,7 +316,7 @@ class ProfileRelationshipGoalsSection extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.lightbulb_outline,
                     size: 16,
                     color: PulseColors.secondary,

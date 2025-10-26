@@ -84,7 +84,7 @@ class ErrorDialog extends StatelessWidget {
           if (technicalDetails != null) ...[
             const SizedBox(height: 16),
             ExpansionTile(
-              title: const Text('Technical Details'),
+              title: Text('Technical Details'),
               children: [
                 Container(
                   width: double.infinity,

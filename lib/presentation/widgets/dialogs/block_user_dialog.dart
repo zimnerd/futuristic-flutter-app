@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../theme/pulse_colors.dart' hide PulseTextStyles;
 import '../../theme/pulse_theme.dart';
 import '../../blocs/block_report/block_report_bloc.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Dialog for blocking a user
 class BlockUserDialog extends StatefulWidget {
@@ -149,7 +150,7 @@ class _BlockUserDialogState extends State<BlockUserDialog> {
           onPressed: _isBlocking ? null : _handleBlock,
           style: ElevatedButton.styleFrom(
             backgroundColor: PulseColors.error,
-            foregroundColor: Colors.white,
+            foregroundColor: context.onSurfaceColor,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),
@@ -166,7 +167,7 @@ class _BlockUserDialogState extends State<BlockUserDialog> {
               : Text(
                   'Block',
                   style: PulseTextStyles.labelLarge.copyWith(
-                    color: Colors.white,
+                    color: context.onSurfaceColor,
                     fontWeight: FontWeight.bold,
                   ),
                 ),

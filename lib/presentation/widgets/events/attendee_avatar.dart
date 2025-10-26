@@ -4,6 +4,7 @@ import '../../../domain/entities/event.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../theme/pulse_colors.dart';
 import '../common/robust_network_image.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 class AttendeeAvatar extends StatelessWidget {
   final EventAttendance attendance;
@@ -130,13 +131,16 @@ class AttendeeList extends StatelessWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: PulseColors.primary,
-                      border: Border.all(color: Colors.white, width: 2),
+                      border: Border.all(
+                        color: context.onSurfaceColor,
+                        width: 2,
+                      ),
                     ),
                     child: Center(
                       child: Text(
                         '+$remainingCount',
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: context.onSurfaceColor,
                           fontSize: 10,
                           fontWeight: FontWeight.w600,
                         ),

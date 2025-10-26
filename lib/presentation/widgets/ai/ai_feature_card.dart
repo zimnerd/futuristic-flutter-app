@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Reusable AI feature card widget with futuristic design
 class AiFeatureCard extends StatelessWidget {
@@ -39,11 +40,13 @@ class AiFeatureCard extends StatelessWidget {
                   ],
                 )
               : null,
-          color: enabled ? null : Colors.grey.shade900.withValues(alpha: 0.3),
+          color: enabled
+              ? null
+              : context.outlineColor.shade900.withValues(alpha: 0.3),
           border: Border.all(
             color: enabled
                 ? Colors.white.withValues(alpha: 0.2)
-                : Colors.grey.withValues(alpha: 0.2),
+                : context.outlineColor.withValues(alpha: 0.2),
             width: 1,
           ),
           boxShadow: enabled
@@ -66,10 +69,12 @@ class AiFeatureCard extends StatelessWidget {
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     gradient: enabled ? iconGradient : null,
-                    color: enabled ? null : Colors.grey.withValues(alpha: 0.3),
+                    color: enabled
+                        ? null
+                        : context.outlineColor.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(icon, color: Colors.white, size: 24),
+                  child: Icon(icon, color: context.onSurfaceColor, size: 24),
                 ),
                 const SizedBox(width: 16),
 
@@ -81,7 +86,7 @@ class AiFeatureCard extends StatelessWidget {
                       Text(
                         title,
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          color: enabled ? Colors.white : Colors.grey,
+                          color: enabled ? Colors.white : context.outlineColor,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -91,7 +96,7 @@ class AiFeatureCard extends StatelessWidget {
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: enabled
                               ? Colors.white70
-                              : Colors.grey.shade500,
+                              : context.outlineColor.shade500,
                           height: 1.3,
                         ),
                       ),
@@ -102,7 +107,9 @@ class AiFeatureCard extends StatelessWidget {
                 // Chevron
                 Icon(
                   Icons.chevron_right,
-                  color: enabled ? Colors.white60 : Colors.grey.shade600,
+                  color: enabled
+                      ? Colors.white60
+                      : context.outlineColor.shade600,
                   size: 24,
                 ),
               ],
@@ -124,12 +131,12 @@ class AiFeatureCard extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: enabled
                               ? Colors.white.withValues(alpha: 0.1)
-                              : Colors.grey.withValues(alpha: 0.1),
+                              : context.outlineColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
                             color: enabled
                                 ? Colors.white.withValues(alpha: 0.2)
-                                : Colors.grey.withValues(alpha: 0.2),
+                                : context.outlineColor.withValues(alpha: 0.2),
                             width: 1,
                           ),
                         ),
@@ -139,7 +146,7 @@ class AiFeatureCard extends StatelessWidget {
                               ?.copyWith(
                                 color: enabled
                                     ? Colors.white70
-                                    : Colors.grey.shade500,
+                                    : context.outlineColor.shade500,
                                 fontSize: 12,
                               ),
                         ),
@@ -158,14 +165,18 @@ class AiFeatureCard extends StatelessWidget {
                   height: 8,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: enabled ? Colors.green : Colors.grey.shade600,
+                    color: enabled
+                        ? Colors.green
+                        : context.outlineColor.shade600,
                   ),
                 ),
                 const SizedBox(width: 8),
                 Text(
                   enabled ? 'Active' : 'Disabled',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: enabled ? Colors.green : Colors.grey.shade500,
+                    color: enabled
+                        ? Colors.green
+                        : context.outlineColor.shade500,
                     fontWeight: FontWeight.w500,
                   ),
                 ),

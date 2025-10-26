@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../theme/pulse_colors.dart';
 import '../common/pulse_button.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Advanced filters for enhanced discovery
 class AdvancedFilters extends StatefulWidget {
@@ -116,8 +117,8 @@ class _AdvancedFiltersState extends State<AdvancedFilters>
   Widget build(BuildContext context) {
     return Container(
       height: MediaQuery.of(context).size.height * 0.8,
-      decoration: const BoxDecoration(
-        color: Colors.white,
+      decoration: BoxDecoration(
+        color: context.onSurfaceColor,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
@@ -126,25 +127,29 @@ class _AdvancedFiltersState extends State<AdvancedFilters>
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
+              border: Border(
+                bottom: BorderSide(
+                  color: context.outlineColor.withValues(alpha: 0.5),
+                ),
+              ),
             ),
             child: Row(
               children: [
-                const Text(
+                Text(
                   'Advanced Filters',
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 const Spacer(),
                 TextButton(
                   onPressed: _resetAllFilters,
-                  child: const Text(
+                  child: Text(
                     'Reset All',
                     style: TextStyle(color: PulseColors.primary),
                   ),
                 ),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close),
+                  icon: Icon(Icons.close),
                 ),
               ],
             ),
@@ -156,7 +161,7 @@ class _AdvancedFiltersState extends State<AdvancedFilters>
             isScrollable: true,
             indicatorColor: PulseColors.primary,
             labelColor: PulseColors.primary,
-            unselectedLabelColor: Colors.grey[600],
+            unselectedLabelColor: context.onSurfaceVariantColor,
             tabs: const [
               Tab(text: 'Basic'),
               Tab(text: 'Interests'),
@@ -182,7 +187,11 @@ class _AdvancedFiltersState extends State<AdvancedFilters>
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              border: Border(top: BorderSide(color: Colors.grey.shade200)),
+              border: Border(
+                top: BorderSide(
+                  color: context.outlineColor.withValues(alpha: 0.5),
+                ),
+              ),
             ),
             child: PulseButton(
               text: 'Apply Filters',
@@ -237,7 +246,10 @@ class _AdvancedFiltersState extends State<AdvancedFilters>
           const SizedBox(height: 8),
           Text(
             'Choose interests you\'d like to match with',
-            style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+            style: TextStyle(
+              fontSize: 14,
+              color: context.onSurfaceVariantColor,
+            ),
           ),
           const SizedBox(height: 16),
           _buildInterestsGrid(),
@@ -282,7 +294,10 @@ class _AdvancedFiltersState extends State<AdvancedFilters>
           const SizedBox(height: 8),
           Text(
             'Select lifestyle choices that matter to you',
-            style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+            style: TextStyle(
+              fontSize: 14,
+              color: context.onSurfaceVariantColor,
+            ),
           ),
           const SizedBox(height: 16),
           _buildLifestyleGrid(),
@@ -294,7 +309,7 @@ class _AdvancedFiltersState extends State<AdvancedFilters>
   Widget _buildSectionHeader(String title) {
     return Text(
       title,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.w600,
         color: Colors.black87,
@@ -363,9 +378,9 @@ class _AdvancedFiltersState extends State<AdvancedFilters>
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('1 km'),
+            Text('1 km'),
             Text('${_distance.round()} km'),
-            const Text('100+ km'),
+            Text('100+ km'),
           ],
         ),
       ],
@@ -414,8 +429,8 @@ class _AdvancedFiltersState extends State<AdvancedFilters>
     return Column(
       children: [
         CheckboxListTile(
-          title: const Text('Verified profiles only'),
-          subtitle: const Text('Show only verified users'),
+          title: Text('Verified profiles only'),
+          subtitle: Text('Show only verified users'),
           value: _verifiedOnly,
           fillColor: WidgetStateProperty.resolveWith((states) {
             if (states.contains(WidgetState.selected)) {
@@ -430,8 +445,8 @@ class _AdvancedFiltersState extends State<AdvancedFilters>
           },
         ),
         CheckboxListTile(
-          title: const Text('Active recently'),
-          subtitle: const Text('Show users active in the last 7 days'),
+          title: Text('Active recently'),
+          subtitle: Text('Show users active in the last 7 days'),
           value: _activeRecentlyOnly,
           fillColor: WidgetStateProperty.resolveWith((states) {
             if (states.contains(WidgetState.selected)) {
@@ -477,7 +492,7 @@ class _AdvancedFiltersState extends State<AdvancedFilters>
   Widget _buildEducationDropdown() {
     return DropdownButtonFormField<String>(
       initialValue: _selectedEducation,
-      hint: const Text('Select education level'),
+      hint: Text('Select education level'),
       decoration: InputDecoration(
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         contentPadding: const EdgeInsets.symmetric(
@@ -499,7 +514,7 @@ class _AdvancedFiltersState extends State<AdvancedFilters>
   Widget _buildOccupationDropdown() {
     return DropdownButtonFormField<String>(
       initialValue: _selectedOccupation,
-      hint: const Text('Select occupation type'),
+      hint: Text('Select occupation type'),
       decoration: InputDecoration(
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         contentPadding: const EdgeInsets.symmetric(
@@ -521,7 +536,7 @@ class _AdvancedFiltersState extends State<AdvancedFilters>
   Widget _buildZodiacDropdown() {
     return DropdownButtonFormField<String>(
       initialValue: _selectedZodiacSign,
-      hint: const Text('Select zodiac sign'),
+      hint: Text('Select zodiac sign'),
       decoration: InputDecoration(
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         contentPadding: const EdgeInsets.symmetric(

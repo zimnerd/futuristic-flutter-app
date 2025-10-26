@@ -19,6 +19,7 @@ import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 import '../../widgets/common/empty_state_widget.dart';
 import '../../widgets/common/skeleton_loading.dart';
 import '../../widgets/common/pulse_toast.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Actual Matches Screen - Shows mutual matches and people who liked you
 ///
@@ -172,7 +173,7 @@ class _MatchesScreenState extends State<MatchesScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Your Sparks',
                       style: TextStyle(
                         fontSize: 24,
@@ -182,7 +183,10 @@ class _MatchesScreenState extends State<MatchesScreen>
                     ),
                     Text(
                       '$matchCount mutual matches',
-                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: context.onSurfaceVariantColor,
+                      ),
                     ),
                   ],
                 ),
@@ -225,7 +229,7 @@ class _MatchesScreenState extends State<MatchesScreen>
           // Search bar
           Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: context.onSurfaceColor,
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
@@ -239,10 +243,10 @@ class _MatchesScreenState extends State<MatchesScreen>
               controller: _searchController,
               decoration: InputDecoration(
                 hintText: 'Search your matches...',
-                prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                prefixIcon: Icon(Icons.search, color: context.outlineColor),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
-                        icon: const Icon(Icons.clear, color: Colors.grey),
+                        icon: Icon(Icons.clear, color: context.outlineColor),
                         onPressed: () {
                           _searchController.clear();
                           setState(() {
@@ -293,14 +297,17 @@ class _MatchesScreenState extends State<MatchesScreen>
             Text(
               state.message,
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+              style: TextStyle(
+                fontSize: 14,
+                color: context.onSurfaceVariantColor,
+              ),
             ),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: () => context.read<MatchBloc>().add(
                 const LoadMatches(excludeWithConversations: true),
               ),
-              child: const Text('Try Again'),
+              child: Text('Try Again'),
             ),
           ],
         ),
@@ -324,7 +331,7 @@ class _MatchesScreenState extends State<MatchesScreen>
             child: SizedBox(
               height: MediaQuery.of(context).size.height - 200,
               child: _searchQuery.isNotEmpty
-                  ? EmptyStates.noSearchResults(query: _searchQuery)
+                  ? EmptyStates.noSearchResults(context, query: _searchQuery)
                   : EmptyStates.noMatches(
                       onDiscover: () => context.go('/home'),
                     ),
@@ -425,14 +432,14 @@ class _MatchesScreenState extends State<MatchesScreen>
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Unmatch'),
+        title: Text('Unmatch'),
         content: Text(
           'Are you sure you want to unmatch with ${match.userProfile?.name ?? "this person"}? This action cannot be undone.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           TextButton(
             onPressed: () async {
@@ -449,8 +456,8 @@ class _MatchesScreenState extends State<MatchesScreen>
                 );
               }
             },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Unmatch'),
+            style: TextButton.styleFrom(foregroundColor: context.errorColor),
+            child: Text('Unmatch'),
           ),
         ],
       ),
@@ -461,14 +468,14 @@ class _MatchesScreenState extends State<MatchesScreen>
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Block User'),
+        title: Text('Block User'),
         content: Text(
           'Are you sure you want to block ${match.userProfile?.name ?? "this person"}? They will not be able to contact you.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           TextButton(
             onPressed: () async {
@@ -495,8 +502,8 @@ class _MatchesScreenState extends State<MatchesScreen>
                 );
               }
             },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Block'),
+            style: TextButton.styleFrom(foregroundColor: context.errorColor),
+            child: Text('Block'),
           ),
         ],
       ),
@@ -507,14 +514,14 @@ class _MatchesScreenState extends State<MatchesScreen>
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Report User'),
+        title: Text('Report User'),
         content: Text(
           'Report ${match.userProfile?.name ?? "this person"} for inappropriate behavior?',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           TextButton(
             onPressed: () async {
@@ -546,8 +553,8 @@ class _MatchesScreenState extends State<MatchesScreen>
                 );
               }
             },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Report'),
+            style: TextButton.styleFrom(foregroundColor: context.errorColor),
+            child: Text('Report'),
           ),
         ],
       ),
@@ -579,7 +586,7 @@ class _MatchesScreenState extends State<MatchesScreen>
             ),
           ),
           const SizedBox(width: 12),
-          const Text('Loading more matches...'),
+          Text('Loading more matches...'),
         ],
       ),
     );

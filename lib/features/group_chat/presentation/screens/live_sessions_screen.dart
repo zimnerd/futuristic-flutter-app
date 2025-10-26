@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 import '../../../../presentation/blocs/group_chat/group_chat_bloc.dart';
 import '../../data/models.dart';
 import 'video_call_screen.dart';
@@ -40,10 +41,10 @@ class _LiveSessionsScreenState extends State<LiveSessionsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Live Sessions'),
+        title: Text('Live Sessions'),
         actions: [
           PopupMenuButton<GroupType?>(
-            icon: const Icon(Icons.filter_list),
+            icon: Icon(Icons.filter_list),
             onSelected: _onFilterChanged,
             itemBuilder: (context) => [
               const PopupMenuItem(value: null, child: Text('All')),
@@ -122,20 +123,27 @@ class _LiveSessionsScreenState extends State<LiveSessionsScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.video_call_outlined, size: 80, color: Colors.grey[400]),
+          Icon(
+            Icons.video_call_outlined,
+            size: 80,
+            color: context.outlineColor.withValues(alpha: 0.5),
+          ),
           const SizedBox(height: 16),
           Text(
             'No active live sessions',
             style: TextStyle(
               fontSize: 18,
-              color: Colors.grey[600],
+              color: context.onSurfaceVariantColor,
               fontWeight: FontWeight.w500,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             'Check back later or create your own!',
-            style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+            style: TextStyle(
+              fontSize: 14,
+              color: context.onSurfaceVariantColor.withValues(alpha: 0.6),
+            ),
           ),
         ],
       ),
@@ -178,7 +186,7 @@ class _LiveSessionsScreenState extends State<LiveSessionsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () {
@@ -192,7 +200,7 @@ class _LiveSessionsScreenState extends State<LiveSessionsScreen> {
                 ),
               );
             },
-            child: const Text('Send Request'),
+            child: Text('Send Request'),
           ),
         ],
       ),
@@ -212,14 +220,14 @@ class _LiveSessionsScreenState extends State<LiveSessionsScreen> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text('Join ${session.title}'),
-        content: const Column(
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text('Would you like to join with video/audio?'),
             SizedBox(height: 8),
             Text(
               'You can chat without video or join the video call.',
-              style: TextStyle(fontSize: 12, color: Colors.grey),
+              style: TextStyle(fontSize: 12, color: context.outlineColor),
             ),
           ],
         ),
@@ -233,15 +241,15 @@ class _LiveSessionsScreenState extends State<LiveSessionsScreen> {
                 message: 'Joined ${session.title} chat',
               );
             },
-            child: const Text('Chat Only'),
+            child: Text('Chat Only'),
           ),
           ElevatedButton.icon(
             onPressed: () {
               Navigator.of(dialogContext).pop();
               _navigateToVideoCall(session);
             },
-            icon: const Icon(Icons.videocam),
-            label: const Text('Join Video Call'),
+            icon: Icon(Icons.videocam),
+            label: Text('Join Video Call'),
           ),
         ],
       ),
@@ -321,7 +329,7 @@ class _LiveSessionCard extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: _getGradientColors(session.groupType),
+                  colors: _getGradientColors(context, session.groupType),
                 ),
               ),
             ),
@@ -400,7 +408,7 @@ class _LiveSessionCard extends StatelessWidget {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.people,
                               size: 14,
                               color: Colors.white,
@@ -495,7 +503,7 @@ class _LiveSessionCard extends StatelessWidget {
     return const SizedBox.shrink();
   }
 
-  List<Color> _getGradientColors(GroupType type) {
+  List<Color> _getGradientColors(BuildContext context, GroupType type) {
     switch (type) {
       case GroupType.dating:
         return [Colors.pink.shade400, Colors.purple.shade600];
@@ -508,7 +516,7 @@ class _LiveSessionCard extends StatelessWidget {
       case GroupType.liveHost:
         return [Colors.deepPurple.shade400, Colors.indigo.shade600];
       default:
-        return [Colors.grey.shade500, Colors.blueGrey.shade700];
+        return [context.outlineColor.shade500, Colors.blueGrey.shade700];
     }
   }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 import '../../data/models/subscription.dart';
 import '../../data/models/payment_transaction.dart';
 import '../../core/theme/app_colors.dart';
@@ -43,8 +44,8 @@ class _SubscriptionManagementSheetState
   Widget build(BuildContext context) {
     return Container(
       height: MediaQuery.of(context).size.height * 0.85,
-      decoration: const BoxDecoration(
-        color: Colors.white,
+      decoration: BoxDecoration(
+        color: context.onSurfaceColor,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
@@ -55,7 +56,7 @@ class _SubscriptionManagementSheetState
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.grey[300],
+              color: context.outlineColor.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -74,7 +75,7 @@ class _SubscriptionManagementSheetState
                 ),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close),
+                  icon: Icon(Icons.close),
                 ),
               ],
             ),
@@ -143,13 +144,18 @@ class _SubscriptionManagementSheetState
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               )
-            : LinearGradient(colors: [Colors.grey[400]!, Colors.grey[500]!]),
+            : LinearGradient(
+                colors: [
+                  context.outlineColor.withValues(alpha: 0.2),
+                  context.onSurfaceVariantColor.withValues(alpha: 0.6)!,
+                ],
+              ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
             color: isActive
                 ? AppColors.primary.withValues(alpha: 0.3)
-                : Colors.grey.withValues(alpha: 0.2),
+                : context.outlineColor.withValues(alpha: 0.2),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -168,7 +174,7 @@ class _SubscriptionManagementSheetState
                 ),
                 child: Icon(
                   isActive ? Icons.workspace_premium : Icons.pause_circle,
-                  color: Colors.white,
+                  color: context.onSurfaceColor,
                   size: 28,
                 ),
               ),
@@ -179,8 +185,8 @@ class _SubscriptionManagementSheetState
                   children: [
                     Text(
                       subscription.plan?.name ?? 'Premium Plan',
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: context.onSurfaceColor,
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
                       ),
@@ -207,8 +213,8 @@ class _SubscriptionManagementSheetState
                 ),
                 child: Text(
                   subscription.statusText.toUpperCase(),
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: context.onSurfaceColor,
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
                   ),
@@ -249,12 +255,19 @@ class _SubscriptionManagementSheetState
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.info_outline, color: Colors.white, size: 18),
+                  Icon(
+                    Icons.info_outline,
+                    color: context.onSurfaceColor,
+                    size: 18,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       'Your subscription will not renew. You can still use premium features until ${subscription.endDate != null ? DateFormat('MMM dd').format(subscription.endDate!) : 'the end of your billing period'}.',
-                      style: const TextStyle(color: Colors.white, fontSize: 12),
+                      style: TextStyle(
+                        color: context.onSurfaceColor,
+                        fontSize: 12,
+                      ),
                     ),
                   ),
                 ],
@@ -281,8 +294,8 @@ class _SubscriptionManagementSheetState
         Expanded(
           child: Text(
             value,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: context.onSurfaceColor,
               fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
@@ -301,8 +314,8 @@ class _SubscriptionManagementSheetState
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: Colors.grey[300]!),
+        color: context.onSurfaceColor,
+        border: Border.all(color: context.outlineColor.withValues(alpha: 0.3)),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -327,7 +340,7 @@ class _SubscriptionManagementSheetState
                   ? Colors.green
                   : isRefunded
                   ? Colors.orange
-                  : Colors.grey,
+                  : context.outlineColor,
               size: 20,
             ),
           ),
@@ -338,7 +351,7 @@ class _SubscriptionManagementSheetState
               children: [
                 Text(
                   transactionData['description'] ?? 'Transaction',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
                   ),
@@ -346,7 +359,10 @@ class _SubscriptionManagementSheetState
                 const SizedBox(height: 4),
                 Text(
                   transactionData['date'] ?? '',
-                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                  style: TextStyle(
+                    color: context.onSurfaceVariantColor,
+                    fontSize: 12,
+                  ),
                 ),
               ],
             ),
@@ -372,7 +388,7 @@ class _SubscriptionManagementSheetState
                       ? Colors.green
                       : isRefunded
                       ? Colors.orange
-                      : Colors.grey,
+                      : context.outlineColor,
                   fontSize: 10,
                   fontWeight: FontWeight.w600,
                 ),
@@ -391,7 +407,7 @@ class _SubscriptionManagementSheetState
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
+            Text(
               'Billing History',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
@@ -400,13 +416,13 @@ class _SubscriptionManagementSheetState
                 // Navigate to full billing history screen
                 Navigator.pushNamed(context, '/transaction-history');
               },
-              child: const Text('View All'),
+              child: Text('View All'),
             ),
           ],
         ),
         const SizedBox(height: 12),
         if (_isLoadingTransactions)
-          const Center(
+          Center(
             child: Padding(
               padding: EdgeInsets.all(20.0),
               child: LoadingIndicator(),
@@ -422,7 +438,7 @@ class _SubscriptionManagementSheetState
             child: Center(
               child: Text(
                 'No billing history available',
-                style: TextStyle(color: Colors.grey[600]),
+                style: TextStyle(color: context.onSurfaceVariantColor),
               ),
             ),
           )
@@ -448,8 +464,8 @@ class _SubscriptionManagementSheetState
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: Colors.grey[300]!),
+        color: context.onSurfaceColor,
+        border: Border.all(color: context.outlineColor.withValues(alpha: 0.3)),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -474,7 +490,7 @@ class _SubscriptionManagementSheetState
                   ? Colors.green
                   : isRefunded
                   ? Colors.orange
-                  : Colors.grey,
+                  : context.outlineColor,
               size: 20,
             ),
           ),
@@ -485,7 +501,7 @@ class _SubscriptionManagementSheetState
               children: [
                 Text(
                   transaction.description,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
                   ),
@@ -493,7 +509,10 @@ class _SubscriptionManagementSheetState
                 const SizedBox(height: 4),
                 Text(
                   DateFormat('MMM dd, yyyy').format(transaction.processedAt),
-                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                  style: TextStyle(
+                    color: context.onSurfaceVariantColor,
+                    fontSize: 12,
+                  ),
                 ),
               ],
             ),
@@ -517,7 +536,7 @@ class _SubscriptionManagementSheetState
                       ? Colors.green
                       : isRefunded
                       ? Colors.orange
-                      : Colors.grey,
+                      : context.outlineColor,
                   fontSize: 10,
                   fontWeight: FontWeight.w600,
                 ),
@@ -539,7 +558,7 @@ class _SubscriptionManagementSheetState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Subscription Actions',
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
@@ -581,7 +600,7 @@ class _SubscriptionManagementSheetState
           _buildActionButton(
             icon: Icons.cancel_outlined,
             label: 'Cancel Subscription',
-            color: Colors.red,
+            color: context.errorColor,
             onPressed: _showCancellationDialog,
           ),
 
@@ -593,13 +612,16 @@ class _SubscriptionManagementSheetState
             children: [
               Text(
                 'Need help?',
-                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: context.onSurfaceVariantColor,
+                ),
               ),
               TextButton(
                 onPressed: () {
                   // Open support contact
                 },
-                child: const Text(
+                child: Text(
                   'Contact Support',
                   style: TextStyle(fontSize: 12),
                 ),
@@ -644,12 +666,12 @@ class _SubscriptionManagementSheetState
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Pause Subscription',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'How long would you like to pause your subscription?',
               style: TextStyle(fontSize: 14),
             ),
@@ -661,7 +683,7 @@ class _SubscriptionManagementSheetState
               width: double.infinity,
               child: TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
+                child: Text('Cancel'),
               ),
             ),
           ],

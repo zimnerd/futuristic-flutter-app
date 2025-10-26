@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../data/models/safety.dart';
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Widget for displaying safety tips in a list format
 class SafetyTipsWidget extends StatelessWidget {
@@ -17,13 +18,19 @@ class SafetyTipsWidget extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.lightbulb_outline, size: 64, color: Colors.grey[400]),
+            Icon(
+              Icons.lightbulb_outline,
+              size: 64,
+              color: context.outlineColor.withValues(alpha: 0.2),
+            ),
             const SizedBox(height: 16),
             Text(
               'No safety tips available',
               style: Theme.of(
                 context,
-              ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
+              ).textTheme.bodyLarge?.copyWith(
+                color: context.onSurfaceVariantColor,
+              ),
             ),
           ],
         ),
@@ -51,12 +58,15 @@ class SafetyTipsWidget extends StatelessWidget {
         leading: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: _getCategoryColor(tip.category).withValues(alpha: 0.1),
+            color: _getCategoryColor(
+              context,
+              tip.category,
+            ).withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(
             _getCategoryIcon(tip.category),
-            color: _getCategoryColor(tip.category),
+            color: _getCategoryColor(context, tip.category),
           ),
         ),
         title: Text(
@@ -83,7 +93,7 @@ class SafetyTipsWidget extends StatelessWidget {
             ),
             const Spacer(),
             if (tip.isActive)
-              const Icon(Icons.lightbulb, size: 16, color: Colors.amber),
+              Icon(Icons.lightbulb, size: 16, color: Colors.amber),
           ],
         ),
         children: [
@@ -102,14 +112,16 @@ class SafetyTipsWidget extends StatelessWidget {
                 'Updated: ${_formatDate(tip.updatedAt ?? tip.createdAt)}',
                 style: Theme.of(
                   context,
-                ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+                ).textTheme.bodySmall?.copyWith(
+                  color: context.onSurfaceVariantColor,
+                ),
               ),
               TextButton(
                 onPressed: () {
                   // Mark as read logic would go here
                   onTipRead?.call();
                 },
-                child: const Text('Share Tip'),
+                child: Text('Share Tip'),
               ),
             ],
           ),
@@ -118,7 +130,7 @@ class SafetyTipsWidget extends StatelessWidget {
     );
   }
 
-  Color _getCategoryColor(SafetyTipCategory category) {
+  Color _getCategoryColor(BuildContext context, SafetyTipCategory category) {
     switch (category) {
       case SafetyTipCategory.datingSafety:
         return PulseColors.primary;
@@ -133,7 +145,7 @@ class SafetyTipsWidget extends StatelessWidget {
       case SafetyTipCategory.scamAwareness:
         return Colors.purple;
       case SafetyTipCategory.general:
-        return Colors.grey;
+        return context.outlineColor;
     }
   }
 

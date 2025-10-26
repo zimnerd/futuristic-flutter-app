@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../data/models/chat_model.dart';
 import '../messaging/message_status_indicator.dart';
 import '../common/pulse_toast.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Test screen for visually verifying MessageStatusIndicator states
 ///
@@ -21,20 +22,20 @@ class MessageStatusTestScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Message Status Indicator Test'),
+        title: Text('Message Status Indicator Test'),
         backgroundColor: Colors.deepPurple,
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const Text(
+          Text(
             'Status Indicator Visual Test',
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Verify all 5 status states render correctly with proper colors and icons',
-            style: TextStyle(color: Colors.grey),
+            style: TextStyle(color: context.outlineColor),
           ),
           const SizedBox(height: 32),
 
@@ -92,7 +93,7 @@ class MessageStatusTestScreen extends StatelessWidget {
           const SizedBox(height: 32),
 
           // Size variations
-          const Text(
+          Text(
             'Size Variations',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
@@ -104,51 +105,57 @@ class MessageStatusTestScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Small (14px - media-only bubbles)'),
+                  Text('Small (14px - media-only bubbles)'),
                   const SizedBox(height: 8),
                   Row(
                     children: [
                       MessageStatusIndicator(
                         status: MessageStatus.read,
                         size: 14,
-                        color: Colors.white,
+                        color: context.onSurfaceColor,
                         readColor: Colors.blue.shade300,
                       ),
                       const SizedBox(width: 8),
-                      const Text('14px', style: TextStyle(color: Colors.grey)),
+                      Text(
+                        '14px',
+                        style: TextStyle(color: context.outlineColor),
+                      ),
                     ],
                   ),
                   const Divider(height: 32),
-                  const Text('Default (16px - text bubbles)'),
+                  Text('Default (16px - text bubbles)'),
                   const SizedBox(height: 8),
                   Row(
                     children: [
                       MessageStatusIndicator(
                         status: MessageStatus.read,
                         size: 16,
-                        color: Colors.grey.shade600,
+                        color: context.outlineColor.shade600,
                         readColor: Colors.blue.shade300,
                       ),
                       const SizedBox(width: 8),
-                      const Text(
+                      Text(
                         '16px (default)',
-                        style: TextStyle(color: Colors.grey),
+                        style: TextStyle(color: context.outlineColor),
                       ),
                     ],
                   ),
                   const Divider(height: 32),
-                  const Text('Large (20px - custom use)'),
+                  Text('Large (20px - custom use)'),
                   const SizedBox(height: 8),
                   Row(
                     children: [
                       MessageStatusIndicator(
                         status: MessageStatus.read,
                         size: 20,
-                        color: Colors.grey.shade600,
+                        color: context.outlineColor.shade600,
                         readColor: Colors.blue.shade300,
                       ),
                       const SizedBox(width: 8),
-                      const Text('20px', style: TextStyle(color: Colors.grey)),
+                      Text(
+                        '20px',
+                        style: TextStyle(color: context.outlineColor),
+                      ),
                     ],
                   ),
                 ],
@@ -159,7 +166,7 @@ class MessageStatusTestScreen extends StatelessWidget {
           const SizedBox(height: 32),
 
           // Retry button test
-          const Text(
+          Text(
             'Interactive Test',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
@@ -171,7 +178,7 @@ class MessageStatusTestScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Tap the retry button to test interaction:'),
+                  Text('Tap the retry button to test interaction:'),
                   const SizedBox(height: 16),
                   MessageStatusIndicator(
                     status: MessageStatus.failed,
@@ -213,14 +220,14 @@ class MessageStatusTestScreen extends StatelessWidget {
               width: 60,
               height: 60,
               decoration: BoxDecoration(
-                color: Colors.grey.shade100,
+                color: context.outlineColor.shade100,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Center(
                 child: MessageStatusIndicator(
                   status: status,
                   size: 24,
-                  color: Colors.grey.shade600,
+                  color: context.outlineColor.shade600,
                   readColor: Colors.blue.shade300,
                   errorColor: Colors.red,
                   onRetry: hasRetry
@@ -243,7 +250,7 @@ class MessageStatusTestScreen extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -251,16 +258,22 @@ class MessageStatusTestScreen extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     description,
-                    style: const TextStyle(color: Colors.grey, fontSize: 14),
+                    style: TextStyle(color: context.outlineColor, fontSize: 14),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Icon: $expectedIcon',
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: context.outlineColor.shade700,
+                    ),
                   ),
                   Text(
                     'Color: $expectedColor',
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: context.outlineColor.shade700,
+                    ),
                   ),
                 ],
               ),

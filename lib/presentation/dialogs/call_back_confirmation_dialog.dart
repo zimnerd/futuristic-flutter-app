@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../data/models/chat_model.dart';
 import '../../data/models/user_model.dart';
 import '../theme/pulse_colors.dart';
-import '../theme/theme_extensions.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Confirmation dialog shown before calling back from a call message
 /// Prevents accidental calls and allows user to choose audio vs video
@@ -133,8 +133,8 @@ class CallBackConfirmationDialog extends StatelessWidget {
               Navigator.of(context).pop();
               onConfirm(false);
             },
-            icon: const Icon(Icons.phone, size: 18),
-            label: const Text('Audio'),
+            icon: Icon(Icons.phone, size: 18),
+            label: Text('Audio'),
             style: TextButton.styleFrom(
               foregroundColor: context.successColor,
             ),
@@ -146,8 +146,8 @@ class CallBackConfirmationDialog extends StatelessWidget {
               Navigator.of(context).pop();
               onConfirm(true);
             },
-            icon: const Icon(Icons.videocam, size: 18),
-            label: const Text('Video'),
+            icon: Icon(Icons.videocam, size: 18),
+            label: Text('Video'),
             style: ElevatedButton.styleFrom(
               backgroundColor: PulseColors.primary,
               foregroundColor: context.theme.colorScheme.onPrimary,
@@ -164,8 +164,8 @@ class CallBackConfirmationDialog extends StatelessWidget {
               Navigator.of(context).pop();
               onConfirm(false);
             },
-            icon: const Icon(Icons.phone, size: 18),
-            label: const Text('Call'),
+            icon: Icon(Icons.phone, size: 18),
+            label: Text('Call'),
             style: ElevatedButton.styleFrom(
               backgroundColor: context.successColor,
               foregroundColor: context.theme.colorScheme.onTertiary,

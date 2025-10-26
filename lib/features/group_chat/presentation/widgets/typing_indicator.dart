@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 class TypingIndicator extends StatefulWidget {
   final Map<String, String> typingUsers; // userId -> username
@@ -44,9 +45,9 @@ class _TypingIndicatorState extends State<TypingIndicator>
           Expanded(
             child: Text(
               typingText,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
-                color: Colors.grey,
+                color: context.outlineColor,
                 fontStyle: FontStyle.italic,
               ),
               overflow: TextOverflow.ellipsis,
@@ -92,7 +93,7 @@ class _AnimatedDots extends StatelessWidget {
                 width: 6,
                 height: 6,
                 decoration: BoxDecoration(
-                  color: Colors.grey[400],
+                  color: context.outlineColor.withValues(alpha: 0.5),
                   shape: BoxShape.circle,
                 ),
               ),

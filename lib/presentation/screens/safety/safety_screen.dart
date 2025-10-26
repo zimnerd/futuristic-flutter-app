@@ -10,6 +10,7 @@ import '../../widgets/safety/safety_dashboard_widget.dart';
 import '../../widgets/safety/emergency_button_widget.dart';
 import '../../widgets/safety/safety_score_widget.dart';
 import '../../widgets/safety/safety_tips_widget.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Main safety screen with dashboard and controls
 class SafetyScreen extends StatefulWidget {
@@ -31,7 +32,7 @@ class _SafetyScreenState extends State<SafetyScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Safety Center',
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
@@ -39,7 +40,7 @@ class _SafetyScreenState extends State<SafetyScreen> {
         elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings, color: Colors.white),
+            icon: Icon(Icons.settings, color: Colors.white),
             onPressed: () {
               context.push('/safety-settings');
             },
@@ -49,7 +50,7 @@ class _SafetyScreenState extends State<SafetyScreen> {
       body: BlocBuilder<SafetyBloc, SafetyState>(
         builder: (context, state) {
           if (state.isLoading && state.status == SafetyStatus.loading) {
-            return const Center(
+            return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -66,7 +67,11 @@ class _SafetyScreenState extends State<SafetyScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.error_outline, size: 64, color: Colors.red),
+                  Icon(
+                    Icons.error_outline,
+                    size: 64,
+                    color: context.errorColor,
+                  ),
                   const SizedBox(height: 16),
                   Text(
                     'Failed to load safety data',
@@ -77,7 +82,7 @@ class _SafetyScreenState extends State<SafetyScreen> {
                     onPressed: () {
                       context.read<SafetyBloc>().add(const LoadSafetyData());
                     },
-                    child: const Text('Retry'),
+                    child: Text('Retry'),
                   ),
                 ],
               ),
@@ -136,7 +141,7 @@ class _SafetyScreenState extends State<SafetyScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.onSurfaceColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(

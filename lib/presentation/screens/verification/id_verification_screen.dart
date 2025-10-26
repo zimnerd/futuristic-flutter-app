@@ -4,6 +4,7 @@ import 'dart:io';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/network/api_client.dart';
 import '../../widgets/common/pulse_toast.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Document verification screen for ID/Passport/Driver's License
 /// Steps: 1) Select document type, 2) Capture front, 3) Capture back, 4) Review, 5) Submit
@@ -46,18 +47,18 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.surfaceColor,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.surfaceColor,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.close, color: AppColors.textPrimary),
+          icon: Icon(Icons.close, color: context.onSurfaceColor),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text(
+        title: Text(
           'ID Verification',
           style: TextStyle(
-            color: AppColors.textPrimary,
+            color: context.onSurfaceColor,
             fontSize: 20,
             fontWeight: FontWeight.w600,
           ),
@@ -81,7 +82,7 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
 
     return Container(
       padding: const EdgeInsets.all(16),
-      color: AppColors.surface,
+      color: context.surfaceColor,
       child: Row(
         children: List.generate(
           totalSteps,
@@ -92,7 +93,7 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
               decoration: BoxDecoration(
                 color: index <= _currentStep
                     ? AppColors.primary
-                    : AppColors.border.withValues(alpha: 0.3),
+                    : context.outlineColor.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -130,21 +131,21 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.assignment_ind, size: 80, color: AppColors.primary),
+          Icon(Icons.assignment_ind, size: 80, color: AppColors.primary),
           const SizedBox(height: 24),
-          const Text(
+          Text(
             'Choose your document',
             style: TextStyle(
-              color: AppColors.textPrimary,
+              color: context.onSurfaceColor,
               fontSize: 28,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 12),
-          const Text(
+          Text(
             'Select a government-issued ID to verify your identity',
             style: TextStyle(
-              color: AppColors.textSecondary,
+              color: context.onSurfaceVariantColor,
               fontSize: 16,
               height: 1.5,
             ),
@@ -173,13 +174,13 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
             ),
             child: Row(
               children: [
-                const Icon(Icons.lock, color: AppColors.primary, size: 24),
+                Icon(Icons.lock, color: AppColors.primary, size: 24),
                 const SizedBox(width: 12),
-                const Expanded(
+                Expanded(
                   child: Text(
                     'Your information is encrypted and secure. We never share your documents.',
                     style: TextStyle(
-                      color: AppColors.textSecondary,
+                      color: context.onSurfaceVariantColor,
                       fontSize: 14,
                       height: 1.4,
                     ),
@@ -216,10 +217,10 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
         decoration: BoxDecoration(
           color: isSelected
               ? AppColors.primary.withValues(alpha: 0.1)
-              : AppColors.surface,
+              : context.surfaceColor,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.border,
+            color: isSelected ? AppColors.primary : context.outlineColor,
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -248,7 +249,7 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
                   Text(
                     label,
                     style: TextStyle(
-                      color: AppColors.textPrimary,
+                      color: context.onSurfaceColor,
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                     ),
@@ -256,8 +257,8 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
                   const SizedBox(height: 4),
                   Text(
                     description,
-                    style: const TextStyle(
-                      color: AppColors.textSecondary,
+                    style: TextStyle(
+                      color: context.onSurfaceVariantColor,
                       fontSize: 14,
                     ),
                   ),
@@ -265,7 +266,7 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
               ),
             ),
             if (isSelected)
-              const Icon(
+              Icon(
                 Icons.check_circle,
                 color: AppColors.primary,
                 size: 24,
@@ -296,18 +297,18 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
           const SizedBox(height: 32),
           Text(
             'Capture $side of document',
-            style: const TextStyle(
-              color: AppColors.textPrimary,
+            style: TextStyle(
+              color: context.onSurfaceColor,
               fontSize: 24,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 12),
-          const Text(
+          Text(
             'Make sure all details are clearly visible',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: AppColors.textSecondary,
+              color: context.onSurfaceVariantColor,
               fontSize: 16,
               height: 1.5,
             ),
@@ -337,14 +338,14 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
               ),
               label: Text(
                 existingPhoto != null ? 'Retake Photo' : 'Take Photo',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
+                foregroundColor: context.onSurfaceColor,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -357,8 +358,8 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
             height: 56,
             child: OutlinedButton.icon(
               onPressed: () => _pickDocumentFromGallery(isFront: isFront),
-              icon: const Icon(Icons.photo_library),
-              label: const Text(
+              icon: Icon(Icons.photo_library),
+              label: Text(
                 'Choose from Gallery',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
@@ -380,12 +381,12 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
                 onPressed: _proceedToNextStep,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.success,
-                  foregroundColor: Colors.white,
+                  foregroundColor: context.onSurfaceColor,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
                 ),
-                child: const Text(
+                child: Text(
                   'Continue',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
@@ -401,17 +402,17 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.surfaceColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.outlineColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Tips for a clear photo:',
             style: TextStyle(
-              color: AppColors.textPrimary,
+              color: context.onSurfaceColor,
               fontSize: 16,
               fontWeight: FontWeight.w600,
             ),
@@ -435,8 +436,8 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
           const SizedBox(width: 12),
           Text(
             text,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
+            style: TextStyle(
+              color: context.onSurfaceVariantColor,
               fontSize: 14,
             ),
           ),
@@ -455,18 +456,21 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
       padding: const EdgeInsets.all(24),
       child: Column(
         children: [
-          const Text(
+          Text(
             'Review your documents',
             style: TextStyle(
-              color: AppColors.textPrimary,
+              color: context.onSurfaceColor,
               fontSize: 24,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 12),
-          const Text(
+          Text(
             'Make sure all details are clearly visible',
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 16),
+            style: TextStyle(
+              color: context.onSurfaceVariantColor,
+              fontSize: 16,
+            ),
           ),
           const SizedBox(height: 32),
           if (_frontPhoto != null) ...[
@@ -504,12 +508,12 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
+                foregroundColor: context.onSurfaceColor,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
               ),
-              child: const Text(
+              child: Text(
                 'Looks Good - Continue',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
@@ -530,8 +534,8 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
       children: [
         Text(
           title,
-          style: const TextStyle(
-            color: AppColors.textPrimary,
+          style: TextStyle(
+            color: context.onSurfaceColor,
             fontSize: 18,
             fontWeight: FontWeight.w600,
           ),
@@ -542,7 +546,7 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
           height: 250,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.border, width: 2),
+            border: Border.all(color: context.outlineColor, width: 2),
           ),
           clipBehavior: Clip.antiAlias,
           child: Image.file(photo, fit: BoxFit.cover),
@@ -552,11 +556,11 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
           width: double.infinity,
           child: OutlinedButton.icon(
             onPressed: onRetake,
-            icon: const Icon(Icons.refresh),
-            label: const Text('Retake'),
+            icon: Icon(Icons.refresh),
+            label: Text('Retake'),
             style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.textSecondary,
-              side: BorderSide(color: AppColors.border),
+              foregroundColor: context.onSurfaceVariantColor,
+              side: BorderSide(color: context.outlineColor),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -577,36 +581,39 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
           if (_isSubmitting) ...[
             const CircularProgressIndicator(color: AppColors.primary),
             const SizedBox(height: 32),
-            const Text(
+            Text(
               'Uploading your documents...',
               style: TextStyle(
-                color: AppColors.textPrimary,
+                color: context.onSurfaceColor,
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: 12),
-            const Text(
+            Text(
               'This may take a few moments',
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+              style: TextStyle(
+                color: context.onSurfaceVariantColor,
+                fontSize: 14,
+              ),
             ),
           ] else ...[
-            const Icon(Icons.cloud_upload, size: 100, color: AppColors.primary),
+            Icon(Icons.cloud_upload, size: 100, color: AppColors.primary),
             const SizedBox(height: 32),
-            const Text(
+            Text(
               'Ready to submit',
               style: TextStyle(
-                color: AppColors.textPrimary,
+                color: context.onSurfaceColor,
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 12),
-            const Text(
+            Text(
               'We\'ll review your documents within 24-48 hours',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: AppColors.textSecondary,
+                color: context.onSurfaceVariantColor,
                 fontSize: 16,
                 height: 1.5,
               ),
@@ -619,12 +626,12 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
                 onPressed: _submitVerification,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
+                  foregroundColor: context.onSurfaceColor,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
                 ),
-                child: const Text(
+                child: Text(
                   'Submit for Review',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
@@ -775,20 +782,20 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.surfaceColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: const Text(
+        title: Text(
           'Documents Submitted!',
           style: TextStyle(
-            color: AppColors.textPrimary,
+            color: context.onSurfaceColor,
             fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
         ),
-        content: const Text(
+        content: Text(
           'We\'ll review your documents within 24-48 hours and notify you when verified.',
           style: TextStyle(
-            color: AppColors.textSecondary,
+            color: context.onSurfaceVariantColor,
             fontSize: 16,
             height: 1.5,
           ),
@@ -799,7 +806,7 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
               Navigator.of(context).pop(); // Close dialog
               Navigator.of(context).pop(); // Close verification screen
             },
-            child: const Text(
+            child: Text(
               'Got it',
               style: TextStyle(
                 color: AppColors.primary,

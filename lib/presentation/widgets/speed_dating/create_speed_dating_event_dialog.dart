@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../theme/pulse_colors.dart';
 import '../../blocs/speed_dating/speed_dating_bloc.dart';
 import '../../blocs/speed_dating/speed_dating_event.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 import '../common/pulse_toast.dart';
 
 /// Dialog for creating a new speed dating event
@@ -105,13 +106,13 @@ class _CreateSpeedDatingEventDialogState
                       child: Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey),
+                          border: Border.all(color: context.outlineColor),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Date', style: TextStyle(fontSize: 12)),
+                            Text('Date', style: TextStyle(fontSize: 12)),
                             Text(_formatDate(_selectedDate)),
                           ],
                         ),
@@ -125,13 +126,13 @@ class _CreateSpeedDatingEventDialogState
                       child: Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey),
+                          border: Border.all(color: context.outlineColor),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Time', style: TextStyle(fontSize: 12)),
+                            Text('Time', style: TextStyle(fontSize: 12)),
                             Text(_formatTime(_selectedTime)),
                           ],
                         ),
@@ -220,16 +221,16 @@ class _CreateSpeedDatingEventDialogState
                 children: [
                   TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: const Text('Cancel'),
+                    child: Text('Cancel'),
                   ),
                   const SizedBox(width: 16),
                   ElevatedButton(
                     onPressed: _createEvent,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: PulseColors.primary,
-                      foregroundColor: Colors.white,
+                      foregroundColor: context.onSurfaceColor,
                     ),
-                    child: const Text('Create Event'),
+                    child: Text('Create Event'),
                   ),
                 ],
               ),

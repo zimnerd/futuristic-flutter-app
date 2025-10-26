@@ -7,6 +7,7 @@ import '../../navigation/app_router.dart';
 import '../../../blocs/notification_bloc.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/pulse_toast.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
@@ -26,11 +27,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: context.surfaceColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: context.surfaceColor,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Notifications',
           style: TextStyle(
             color: Colors.black87,
@@ -49,7 +50,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                       const MarkAllNotificationsAsRead(),
                     );
                   },
-                  child: const Text(
+                  child: Text(
                     'Mark all read',
                     style: TextStyle(
                       color: PulseColors.primary,
@@ -66,7 +67,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
       body: BlocBuilder<NotificationBloc, NotificationState>(
         builder: (context, state) {
           if (state is NotificationLoading) {
-            return const Center(
+            return Center(
               child: CircularProgressIndicator(
                 valueColor: AlwaysStoppedAnimation<Color>(PulseColors.primary),
               ),
@@ -78,11 +79,15 @@ class _NotificationScreenState extends State<NotificationScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.error_outline, color: Colors.grey, size: 64),
+                  Icon(
+                    Icons.error_outline,
+                    color: context.outlineColor,
+                    size: 64,
+                  ),
                   const SizedBox(height: 16),
                   Text(
                     state.message,
-                    style: const TextStyle(color: Colors.grey),
+                    style: TextStyle(color: context.outlineColor),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 16),
@@ -94,9 +99,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: PulseColors.primary,
-                      foregroundColor: Colors.white,
+                      foregroundColor: context.onSurfaceColor,
                     ),
-                    child: const Text('Retry'),
+                    child: Text('Retry'),
                   ),
                 ],
               ),
@@ -105,20 +110,20 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
           if (state is NotificationsLoaded) {
             if (state.notifications.isEmpty) {
-              return const Center(
+              return Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
                       Icons.notifications_none,
-                      color: Colors.grey,
+                      color: context.outlineColor,
                       size: 64,
                     ),
                     SizedBox(height: 16),
                     Text(
                       'No notifications yet',
                       style: TextStyle(
-                        color: Colors.grey,
+                        color: context.outlineColor,
                         fontSize: 18,
                         fontWeight: FontWeight.w500,
                       ),
@@ -126,7 +131,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     SizedBox(height: 8),
                     Text(
                       'You\'ll receive notifications for matches, messages, and other activities here.',
-                      style: TextStyle(color: Colors.grey, fontSize: 14),
+                      style: TextStyle(
+                        color: context.outlineColor,
+                        fontSize: 14,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -166,7 +174,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: notification.isRead
-              ? Colors.grey.withValues(alpha: 0.2)
+              ? context.outlineColor.withValues(alpha: 0.2)
               : PulseColors.primary.withValues(alpha: 0.3),
         ),
         boxShadow: [
@@ -182,12 +190,12 @@ class _NotificationScreenState extends State<NotificationScreen> {
         direction: DismissDirection.endToStart,
         background: Container(
           decoration: BoxDecoration(
-            color: Colors.red,
+            color: context.errorColor,
             borderRadius: BorderRadius.circular(12),
           ),
           alignment: Alignment.centerRight,
           padding: const EdgeInsets.only(right: 20),
-          child: const Icon(Icons.delete, color: Colors.white, size: 24),
+          child: Icon(Icons.delete, color: context.onSurfaceColor, size: 24),
         ),
         onDismissed: (direction) {
           context.read<NotificationBloc>().add(
@@ -217,14 +225,20 @@ class _NotificationScreenState extends State<NotificationScreen> {
               const SizedBox(height: 4),
               Text(
                 notification.message,
-                style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                style: TextStyle(
+                  color: context.onSurfaceVariantColor,
+                  fontSize: 14,
+                ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 8),
               Text(
                 DateFormat('MMM d, h:mm a').format(notification.createdAt),
-                style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                style: TextStyle(
+                  color: context.onSurfaceVariantColor.withValues(alpha: 0.6),
+                  fontSize: 12,
+                ),
               ),
             ],
           ),
@@ -233,7 +247,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
               : Container(
                   width: 12,
                   height: 12,
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     color: PulseColors.primary,
                     shape: BoxShape.circle,
                   ),
@@ -278,7 +292,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
         break;
       case 'system':
         iconData = Icons.info;
-        iconColor = Colors.grey;
+        iconColor = context.outlineColor;
         break;
       default:
         iconData = Icons.notifications;

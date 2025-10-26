@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 import '../../theme/pulse_colors.dart';
 
@@ -187,7 +188,7 @@ class PulseErrorState extends StatelessWidget {
                 onPressed: onRetry,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: PulseColors.error,
-                  foregroundColor: Colors.white,
+                  foregroundColor: context.onSurfaceColor,
                 ),
                 child: Text(retryText),
               ),

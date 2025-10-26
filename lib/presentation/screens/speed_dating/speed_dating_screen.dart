@@ -13,6 +13,7 @@ import '../../widgets/common/pulse_toast.dart';
 import '../../widgets/speed_dating/speed_dating_event_card.dart';
 import '../../widgets/speed_dating/active_session_widget.dart';
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Main screen for speed dating functionality
 class SpeedDatingScreen extends StatefulWidget {
@@ -58,7 +59,7 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Speed Dating',
           style: TextStyle(
             fontSize: 20,
@@ -98,7 +99,7 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
         child: BlocBuilder<SpeedDatingBloc, SpeedDatingState>(
           builder: (context, state) {
             if (state is SpeedDatingLoading) {
-              return const Center(child: PulseLoadingWidget());
+              return Center(child: PulseLoadingWidget());
             }
 
             if (state is SpeedDatingError) {
@@ -146,7 +147,7 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
 
             // For joining/joined/leaving/left states, show loading
             // The BLoC will emit SpeedDatingLoaded once events refresh
-            return const Center(child: PulseLoadingWidget());
+            return Center(child: PulseLoadingWidget());
           },
         ),
       ),
@@ -177,7 +178,7 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
         // Search and Filter Bar
         Container(
           padding: const EdgeInsets.all(16),
-          color: Colors.grey.shade50,
+          color: context.outlineColor.shade50,
           child: Column(
             children: [
               // Search Field
@@ -185,10 +186,10 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
                 controller: _searchController,
                 decoration: InputDecoration(
                   hintText: 'Search events...',
-                  prefixIcon: const Icon(Icons.search),
+                  prefixIcon: Icon(Icons.search),
                   suffixIcon: _searchQuery.isNotEmpty
                       ? IconButton(
-                          icon: const Icon(Icons.clear),
+                          icon: Icon(Icons.clear),
                           onPressed: () {
                             setState(() {
                               _searchController.clear();
@@ -228,7 +229,7 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
                             _selectedCategory = category;
                           });
                         },
-                        backgroundColor: Colors.white,
+                        backgroundColor: context.surfaceColor,
                         selectedColor: PulseColors.primary.withValues(
                           alpha: 0.2,
                         ),
@@ -236,7 +237,7 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
                         labelStyle: TextStyle(
                           color: isSelected
                               ? PulseColors.primary
-                              : Colors.grey.shade700,
+                              : context.outlineColor.shade700,
                           fontWeight: isSelected
                               ? FontWeight.w600
                               : FontWeight.normal,
@@ -288,9 +289,13 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.search_off, size: 80, color: Colors.grey[400]),
+              Icon(
+                Icons.search_off,
+                size: 80,
+                color: context.outlineColor.withValues(alpha: 0.2),
+              ),
               const SizedBox(height: 24),
-              const Text(
+              Text(
                 'No Events Found',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
@@ -298,7 +303,10 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
               Text(
                 'Try adjusting your search or filters',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                style: TextStyle(
+                  fontSize: 16,
+                  color: context.onSurfaceVariantColor,
+                ),
               ),
               const SizedBox(height: 24),
               ElevatedButton(
@@ -311,9 +319,9 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: PulseColors.primary,
-                  foregroundColor: Colors.white,
+                  foregroundColor: context.onSurfaceColor,
                 ),
-                child: const Text('Clear Filters'),
+                child: Text('Clear Filters'),
               ),
             ],
           ),
@@ -327,9 +335,13 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.event_available, size: 80, color: Colors.grey[400]),
+            Icon(
+              Icons.event_available,
+              size: 80,
+              color: context.outlineColor.withValues(alpha: 0.2),
+            ),
             const SizedBox(height: 24),
-            const Text(
+            Text(
               'No Speed Dating Events',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
@@ -337,7 +349,10 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
             Text(
               'Check back soon! Admins will post new events regularly.',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+              style: TextStyle(
+                fontSize: 16,
+                color: context.onSurfaceVariantColor,
+              ),
             ),
           ],
         ),
@@ -362,7 +377,7 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
           ),
           const SizedBox(height: 24),
           if (state.matches.isNotEmpty) ...[
-            const Text(
+            Text(
               'Recent Matches',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
@@ -396,9 +411,13 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.timer_off, size: 80, color: Colors.grey[400]),
+            Icon(
+              Icons.timer_off,
+              size: 80,
+              color: context.outlineColor.withValues(alpha: 0.2),
+            ),
             const SizedBox(height: 24),
-            const Text(
+            Text(
               'No Active Session',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
@@ -406,16 +425,19 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
             Text(
               'Join a speed dating event to start meeting new people!',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+              style: TextStyle(
+                fontSize: 16,
+                color: context.onSurfaceVariantColor,
+              ),
             ),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: () => _tabController.animateTo(0),
               style: ElevatedButton.styleFrom(
                 backgroundColor: PulseColors.primary,
-                foregroundColor: Colors.white,
+                foregroundColor: context.onSurfaceColor,
               ),
-              child: const Text('Browse Events'),
+              child: Text('Browse Events'),
             ),
           ],
         ),
@@ -430,9 +452,13 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.history, size: 80, color: Colors.grey[400]),
+            Icon(
+              Icons.history,
+              size: 80,
+              color: context.outlineColor.withValues(alpha: 0.2),
+            ),
             const SizedBox(height: 24),
-            const Text(
+            Text(
               'No Dating History',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
@@ -440,7 +466,10 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
             Text(
               'Your past speed dating sessions will appear here',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+              style: TextStyle(
+                fontSize: 16,
+                color: context.onSurfaceVariantColor,
+              ),
             ),
           ],
         ),
@@ -468,13 +497,13 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
                       : null,
                   backgroundColor: PulseColors.primary.withValues(alpha: 0.2),
                   child: match['avatarUrl'] == null
-                      ? const Icon(Icons.person)
+                      ? Icon(Icons.person)
                       : null,
                 ),
                 const SizedBox(height: 8),
                 Text(
                   match['name'] ?? 'Unknown',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                   ),
@@ -484,7 +513,10 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
                 ),
                 Text(
                   '${match['matchScore'] ?? 0}% match',
-                  style: TextStyle(fontSize: 10, color: Colors.grey[600]),
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: context.onSurfaceVariantColor,
+                  ),
                 ),
               ],
             ),
@@ -525,20 +557,20 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
                 ? CachedNetworkImage(
                     imageUrl: imageUrl,
                     fit: BoxFit.cover,
-                    placeholder: (context, url) => const Center(
+                    placeholder: (context, url) => Center(
                       child: SizedBox(
                         width: 20,
                         height: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       ),
                     ),
-                    errorWidget: (context, url, error) => const Icon(
+                    errorWidget: (context, url, error) => Icon(
                       Icons.speed,
                       color: PulseColors.secondary,
                       size: 28,
                     ),
                   )
-                : const Icon(
+                : Icon(
                     Icons.speed,
                     color: PulseColors.secondary,
                     size: 28,
@@ -547,7 +579,7 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
         ),
         title: Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontWeight: FontWeight.w600,
             fontSize: 16,
             color: Colors.black87,
@@ -559,11 +591,11 @@ class _SpeedDatingScreenState extends State<SpeedDatingScreen>
             const SizedBox(height: 4),
             Text(
               'Date: $date',
-              style: const TextStyle(fontSize: 14, color: Colors.black87),
+              style: TextStyle(fontSize: 14, color: Colors.black87),
             ),
             Text(
               'Matches: $matchesCount',
-              style: const TextStyle(fontSize: 14, color: Colors.black87),
+              style: TextStyle(fontSize: 14, color: Colors.black87),
             ),
           ],
         ),

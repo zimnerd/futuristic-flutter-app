@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Widget for displaying date plan information
 class DatePlanCard extends StatelessWidget {
@@ -45,7 +46,7 @@ class DatePlanCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
@@ -74,13 +75,13 @@ class DatePlanCard extends StatelessWidget {
                             ],
                           ),
                         ),
-                        const PopupMenuItem(
+                        PopupMenuItem(
                           value: 'delete',
                           child: Row(
                             children: [
-                              Icon(Icons.delete, color: Colors.red),
-                              SizedBox(width: 8),
-                              Text('Delete'),
+                              Icon(Icons.delete, color: context.errorColor),
+                              const SizedBox(width: 8),
+                              const Text('Delete'),
                             ],
                           ),
                         ),
@@ -135,7 +136,7 @@ class DatePlanCard extends StatelessWidget {
                     Expanded(
                       child: OutlinedButton(
                         onPressed: onDecline,
-                        child: const Text('Decline'),
+                        child: Text('Decline'),
                       ),
                     ),
                   ],

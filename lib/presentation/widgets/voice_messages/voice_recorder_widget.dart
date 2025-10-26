@@ -6,6 +6,7 @@ import 'dart:io';
 import '../../../data/models/voice_message.dart';
 import '../../theme/pulse_colors.dart';
 import '../common/pulse_toast.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Widget for recording voice messages
 class VoiceRecorderWidget extends StatefulWidget {
@@ -222,7 +223,7 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget>
                   boxShadow: _isRecording && !_isPaused
                       ? [
                           BoxShadow(
-                            color: Colors.red.withValues(alpha: 0.3),
+                            color: context.errorColor.withValues(alpha: 0.3),
                             blurRadius: 20,
                             spreadRadius: 5,
                           ),
@@ -233,7 +234,7 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget>
                   _isRecording
                       ? (_isPaused ? Icons.pause : Icons.mic)
                       : Icons.mic_none,
-                  color: Colors.white,
+                  color: context.onSurfaceColor,
                   size: 40,
                 ),
               ),
@@ -259,7 +260,7 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget>
           value:
               _recordedDuration.inMilliseconds /
               widget.maxDuration.inMilliseconds,
-          backgroundColor: Colors.grey[300],
+          backgroundColor: context.outlineColor.withValues(alpha: 0.3),
           valueColor: AlwaysStoppedAnimation<Color>(
             _recordedDuration.inSeconds > (widget.maxDuration.inSeconds * 0.8)
                 ? Colors.red
@@ -271,7 +272,7 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget>
           'Max: ${_formatDuration(widget.maxDuration)}',
           style: Theme.of(
             context,
-          ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+          ).textTheme.bodySmall?.copyWith(color: context.onSurfaceVariantColor),
         ),
       ],
     );
@@ -281,11 +282,11 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget>
     if (!_isRecording) {
       return ElevatedButton.icon(
         onPressed: _startRecording,
-        icon: const Icon(Icons.mic),
-        label: const Text('Start Recording'),
+        icon: Icon(Icons.mic),
+        label: Text('Start Recording'),
         style: ElevatedButton.styleFrom(
           backgroundColor: PulseColors.primary,
-          foregroundColor: Colors.white,
+          foregroundColor: context.onSurfaceColor,
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30),
@@ -304,7 +305,7 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget>
           label: Text(_isPaused ? 'Resume' : 'Pause'),
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.orange,
-            foregroundColor: Colors.white,
+            foregroundColor: context.onSurfaceColor,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
@@ -314,11 +315,11 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget>
         // Stop Button
         ElevatedButton.icon(
           onPressed: _stopRecording,
-          icon: const Icon(Icons.stop),
-          label: const Text('Finish'),
+          icon:  Icon(Icons.stop),
+          label: Text('Finish'),
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.green,
-            foregroundColor: Colors.white,
+            foregroundColor: context.onSurfaceColor,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),

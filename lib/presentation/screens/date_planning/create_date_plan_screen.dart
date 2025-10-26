@@ -5,6 +5,7 @@ import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 import '../../blocs/date_planning/date_planning_bloc.dart';
 import '../../blocs/date_planning/date_planning_event.dart';
 import '../../widgets/common/pulse_toast.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Screen for creating or editing a date plan
 class CreateDatePlanScreen extends StatefulWidget {
@@ -80,7 +81,7 @@ class _CreateDatePlanScreenState extends State<CreateDatePlanScreen> {
             onPressed: _savePlan,
             child: Text(
               isEditing ? 'Update' : 'Create',
-              style: const TextStyle(color: Colors.white),
+              style: TextStyle(color: Colors.white),
             ),
           ),
         ],
@@ -182,7 +183,7 @@ class _CreateDatePlanScreenState extends State<CreateDatePlanScreen> {
             const SizedBox(height: 24),
 
             // Activities section
-            const Text(
+            Text(
               'Activities',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
@@ -204,7 +205,7 @@ class _CreateDatePlanScreenState extends State<CreateDatePlanScreen> {
                 const SizedBox(width: 12),
                 ElevatedButton(
                   onPressed: _addActivity,
-                  child: const Text('Add'),
+                  child: Text('Add'),
                 ),
               ],
             ),
@@ -223,7 +224,7 @@ class _CreateDatePlanScreenState extends State<CreateDatePlanScreen> {
                     child: ListTile(
                       title: Text(activity),
                       trailing: IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.red),
+                        icon: Icon(Icons.delete, color: context.errorColor),
                         onPressed: () => _removeActivity(index),
                       ),
                     ),
@@ -235,16 +236,22 @@ class _CreateDatePlanScreenState extends State<CreateDatePlanScreen> {
                 padding: const EdgeInsets.all(32),
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey[300]!),
+                  border: Border.all(
+                    color: context.outlineColor.withValues(alpha: 0.3),
+                  ),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Column(
+                child: Column(
                   children: [
-                    Icon(Icons.local_activity, size: 48, color: Colors.grey),
-                    SizedBox(height: 8),
+                    Icon(
+                      Icons.local_activity,
+                      size: 48,
+                      color: context.outlineColor,
+                    ),
+                    const SizedBox(height: 8),
                     Text(
                       'No activities added yet',
-                      style: TextStyle(color: Colors.grey),
+                      style: TextStyle(color: context.outlineColor),
                     ),
                   ],
                 ),
@@ -264,10 +271,10 @@ class _CreateDatePlanScreenState extends State<CreateDatePlanScreen> {
                 ),
                 child: Text(
                   isEditing ? 'Update Plan' : 'Create Plan',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: context.onSurfaceColor,
                   ),
                 ),
               ),

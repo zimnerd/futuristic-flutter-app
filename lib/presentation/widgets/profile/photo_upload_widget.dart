@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:pulse_dating_app/core/utils/logger.dart';
 import 'package:pulse_dating_app/presentation/theme/pulse_colors.dart';
 import '../common/pulse_toast.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Widget for uploading multiple photos with preview and validation
 class PhotoUploadWidget extends StatefulWidget {
@@ -52,14 +53,17 @@ class _PhotoUploadWidgetState extends State<PhotoUploadWidget> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Upload Photos',
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Text(
                 'Select up to ${widget.maxPhotos} photos. You have $_remainingSlots slots available.',
-                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                style: TextStyle(
+                  fontSize: 14,
+                  color: context.onSurfaceVariantColor,
+                ),
               ),
             ],
           ),
@@ -92,8 +96,8 @@ class _PhotoUploadWidgetState extends State<PhotoUploadWidget> {
                   onPressed: _availableSlots > 0 && !_isProcessing
                       ? () => _pickPhoto(ImageSource.camera)
                       : null,
-                  icon: const Icon(Icons.camera_alt),
-                  label: const Text('Camera'),
+                  icon: Icon(Icons.camera_alt),
+                  label: Text('Camera'),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
@@ -106,8 +110,8 @@ class _PhotoUploadWidgetState extends State<PhotoUploadWidget> {
                   onPressed: _availableSlots > 0 && !_isProcessing
                       ? () => _pickPhoto(ImageSource.gallery)
                       : null,
-                  icon: const Icon(Icons.photo_library),
-                  label: const Text('Gallery'),
+                  icon: Icon(Icons.photo_library),
+                  label: Text('Gallery'),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
@@ -127,7 +131,7 @@ class _PhotoUploadWidgetState extends State<PhotoUploadWidget> {
               onPressed: _isProcessing ? null : _uploadPhotos,
               style: ElevatedButton.styleFrom(
                 backgroundColor: PulseColors.primary,
-                foregroundColor: Colors.white,
+                foregroundColor: context.onSurfaceColor,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -144,7 +148,7 @@ class _PhotoUploadWidgetState extends State<PhotoUploadWidget> {
                     )
                   : Text(
                       'Upload ${_selectedPhotos.length} ${_selectedPhotos.length == 1 ? 'Photo' : 'Photos'}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
@@ -158,7 +162,7 @@ class _PhotoUploadWidgetState extends State<PhotoUploadWidget> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Photo Guidelines:',
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
               ),
@@ -213,7 +217,7 @@ class _PhotoUploadWidgetState extends State<PhotoUploadWidget> {
                   color: Colors.black.withValues(alpha: 0.6),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.close, size: 16, color: Colors.white),
+                child: Icon(Icons.close, size: 16, color: Colors.white),
               ),
             ),
           ),
@@ -229,10 +233,10 @@ class _PhotoUploadWidgetState extends State<PhotoUploadWidget> {
                   color: PulseColors.primary,
                   borderRadius: BorderRadius.circular(4),
                 ),
-                child: const Text(
+                child: Text(
                   'MAIN',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: context.onSurfaceColor,
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
                   ),
@@ -254,7 +258,10 @@ class _PhotoUploadWidgetState extends State<PhotoUploadWidget> {
           Expanded(
             child: Text(
               text,
-              style: TextStyle(fontSize: 13, color: Colors.grey[700]),
+              style: TextStyle(
+                fontSize: 13,
+                color: context.onSurfaceVariantColor,
+              ),
             ),
           ),
         ],

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 import '../../data/models/subscription.dart';
 import '../../data/models/subscription_plan.dart';
 import '../../data/models/subscription_usage.dart';
@@ -94,11 +95,11 @@ class _SubscriptionManagementScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.surfaceColor,
       appBar: AppBar(
         title: Text(
           'Subscription',
-          style: AppTextStyles.heading2.copyWith(color: AppColors.textPrimary),
+          style: AppTextStyles.heading2.copyWith(color: context.onSurfaceColor),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -110,12 +111,12 @@ class _SubscriptionManagementScreenState
             Tab(text: 'Plans'),
           ],
           labelColor: AppColors.primary,
-          unselectedLabelColor: AppColors.textSecondary,
+          unselectedLabelColor: context.onSurfaceVariantColor,
           indicatorColor: AppColors.primary,
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : TabBarView(
               controller: _tabController,
               children: [
@@ -216,29 +217,29 @@ class _SubscriptionManagementScreenState
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.surfaceColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.outlineColor),
       ),
       child: Column(
         children: [
           Icon(
             Icons.card_membership_outlined,
             size: 64,
-            color: AppColors.textSecondary,
+            color: context.onSurfaceVariantColor,
           ),
           const SizedBox(height: 16),
           Text(
             'No Active Subscription',
             style: AppTextStyles.headlineSmall.copyWith(
-              color: AppColors.textPrimary,
+              color: context.onSurfaceColor,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             'Subscribe to a plan to unlock premium features',
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
+              color: context.onSurfaceVariantColor,
             ),
             textAlign: TextAlign.center,
           ),
@@ -263,20 +264,20 @@ class _SubscriptionManagementScreenState
             Icon(
               Icons.analytics_outlined,
               size: 64,
-              color: AppColors.textSecondary,
+              color: context.onSurfaceVariantColor,
             ),
             const SizedBox(height: 16),
             Text(
               'No Usage Data',
               style: AppTextStyles.headlineSmall.copyWith(
-                color: AppColors.textPrimary,
+                color: context.onSurfaceColor,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               'Subscribe to a plan to track your usage',
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+                color: context.onSurfaceVariantColor,
               ),
               textAlign: TextAlign.center,
             ),
@@ -290,9 +291,9 @@ class _SubscriptionManagementScreenState
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.surfaceColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.outlineColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -300,7 +301,7 @@ class _SubscriptionManagementScreenState
           Text(
             'Quick Actions',
             style: AppTextStyles.headlineSmall.copyWith(
-              color: AppColors.textPrimary,
+              color: context.onSurfaceColor,
             ),
           ),
           const SizedBox(height: 16),
@@ -332,9 +333,9 @@ class _SubscriptionManagementScreenState
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.surfaceColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.outlineColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -345,7 +346,7 @@ class _SubscriptionManagementScreenState
               Text(
                 'Recent Activity',
                 style: AppTextStyles.headlineSmall.copyWith(
-                  color: AppColors.textPrimary,
+                  color: context.onSurfaceColor,
                 ),
               ),
               TextButton(
@@ -403,14 +404,14 @@ class _SubscriptionManagementScreenState
                 Text(
                   title,
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.textPrimary,
+                    color: context.onSurfaceColor,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
                 Text(
                   date,
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
+                    color: context.onSurfaceVariantColor,
                   ),
                 ),
               ],
@@ -419,7 +420,7 @@ class _SubscriptionManagementScreenState
           Text(
             amount,
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textPrimary,
+              color: context.onSurfaceColor,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -433,29 +434,29 @@ class _SubscriptionManagementScreenState
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.surfaceColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.outlineColor),
       ),
       child: Column(
         children: [
           Icon(
             Icons.trending_up_outlined,
             size: 48,
-            color: AppColors.textSecondary,
+            color: context.onSurfaceVariantColor,
           ),
           const SizedBox(height: 16),
           Text(
             'No Usage Data Yet',
             style: AppTextStyles.headlineSmall.copyWith(
-              color: AppColors.textPrimary,
+              color: context.onSurfaceColor,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             'Start using premium features to see your usage statistics',
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
+              color: context.onSurfaceVariantColor,
             ),
             textAlign: TextAlign.center,
           ),
@@ -468,9 +469,9 @@ class _SubscriptionManagementScreenState
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.surfaceColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.outlineColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -478,7 +479,7 @@ class _SubscriptionManagementScreenState
           Text(
             'Usage Insights',
             style: AppTextStyles.headlineSmall.copyWith(
-              color: AppColors.textPrimary,
+              color: context.onSurfaceColor,
             ),
           ),
           const SizedBox(height: 16),
@@ -516,14 +517,14 @@ class _SubscriptionManagementScreenState
                 Text(
                   title,
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.textPrimary,
+                    color: context.onSurfaceColor,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
                 Text(
                   description,
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
+                    color: context.onSurfaceVariantColor,
                   ),
                 ),
               ],
@@ -590,19 +591,19 @@ class _SubscriptionManagementScreenState
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Cancel Subscription'),
-        content: const Text(
+        title: Text('Cancel Subscription'),
+        content: Text(
           'Are you sure you want to cancel your subscription? You will lose access to premium features at the end of your billing period.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Keep Subscription'),
+            child: Text('Keep Subscription'),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            child: const Text('Cancel Subscription'),
+            style: TextButton.styleFrom(foregroundColor: context.errorColor),
+            child: Text('Cancel Subscription'),
           ),
         ],
       ),

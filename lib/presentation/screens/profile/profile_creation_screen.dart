@@ -14,6 +14,7 @@ import '../../widgets/common/pulse_toast.dart';
 import '../../widgets/profile/interests_selector.dart';
 import '../../widgets/profile/photo_picker_grid.dart';
 import '../../widgets/profile/profile_exit_dialog.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Profile creation screen for new users
 /// IMPORTANT: Core fields (name, age, gender, 1 photo) are now required and non-skippable
@@ -138,7 +139,7 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
           elevation: 0,
           foregroundColor: PulseColors.primary,
           leading: IconButton(
-            icon: const Icon(Icons.close),
+            icon: Icon(Icons.close),
             onPressed: () => _handleBackButton(),
           ),
           actions: [
@@ -147,7 +148,9 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
               child: Text(
                 'Back',
                 style: TextStyle(
-                  color: _currentStep > 0 ? PulseColors.primary : Colors.grey,
+                  color: _currentStep > 0
+                      ? PulseColors.primary
+                      : context.outlineColor,
                 ),
               ),
             ),
@@ -167,7 +170,7 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
           },
           builder: (context, state) {
             if (state.status == ProfileStatus.loading) {
-              return const Center(child: PulseLoadingWidget());
+              return Center(child: PulseLoadingWidget());
             }
 
             return Column(
@@ -212,7 +215,7 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
                   decoration: BoxDecoration(
                     color: index <= _currentStep
                         ? PulseColors.primary
-                        : Colors.grey[300],
+                        : context.outlineColor.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -224,7 +227,9 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
             'Step ${_currentStep + 1} of $_totalSteps',
             style: Theme.of(
               context,
-            ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+            ).textTheme.bodyMedium?.copyWith(
+              color: context.onSurfaceVariantColor,
+            ),
           ),
         ],
       ),
@@ -256,7 +261,9 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
               'Tell us a bit about yourself',
               style: Theme.of(
                 context,
-              ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
+              ).textTheme.bodyLarge?.copyWith(
+                color: context.onSurfaceVariantColor,
+              ),
             ),
             const SizedBox(height: 32),
             TextFormField(
@@ -385,7 +392,9 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
             'Upload at least one photo to continue *',
             style: Theme.of(
               context,
-            ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
+            ).textTheme.bodyLarge?.copyWith(
+              color: context.onSurfaceVariantColor,
+            ),
           ),
           const SizedBox(height: 32),
           Expanded(
@@ -456,7 +465,7 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
                 onPressed: () => _goToNextStep(),
                 child: Text(
                   'Skip for now',
-                  style: TextStyle(color: Colors.grey[600]),
+                  style: TextStyle(color: context.onSurfaceVariantColor),
                 ),
               ),
             ],
@@ -466,7 +475,9 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
             'Write a short bio to tell people about yourself (optional)',
             style: Theme.of(
               context,
-            ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
+            ).textTheme.bodyLarge?.copyWith(
+              color: context.onSurfaceVariantColor,
+            ),
           ),
           const SizedBox(height: 32),
           TextFormField(
@@ -541,7 +552,7 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
                 },
                 child: Text(
                   'Skip for now',
-                  style: TextStyle(color: Colors.grey[600]),
+                  style: TextStyle(color: context.onSurfaceVariantColor),
                 ),
               ),
             ],
@@ -551,7 +562,9 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
             'Select interests that represent you (optional)',
             style: Theme.of(
               context,
-            ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
+            ).textTheme.bodyLarge?.copyWith(
+              color: context.onSurfaceVariantColor,
+            ),
           ),
           const SizedBox(height: 32),
           Expanded(
@@ -592,7 +605,7 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
             'Tell us what you\'re looking for',
             style: Theme.of(
               context,
-            ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
+            ).textTheme.bodyLarge?.copyWith(color: context.onSurfaceVariantColor),
           ),
           const SizedBox(height: 32),
           DropdownButtonFormField<String>(
@@ -657,7 +670,9 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
                   textAlign: TextAlign.center,
                   style: Theme.of(
                     context,
-                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey[700]),
+                  ).textTheme.bodyMedium?.copyWith(
+                    color: context.onSurfaceVariantColor,
+                  ),
                 ),
               ],
             ),
@@ -710,7 +725,7 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
               onPressed: _canProceed() ? _goToNextStep : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: PulseColors.primary,
-                foregroundColor: Colors.white,
+                foregroundColor: context.onSurfaceColor,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -719,7 +734,7 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
               ),
               child: Text(
                 _getNextButtonText(),
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
@@ -915,7 +930,10 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: Text('Cancel', style: TextStyle(color: Colors.grey[600])),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: context.onSurfaceVariantColor),
+            ),
           ),
           ElevatedButton(
             onPressed: () {
@@ -924,12 +942,12 @@ class _ProfileCreationScreenState extends State<ProfileCreationScreen> {
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: PulseColors.primary,
-              foregroundColor: Colors.white,
+              foregroundColor: context.onSurfaceColor,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            child: const Text('Skip'),
+            child: Text('Skip'),
           ),
         ],
       ),

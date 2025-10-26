@@ -28,6 +28,7 @@ import '../../../features/group_chat/data/group_chat_service.dart';
 import '../../../features/group_chat/data/group_chat_websocket_service.dart';
 import '../../../core/network/api_client.dart';
 import 'settings_screen.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Enhanced messages screen with conversations list
 class MessagesScreen extends StatefulWidget {
@@ -585,7 +586,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                           ),
                           TextButton(
                             onPressed: _loadMatchStories,
-                            child: const Text('Retry'),
+                            child: Text('Retry'),
                           ),
                         ],
                       ),
@@ -673,7 +674,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                 ),
               );
             },
-            icon: const Icon(Icons.groups),
+            icon: Icon(Icons.groups),
             style: IconButton.styleFrom(
               backgroundColor: PulseColors.primaryContainer,
               foregroundColor: PulseColors.primary,
@@ -687,7 +688,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                 onPressed: () {
                   _showFilterOptions();
                 },
-                icon: const Icon(Icons.filter_list),
+                icon: Icon(Icons.filter_list),
                 style: IconButton.styleFrom(
                   backgroundColor: _hasActiveFilters()
                       ? PulseColors.primary
@@ -708,7 +709,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                     width: 10,
                     height: 10,
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: context.onSurfaceColor,
                       shape: BoxShape.circle,
                       border: Border.all(color: PulseColors.primary, width: 1),
                     ),
@@ -718,7 +719,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
           ),
           const SizedBox(width: PulseSpacing.sm),
           PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert),
+            icon: Icon(Icons.more_vert),
             tooltip: 'More options',
             offset: const Offset(0, 50),
             shape: RoundedRectangleBorder(
@@ -742,7 +743,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                       color: PulseColors.primary,
                     ),
                   ),
-                  title: const Text(
+                  title: Text(
                     'Mark all as read',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
@@ -760,7 +761,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                     ),
                     child: Icon(Icons.groups, color: PulseColors.primary),
                   ),
-                  title: const Text(
+                  title: Text(
                     'Group chats',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
@@ -778,7 +779,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                     ),
                     child: Icon(Icons.settings, color: PulseColors.primary),
                   ),
-                  title: const Text(
+                  title: Text(
                     'Messaging settings',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
@@ -852,10 +853,10 @@ class _MessagesScreenState extends State<MessagesScreen> {
             onPressed: () {
               _showFullSearch();
             },
-            icon: const Icon(Icons.search),
+            icon: Icon(Icons.search),
             style: IconButton.styleFrom(
               backgroundColor: PulseColors.primary,
-              foregroundColor: Colors.white,
+              foregroundColor: context.onSurfaceColor,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(PulseRadii.md),
               ),
@@ -932,7 +933,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                                     conversation.name.isNotEmpty
                                         ? conversation.name[0].toUpperCase()
                                         : '?',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       color: PulseColors.primary,
                                       fontSize: 24,
                                       fontWeight: FontWeight.bold,
@@ -1022,7 +1023,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                               child: Text(
                                 conversation.unreadCount.toString(),
                                 style: PulseTextStyles.labelSmall.copyWith(
-                                  color: Colors.white,
+                                  color: context.onSurfaceColor,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -1073,7 +1074,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
           const SizedBox(height: PulseSpacing.xl),
           ElevatedButton(
             onPressed: _loadConversations,
-            child: const Text('Retry'),
+            child: Text('Retry'),
           ),
         ],
       ),

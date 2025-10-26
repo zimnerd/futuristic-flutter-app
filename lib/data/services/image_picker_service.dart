@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 import '../../core/utils/logger.dart';
 
 /// Global service for handling camera and gallery image picking
@@ -174,12 +175,12 @@ class ImagePickerService {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.grey[300],
+                color: context.outlineColor.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
             const SizedBox(height: 24),
-            const Text(
+            Text(
               'Select Image Source',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
@@ -232,9 +233,9 @@ class ImagePickerService {
               width: double.infinity,
               child: TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text(
+                child: Text(
                   'Cancel',
-                  style: TextStyle(fontSize: 16, color: Colors.grey),
+                  style: TextStyle(fontSize: 16, color: context.outlineColor),
                 ),
               ),
             ),

@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../theme/pulse_colors.dart' hide PulseTextStyles;
 import '../../theme/pulse_theme.dart';
 import '../../widgets/common/pulse_toast.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Main Safety Center screen with links to all safety features
 class SafetyCenterScreen extends StatelessWidget {
@@ -12,9 +13,9 @@ class SafetyCenterScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Safety Center'),
+        title: Text('Safety Center'),
         backgroundColor: PulseColors.primary,
-        foregroundColor: Colors.white,
+        foregroundColor: context.onSurfaceColor,
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -56,7 +57,7 @@ class SafetyCenterScreen extends StatelessWidget {
             title: 'Blocked Users',
             subtitle: 'Manage your blocked users list',
             onTap: () => context.push('/blocked-users'),
-            color: Colors.red,
+            color: context.errorColor,
           ),
           const SizedBox(height: 12),
           _buildOptionCard(
@@ -235,16 +236,19 @@ class SafetyCenterScreen extends StatelessWidget {
   Widget _buildEmergencyCard(BuildContext context) {
     return Card(
       elevation: 0,
-      color: Colors.red.withValues(alpha: 0.1),
+      color: context.errorColor.withValues(alpha: 0.1),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: Colors.red.withValues(alpha: 0.3), width: 1),
+        side: BorderSide(
+          color: context.errorColor.withValues(alpha: 0.3),
+          width: 1,
+        ),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
-            Icon(Icons.emergency, size: 32, color: Colors.red.shade700),
+            Icon(Icons.emergency, size: 32, color: context.errorColor.shade700),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
@@ -254,14 +258,14 @@ class SafetyCenterScreen extends StatelessWidget {
                     'Emergency?',
                     style: PulseTextStyles.titleSmall.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: Colors.red.shade700,
+                      color: context.errorColor.shade700,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     'If you\'re in immediate danger, contact local emergency services',
                     style: PulseTextStyles.bodySmall.copyWith(
-                      color: Colors.red.shade700,
+                      color: context.errorColor.shade700,
                     ),
                   ),
                 ],

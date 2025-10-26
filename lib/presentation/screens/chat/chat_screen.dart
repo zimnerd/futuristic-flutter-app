@@ -44,6 +44,7 @@ import '../../sheets/conversation_picker_sheet.dart';
 import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 import '../../dialogs/call_back_confirmation_dialog.dart';
 import '../../sheets/call_details_bottom_sheet.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 class ChatScreen extends StatefulWidget {
   final String conversationId;
@@ -485,7 +486,7 @@ class _ChatScreenState extends State<ChatScreen>
       },
       child: KeyboardDismissibleScaffold(
         enableDismissOnTap: false, // Don't dismiss on message tap
-        backgroundColor: Colors.white,
+        backgroundColor: context.surfaceColor,
         appBar: _buildAppBar(),
         body: Column(
           children: [
@@ -771,9 +772,9 @@ class _ChatScreenState extends State<ChatScreen>
                       _searchController.clear();
                     });
                   },
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.arrow_back,
-                    color: Colors.white,
+                    color: context.onSurfaceColor,
                     size: 24,
                   ),
                 ),
@@ -789,7 +790,7 @@ class _ChatScreenState extends State<ChatScreen>
                     child: TextField(
                       controller: _searchController,
                       focusNode: _searchFocusNode,
-                      style: const TextStyle(color: Colors.white),
+                      style: TextStyle(color: Colors.white),
                       decoration: const InputDecoration(
                         hintText: 'Search messages...',
                         hintStyle: TextStyle(color: Colors.white70),
@@ -810,15 +811,18 @@ class _ChatScreenState extends State<ChatScreen>
                   const SizedBox(width: 8),
                   Text(
                     '${_currentSearchIndex + 1}/${_searchResults.length}',
-                    style: const TextStyle(color: Colors.white, fontSize: 12),
+                    style: TextStyle(
+                      color: context.onSurfaceColor,
+                      fontSize: 12,
+                    ),
                   ),
                   IconButton(
                     onPressed: _currentSearchIndex > 0
                         ? _previousSearchResult
                         : null,
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.keyboard_arrow_up,
-                      color: Colors.white,
+                      color: context.onSurfaceColor,
                       size: 20,
                     ),
                   ),
@@ -826,9 +830,9 @@ class _ChatScreenState extends State<ChatScreen>
                     onPressed: _currentSearchIndex < _searchResults.length - 1
                         ? _nextSearchResult
                         : null,
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.keyboard_arrow_down,
-                      color: Colors.white,
+                      color: context.onSurfaceColor,
                       size: 20,
                     ),
                   ),
@@ -870,9 +874,9 @@ class _ChatScreenState extends State<ChatScreen>
                 // Back button
                 IconButton(
                   onPressed: () => Navigator.pop(context),
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.arrow_back_ios,
-                    color: Colors.white,
+                    color: context.onSurfaceColor,
                     size: 20,
                   ),
                 ),
@@ -888,7 +892,10 @@ class _ChatScreenState extends State<ChatScreen>
                         height: 48,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 2),
+                          border: Border.all(
+                            color: context.onSurfaceColor,
+                            width: 2,
+                          ),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withValues(alpha: 0.2),
@@ -903,18 +910,22 @@ class _ChatScreenState extends State<ChatScreen>
                                   imageUrl: widget.otherUserPhoto!,
                                   fit: BoxFit.cover,
                                   placeholder: (context, url) => Container(
-                                    color: Colors.grey[300],
-                                    child: const Icon(
+                                    color: context.outlineColor.withValues(
+                                      alpha: 0.3,
+                                    ),
+                                    child: Icon(
                                       Icons.person,
-                                      color: Colors.grey,
+                                      color: context.outlineColor,
                                     ),
                                   ),
                                   errorWidget: (context, url, error) =>
                                       Container(
-                                        color: Colors.grey[300],
-                                        child: const Icon(
+                                        color: context.outlineColor.withValues(
+                                          alpha: 0.3,
+                                        ),
+                                        child: Icon(
                                           Icons.person,
-                                          color: Colors.grey,
+                                          color: context.outlineColor,
                                         ),
                                       ),
                                 )
@@ -924,8 +935,8 @@ class _ChatScreenState extends State<ChatScreen>
                                   ),
                                   child: Text(
                                     widget.otherUserName[0].toUpperCase(),
-                                    style: const TextStyle(
-                                      color: Colors.white,
+                                    style: TextStyle(
+                                      color: context.onSurfaceColor,
                                       fontWeight: FontWeight.bold,
                                       fontSize: 18,
                                     ),
@@ -943,7 +954,10 @@ class _ChatScreenState extends State<ChatScreen>
                           decoration: BoxDecoration(
                             color: PulseColors.success,
                             shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 2),
+                            border: Border.all(
+                              color: context.onSurfaceColor,
+                              width: 2,
+                            ),
                           ),
                         ),
                       ),
@@ -963,8 +977,8 @@ class _ChatScreenState extends State<ChatScreen>
                       children: [
                         Text(
                           widget.otherUserName,
-                          style: const TextStyle(
-                            color: Colors.white,
+                          style: TextStyle(
+                            color: context.onSurfaceColor,
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
@@ -1009,17 +1023,17 @@ class _ChatScreenState extends State<ChatScreen>
                   children: [
                     IconButton(
                       onPressed: () => _initiateCall(context, false),
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.phone,
-                        color: Colors.white,
+                        color: context.onSurfaceColor,
                         size: 22,
                       ),
                     ),
                     IconButton(
                       onPressed: () => _initiateCall(context, true),
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.videocam,
-                        color: Colors.white,
+                        color: context.onSurfaceColor,
                         size: 24,
                       ),
                     ),
@@ -1033,16 +1047,16 @@ class _ChatScreenState extends State<ChatScreen>
                           _searchFocusNode.requestFocus();
                         });
                       },
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.search,
-                        color: Colors.white,
+                        color: context.onSurfaceColor,
                         size: 22,
                       ),
                     ),
                     PopupMenuButton<String>(
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.more_vert,
-                        color: Colors.white,
+                        color: context.onSurfaceColor,
                         size: 22,
                       ),
                       onSelected: (value) => _handleMenuAction(context, value),
@@ -1057,32 +1071,36 @@ class _ChatScreenState extends State<ChatScreen>
                             ],
                           ),
                         ),
-                        const PopupMenuItem(
+                        PopupMenuItem(
                           value: 'block',
                           child: Row(
                             children: [
-                              Icon(Icons.block, size: 20, color: Colors.red),
-                              SizedBox(width: 12),
+                              Icon(
+                                Icons.block,
+                                size: 20,
+                                color: context.errorColor,
+                              ),
+                              const SizedBox(width: 12),
                               Text(
                                 'Block User',
-                                style: TextStyle(color: Colors.red),
+                                style: TextStyle(color: context.errorColor),
                               ),
                             ],
                           ),
                         ),
-                        const PopupMenuItem(
+                        PopupMenuItem(
                           value: 'unmatch',
                           child: Row(
                             children: [
                               Icon(
                                 Icons.heart_broken,
                                 size: 20,
-                                color: Colors.red,
+                                color: context.errorColor,
                               ),
-                              SizedBox(width: 12),
+                              const SizedBox(width: 12),
                               Text(
                                 'Unmatch',
-                                style: TextStyle(color: Colors.red),
+                                style: TextStyle(color: context.errorColor),
                               ),
                             ],
                           ),
@@ -1123,7 +1141,7 @@ class _ChatScreenState extends State<ChatScreen>
 
     if (state is ChatLoading) {
       AppLogger.debug('_buildMessagesList - Showing loading indicator');
-      return const Center(
+      return Center(
         child: CircularProgressIndicator(
           valueColor: AlwaysStoppedAnimation<Color>(PulseColors.primary),
         ),
@@ -1136,11 +1154,11 @@ class _ChatScreenState extends State<ChatScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline, color: Colors.grey, size: 64),
+            Icon(Icons.error_outline, color: context.outlineColor, size: 64),
             const SizedBox(height: 16),
             Text(
               state.message,
-              style: const TextStyle(color: Colors.grey),
+              style: TextStyle(color: context.outlineColor),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
@@ -1152,9 +1170,9 @@ class _ChatScreenState extends State<ChatScreen>
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: PulseColors.primary,
-                foregroundColor: Colors.white,
+                foregroundColor: context.onSurfaceColor,
               ),
-              child: const Text('Retry'),
+              child: Text('Retry'),
             ),
           ],
         ),
@@ -1168,20 +1186,24 @@ class _ChatScreenState extends State<ChatScreen>
 
       if (state.messages.isEmpty) {
         AppLogger.debug('_buildMessagesList - Showing empty state');
-        return const Center(
+        return Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.chat_bubble_outline, color: Colors.grey, size: 64),
+              Icon(
+                Icons.chat_bubble_outline,
+                color: context.outlineColor,
+                size: 64,
+              ),
               SizedBox(height: 16),
               Text(
                 'No messages yet',
-                style: TextStyle(color: Colors.grey, fontSize: 16),
+                style: TextStyle(color: context.outlineColor, fontSize: 16),
               ),
               SizedBox(height: 8),
               Text(
                 'Send a message to start the conversation!',
-                style: TextStyle(color: Colors.grey, fontSize: 14),
+                style: TextStyle(color: context.outlineColor, fontSize: 14),
               ),
             ],
           ),
@@ -1235,21 +1257,24 @@ class _ChatScreenState extends State<ChatScreen>
             itemBuilder: (context, index) {
               // Show refresh indicator at top (index 0 in reverse list)
               if (state.isRefreshing && index == 0) {
-                return const Padding(
-                  padding: EdgeInsets.all(16),
+                return Padding(
+                  padding: const EdgeInsets.all(16),
                   child: Center(
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        SizedBox(
+                        const SizedBox(
                           width: 16,
                           height: 16,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         ),
-                        SizedBox(width: 8),
+                        const SizedBox(width: 8),
                         Text(
                           'Refreshing...',
-                          style: TextStyle(color: Colors.grey, fontSize: 12),
+                          style: TextStyle(
+                            color: context.outlineColor,
+                            fontSize: 12,
+                          ),
                         ),
                       ],
                     ),
@@ -1267,21 +1292,21 @@ class _ChatScreenState extends State<ChatScreen>
                   padding: const EdgeInsets.all(16),
                   child: Center(
                     child: state.isLoadingMore
-                        ? const Row(
+                        ? Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              SizedBox(
+                              const SizedBox(
                                 width: 16,
                                 height: 16,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
                                 ),
                               ),
-                              SizedBox(width: 8),
+                              const SizedBox(width: 8),
                               Text(
                                 'Loading more messages...',
                                 style: TextStyle(
-                                  color: Colors.grey,
+                                  color: context.outlineColor,
                                   fontSize: 12,
                                 ),
                               ),
@@ -1309,13 +1334,15 @@ class _ChatScreenState extends State<ChatScreen>
                                 vertical: 6,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.grey.shade100,
+                                color: context.outlineColor.withValues(
+                                  alpha: 0.1,
+                                ),
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              child: const Text(
+                              child: Text(
                                 'Tap to load older messages',
                                 style: TextStyle(
-                                  color: Colors.grey,
+                                  color: context.outlineColor,
                                   fontSize: 12,
                                 ),
                               ),
@@ -1494,9 +1521,9 @@ class _ChatScreenState extends State<ChatScreen>
                   child: widget.otherUserPhoto == null
                       ? Text(
                           widget.otherUserName[0].toUpperCase(),
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 10,
-                            color: Colors.white,
+                            color: context.onSurfaceColor,
                             fontWeight: FontWeight.bold,
                           ),
                         )
@@ -1543,13 +1570,13 @@ class _ChatScreenState extends State<ChatScreen>
               if (widget.otherUserProfile!.bio != null)
                 Text('Bio: ${widget.otherUserProfile!.bio}'),
             ] else
-              const Text('Profile information not available'),
+              Text('Profile information not available'),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+            child: Text('Close'),
           ),
         ],
       ),
@@ -1568,7 +1595,7 @@ class _ChatScreenState extends State<ChatScreen>
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (context) => const Center(child: CircularProgressIndicator()),
+        builder: (context) => Center(child: CircularProgressIndicator()),
       );
 
       // ✅ Use CallInvitationService for WebSocket event-driven flow
@@ -1683,14 +1710,14 @@ class _ChatScreenState extends State<ChatScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Unmatch User'),
+        title: Text('Unmatch User'),
         content: Text(
           'Are you sure you want to unmatch with ${widget.otherUserName}? This will remove them from your matches and delete this conversation.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           TextButton(
             onPressed: () {
@@ -1703,8 +1730,8 @@ class _ChatScreenState extends State<ChatScreen>
                 message: 'Unmatched with ${widget.otherUserName}',
               );
             },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Unmatch'),
+            style: TextButton.styleFrom(foregroundColor: context.errorColor),
+            child: Text('Unmatch'),
           ),
         ],
       ),
@@ -1750,7 +1777,7 @@ class _ChatScreenState extends State<ChatScreen>
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
-                leading: const Icon(Icons.person),
+                leading: Icon(Icons.person),
                 title: Text('View ${widget.otherUserName}\'s Profile'),
                 onTap: () {
                   Navigator.pop(context);
@@ -1762,15 +1789,15 @@ class _ChatScreenState extends State<ChatScreen>
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.notifications_off),
-                title: const Text('Mute Notifications'),
+                leading: Icon(Icons.notifications_off),
+                title: Text('Mute Notifications'),
                 onTap: () {
                   Navigator.pop(context);
                   PulseToast.success(context, message: 'Notifications muted');
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.block),
+                leading: Icon(Icons.block),
                 title: Text('Block ${widget.otherUserName}'),
                 onTap: () {
                   Navigator.pop(context);
@@ -1778,10 +1805,10 @@ class _ChatScreenState extends State<ChatScreen>
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.report, color: Colors.red),
-                title: const Text(
+                leading: Icon(Icons.report, color: context.errorColor),
+                title: Text(
                   'Report User',
-                  style: TextStyle(color: Colors.red),
+                  style: TextStyle(color: context.errorColor),
                 ),
                 onTap: () {
                   Navigator.pop(context);
@@ -1789,10 +1816,10 @@ class _ChatScreenState extends State<ChatScreen>
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.delete, color: Colors.red),
-                title: const Text(
+                leading: Icon(Icons.delete, color: context.errorColor),
+                title: Text(
                   'Delete Conversation',
-                  style: TextStyle(color: Colors.red),
+                  style: TextStyle(color: context.errorColor),
                 ),
                 onTap: () {
                   Navigator.pop(context);
@@ -1818,7 +1845,7 @@ class _ChatScreenState extends State<ChatScreen>
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
+              child: Text('Cancel'),
             ),
             TextButton(
               onPressed: () {
@@ -1828,7 +1855,7 @@ class _ChatScreenState extends State<ChatScreen>
                   message: '${widget.otherUserName} has been blocked',
                 );
               },
-              child: const Text('Block', style: TextStyle(color: Colors.red)),
+              child: Text('Block', style: TextStyle(color: context.errorColor)),
             ),
           ],
         );
@@ -1842,11 +1869,11 @@ class _ChatScreenState extends State<ChatScreen>
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Report ${widget.otherUserName}'),
-          content: const Text('Why are you reporting this user?'),
+          content: Text('Why are you reporting this user?'),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
+              child: Text('Cancel'),
             ),
             TextButton(
               onPressed: () {
@@ -1856,7 +1883,10 @@ class _ChatScreenState extends State<ChatScreen>
                   message: '${widget.otherUserName} has been reported',
                 );
               },
-              child: const Text('Report', style: TextStyle(color: Colors.red)),
+              child: Text(
+                'Report',
+                style: TextStyle(color: context.errorColor),
+              ),
             ),
           ],
         );
@@ -1869,14 +1899,14 @@ class _ChatScreenState extends State<ChatScreen>
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Delete Conversation'),
-          content: const Text(
+          title: Text('Delete Conversation'),
+          content: Text(
             'This conversation will be permanently deleted. This action cannot be undone.',
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
+              child: Text('Cancel'),
             ),
             TextButton(
               onPressed: () {
@@ -1884,7 +1914,10 @@ class _ChatScreenState extends State<ChatScreen>
                 Navigator.pop(context); // Close chat screen
                 PulseToast.success(context, message: 'Conversation deleted');
               },
-              child: const Text('Delete', style: TextStyle(color: Colors.red)),
+              child: Text(
+                'Delete',
+                style: TextStyle(color: context.errorColor),
+              ),
             ),
           ],
         );
@@ -2132,8 +2165,8 @@ class _ChatScreenState extends State<ChatScreen>
       enableDrag: false,
       builder: (context) => Container(
         height: MediaQuery.of(context).size.height * 0.4,
-        decoration: const BoxDecoration(
-          color: Colors.white,
+        decoration: BoxDecoration(
+          color: context.onSurfaceColor,
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(20),
             topRight: Radius.circular(20),
@@ -2408,8 +2441,8 @@ class _ChatScreenState extends State<ChatScreen>
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
+        decoration: BoxDecoration(
+          color: context.onSurfaceColor,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: Column(
@@ -2420,7 +2453,7 @@ class _ChatScreenState extends State<ChatScreen>
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.grey[300],
+                color: context.outlineColor.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -2448,7 +2481,7 @@ class _ChatScreenState extends State<ChatScreen>
                           child: Center(
                             child: Text(
                               emoji,
-                              style: const TextStyle(fontSize: 20),
+                              style: TextStyle(fontSize: 20),
                             ),
                           ),
                         ),
@@ -2528,7 +2561,7 @@ class _ChatScreenState extends State<ChatScreen>
               _buildOptionTile(
                 icon: Icons.delete,
                 title: 'Delete',
-                color: Colors.red,
+                color: context.errorColor,
                 onTap: () {
                   Navigator.pop(context);
                   _deleteMessage(message);
@@ -2538,7 +2571,7 @@ class _ChatScreenState extends State<ChatScreen>
               _buildOptionTile(
                 icon: Icons.report,
                 title: 'Report',
-                color: Colors.red,
+                color: context.errorColor,
                 onTap: () {
                   Navigator.pop(context);
                   _reportMessage(message);
@@ -2560,7 +2593,7 @@ class _ChatScreenState extends State<ChatScreen>
     Color? color,
   }) {
     return ListTile(
-      leading: Icon(icon, color: color ?? Colors.grey[700]),
+      leading: Icon(icon, color: color ?? context.onSurfaceVariantColor),
       title: Text(
         title,
         style: TextStyle(
@@ -2655,7 +2688,7 @@ class _ChatScreenState extends State<ChatScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Edit Message'),
+        title: Text('Edit Message'),
         content: TextField(
           controller: editController,
           maxLines: 3,
@@ -2667,7 +2700,7 @@ class _ChatScreenState extends State<ChatScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           TextButton(
             onPressed: () {
@@ -2681,7 +2714,7 @@ class _ChatScreenState extends State<ChatScreen>
               }
               Navigator.pop(context);
             },
-            child: const Text('Save'),
+            child: Text('Save'),
           ),
         ],
       ),
@@ -2692,12 +2725,12 @@ class _ChatScreenState extends State<ChatScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Message'),
-        content: const Text('Are you sure you want to delete this message?'),
+        title: Text('Delete Message'),
+        content: Text('Are you sure you want to delete this message?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           TextButton(
             onPressed: () {
@@ -2706,8 +2739,8 @@ class _ChatScreenState extends State<ChatScreen>
                 DeleteMessage(messageId: message.id),
               );
             },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
+            style: TextButton.styleFrom(foregroundColor: context.errorColor),
+            child: Text('Delete'),
           ),
         ],
       ),

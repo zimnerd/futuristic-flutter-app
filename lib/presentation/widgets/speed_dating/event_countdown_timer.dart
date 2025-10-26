@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Countdown timer widget for speed dating events
 class EventCountdownTimer extends StatefulWidget {
@@ -65,7 +66,7 @@ class _EventCountdownTimerState extends State<EventCountdownTimer> {
 
   Color _getTimerColor() {
     if (_timeUntilEvent.isNegative) {
-      return Colors.grey;
+      return context.outlineColor;
     }
     
     final hoursRemaining = _timeUntilEvent.inHours;
@@ -179,7 +180,7 @@ class _EventCountdownTimerState extends State<EventCountdownTimer> {
                       : 'Starts in',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.grey[600],
+                    color: context.onSurfaceVariantColor,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -204,10 +205,10 @@ class _EventCountdownTimerState extends State<EventCountdownTimer> {
               ),
               child: Text(
                 _timeUntilEvent.inHours < 1 ? 'URGENT' : 'SOON',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: context.onSurfaceColor,
                 ),
               ),
             ),

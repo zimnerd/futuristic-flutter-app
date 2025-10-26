@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Widget to display active speed dating session
 class ActiveSessionWidget extends StatelessWidget {
@@ -45,7 +46,7 @@ class ActiveSessionWidget extends StatelessWidget {
               children: [
                 Icon(
                   isActive ? Icons.live_tv : Icons.schedule,
-                  color: Colors.white,
+                  color: context.onSurfaceColor,
                   size: 24,
                 ),
                 const SizedBox(width: 12),
@@ -55,10 +56,10 @@ class ActiveSessionWidget extends StatelessWidget {
                     children: [
                       Text(
                         eventTitle,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: context.onSurfaceColor,
                         ),
                       ),
                       Text(
@@ -82,10 +83,10 @@ class ActiveSessionWidget extends StatelessWidget {
                   ),
                   child: Text(
                     isActive ? 'LIVE' : 'WAITING',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: context.onSurfaceColor,
                     ),
                   ),
                 ),
@@ -113,10 +114,10 @@ class ActiveSessionWidget extends StatelessWidget {
                       const SizedBox(width: 8),
                       Text(
                         'Round $currentRound of $totalRounds',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                          color: context.onSurfaceColor,
                         ),
                       ),
                       const Spacer(),
@@ -126,7 +127,7 @@ class ActiveSessionWidget extends StatelessWidget {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: context.onSurfaceColor,
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
@@ -147,7 +148,9 @@ class ActiveSessionWidget extends StatelessWidget {
                     children: [
                       CircleAvatar(
                         radius: 20,
-                        backgroundColor: Colors.white.withValues(alpha: 0.2),
+                        backgroundColor: context.surfaceColor.withValues(
+                          alpha: 0.2,
+                        ),
                         child: Icon(
                           Icons.person,
                           color: Colors.white.withValues(alpha: 0.8),
@@ -167,10 +170,10 @@ class ActiveSessionWidget extends StatelessWidget {
                             ),
                             Text(
                               currentPartner,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.white,
+                                color: context.onSurfaceColor,
                               ),
                             ),
                           ],
@@ -190,16 +193,16 @@ class ActiveSessionWidget extends StatelessWidget {
                   child: OutlinedButton(
                     onPressed: onLeaveSession,
                     style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Colors.white, width: 2),
+                      side: BorderSide(color: context.onSurfaceColor, width: 2),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(25),
                       ),
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
-                    child: const Text(
+                    child: Text(
                       'Leave Session',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: context.onSurfaceColor,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -210,7 +213,7 @@ class ActiveSessionWidget extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: isActive ? onEnterRoom : null,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
+                      backgroundColor: context.surfaceColor,
                       foregroundColor: PulseColors.primary,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(25),
@@ -228,7 +231,7 @@ class ActiveSessionWidget extends StatelessWidget {
                         const SizedBox(width: 8),
                         Text(
                           isActive ? 'Enter Room' : 'Waiting...',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
+                          style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),

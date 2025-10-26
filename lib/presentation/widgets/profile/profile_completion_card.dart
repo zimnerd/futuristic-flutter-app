@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../theme/pulse_colors.dart';
 import '../../../domain/entities/user_profile.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Widget that displays profile completion progress and missing fields
 class ProfileCompletionCard extends StatelessWidget {
@@ -59,7 +60,7 @@ class ProfileCompletionCard extends StatelessWidget {
                       completionData.isComplete
                           ? 'Profile Complete!'
                           : 'Complete Your Profile',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
                         color: Colors.black87,
@@ -67,7 +68,10 @@ class ProfileCompletionCard extends StatelessWidget {
                     ),
                     Text(
                       '${completionData.percentage}% complete',
-                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: context.onSurfaceVariantColor,
+                      ),
                     ),
                   ],
                 ),
@@ -77,7 +81,7 @@ class ProfileCompletionCard extends StatelessWidget {
                   '${completionData.missingFields.length} items',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.grey[500],
+                    color: context.onSurfaceVariantColor.withValues(alpha: 0.6),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -89,7 +93,7 @@ class ProfileCompletionCard extends StatelessWidget {
           Container(
             height: 8,
             decoration: BoxDecoration(
-              color: Colors.grey[200],
+              color: context.outlineColor.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(4),
             ),
             child: FractionallySizedBox(
@@ -113,7 +117,7 @@ class ProfileCompletionCard extends StatelessWidget {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
-                color: Colors.grey[700],
+                color: context.onSurfaceVariantColor,
               ),
             ),
             const SizedBox(height: 8),
@@ -129,7 +133,10 @@ class ProfileCompletionCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Colors.grey[100],
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.grey[300]!, width: 1),
+                    border: Border.all(
+                      color: context.outlineColor.withValues(alpha: 0.3),
+                      width: 1,
+                    ),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -137,12 +144,15 @@ class ProfileCompletionCard extends StatelessWidget {
                       Icon(
                         _getFieldIcon(field),
                         size: 14,
-                        color: Colors.grey[600],
+                        color: context.onSurfaceVariantColor,
                       ),
                       const SizedBox(width: 4),
                       Text(
                         field,
-                        style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: context.onSurfaceVariantColor,
+                        ),
                       ),
                     ],
                   ),
@@ -156,13 +166,13 @@ class ProfileCompletionCard extends StatelessWidget {
                 onPressed: onTapIncomplete,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: PulseColors.primary,
-                  foregroundColor: Colors.white,
+                  foregroundColor: context.onSurfaceColor,
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: const Text(
+                child: Text(
                   'Complete Profile',
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                 ),

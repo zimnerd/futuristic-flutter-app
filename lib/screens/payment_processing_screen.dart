@@ -61,7 +61,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
         backgroundColor: AppColors.background,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(_getAppBarTitle(), style: AppTextStyles.headlineSmall),
@@ -264,7 +264,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
               ),
             ),
             if (isSelected)
-              const Icon(
+              Icon(
                 Icons.check_circle,
                 color: AppColors.primary,
                 size: 20,
@@ -299,7 +299,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
         ),
         child: Row(
           children: [
-            const Icon(
+             Icon(
               Icons.add_circle_outline,
               size: 24,
               color: AppColors.primary,
@@ -314,7 +314,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen> {
               ),
             ),
             if (isSelected)
-              const Icon(
+              Icon(
                 Icons.check_circle,
                 color: AppColors.primary,
                 size: 20,

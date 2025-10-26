@@ -39,9 +39,9 @@ class _NotificationSettingsScreenState
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Notification Settings'),
+          title: Text('Notification Settings'),
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
+            icon: Icon(Icons.arrow_back),
             onPressed: () => context.pop(),
           ),
         ),
@@ -56,7 +56,7 @@ class _NotificationSettingsScreenState
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.error_outline,
                       size: 64,
                       color: PulseColors.error,
@@ -68,7 +68,7 @@ class _NotificationSettingsScreenState
                       onPressed: () => context.read<NotificationBloc>().add(
                         LoadNotificationPreferences(),
                       ),
-                      child: const Text('Retry'),
+                      child: Text('Retry'),
                     ),
                   ],
                 ),

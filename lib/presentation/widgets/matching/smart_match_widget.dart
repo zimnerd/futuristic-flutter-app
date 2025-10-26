@@ -7,6 +7,7 @@ import '../../theme/pulse_colors.dart';
 import 'compatibility_score_widget.dart';
 import '../common/robust_network_image.dart';
 import '../common/pulse_toast.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Smart matching widget with AI-powered recommendations and insights
 class SmartMatchWidget extends StatefulWidget {
@@ -167,9 +168,9 @@ class _SmartMatchWidgetState extends State<SmartMatchWidget>
                     ),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.psychology,
-                    color: Colors.white,
+                    color: context.onSurfaceColor,
                     size: 20,
                   ),
                 ),
@@ -254,7 +255,7 @@ class _SmartMatchWidgetState extends State<SmartMatchWidget>
   }
 
   Widget _buildLoadingState() {
-    return const Center(
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -353,7 +354,7 @@ class _SmartMatchWidgetState extends State<SmartMatchWidget>
                         children: [
                           Text(
                             match.userProfile?.name ?? 'Unknown',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                             ),
@@ -426,7 +427,7 @@ class _SmartMatchWidgetState extends State<SmartMatchWidget>
                   child: _buildActionButton(
                     icon: Icons.close,
                     label: 'Pass',
-                    color: Colors.grey,
+                    color: context.outlineColor,
                     onTap: () => _handleMatchAction(match, 'pass'),
                   ),
                 ),

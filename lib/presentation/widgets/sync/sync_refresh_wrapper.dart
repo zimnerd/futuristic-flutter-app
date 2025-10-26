@@ -4,7 +4,7 @@ import 'package:logger/logger.dart';
 
 import '../../../blocs/chat_bloc.dart';
 import '../../../data/services/background_sync_manager.dart';
-import '../../theme/theme_extensions.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 import '../common/pulse_toast.dart';
 
 /// A widget that provides pull-to-refresh functionality with background sync
@@ -120,7 +120,7 @@ class _SyncRefreshWrapperState extends State<SyncRefreshWrapper> {
               // Manual sync button
               if (!_isManualSyncing)
                 IconButton(
-                  icon: const Icon(Icons.refresh, size: 18),
+                  icon: Icon(Icons.refresh, size: 18),
                   onPressed: _handleRefresh,
                   tooltip: 'Manual sync',
                 )

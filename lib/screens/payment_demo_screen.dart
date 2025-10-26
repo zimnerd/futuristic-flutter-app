@@ -181,7 +181,7 @@ class _PaymentDemoScreenState extends State<PaymentDemoScreen> {
         elevation: 0,
         title: Text('Payment Demo', style: AppTextStyles.headlineSmall),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),

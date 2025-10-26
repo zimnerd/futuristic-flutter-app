@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Safety score widget showing user's safety rating
 class SafetyScoreWidget extends StatelessWidget {
@@ -16,7 +17,7 @@ class SafetyScoreWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.onSurfaceColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(

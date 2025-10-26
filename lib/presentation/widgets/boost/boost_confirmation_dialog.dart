@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Confirmation dialog for activating a profile boost
 ///
@@ -38,16 +39,16 @@ class BoostConfirmationDialog extends StatelessWidget {
                 ),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.rocket_launch,
                 size: 40,
-                color: Colors.white,
+                color: context.onSurfaceColor,
               ),
             ),
             const SizedBox(height: 20),
 
             // Title
-            const Text(
+            Text(
               'Boost Your Profile',
               style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
@@ -121,10 +122,10 @@ class BoostConfirmationDialog extends StatelessWidget {
                     ),
                     child: Text(
                       'Activate Boost',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: context.onSurfaceColor,
                       ),
                     ),
                   ),
@@ -161,7 +162,7 @@ class BoostConfirmationDialog extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),

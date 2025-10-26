@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import '../../presentation/theme/pulse_colors.dart';
 import '../../presentation/widgets/common/pulse_toast.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Utility class for showing error dialogs with detailed error information
 class ErrorDialogUtils {
@@ -14,7 +15,7 @@ class ErrorDialogUtils {
     VoidCallback? onRetry,
     VoidCallback? onDismiss,
   }) async {
-    final errorInfo = _parseError(error);
+    final errorInfo = _parseError(context, error);
 
     return showDialog(
       context: context,
@@ -55,7 +56,9 @@ class ErrorDialogUtils {
                     decoration: BoxDecoration(
                       color: Colors.grey[100],
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.grey[300]!),
+                      border: Border.all(
+                        color: context.outlineColor.withValues(alpha: 0.3)!,
+                      ),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -65,7 +68,7 @@ class ErrorDialogUtils {
                             Icon(
                               Icons.info_outline,
                               size: 16,
-                              color: Colors.grey[600],
+                              color: context.onSurfaceVariantColor,
                             ),
                             const SizedBox(width: 8),
                             Text(
@@ -73,7 +76,7 @@ class ErrorDialogUtils {
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.grey[700],
+                                color: context.onSurfaceVariantColor,
                               ),
                             ),
                           ],
@@ -129,7 +132,7 @@ class ErrorDialogUtils {
                   Navigator.of(context).pop();
                   onRetry();
                 },
-                child: const Text(
+                child: Text(
                   'Retry',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
@@ -145,7 +148,7 @@ class ErrorDialogUtils {
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                   color: onRetry != null
-                      ? Colors.grey[600]
+                      ? context.onSurfaceVariantColor
                       : PulseColors.primary,
                 ),
               ),
@@ -166,10 +169,10 @@ class ErrorDialogUtils {
   }
 
   /// Parse error and extract relevant information
-  static ErrorInfo _parseError(dynamic error) {
+  static ErrorInfo _parseError(BuildContext context, dynamic error) {
     // Handle DioException (HTTP errors)
     if (error is DioException) {
-      return _parseDioException(error);
+      return _parseDioException(context, error);
     }
 
     // Handle custom app exceptions
@@ -203,7 +206,10 @@ class ErrorDialogUtils {
   }
 
   /// Parse DioException and extract HTTP error details
-  static ErrorInfo _parseDioException(DioException error) {
+  static ErrorInfo _parseDioException(
+    BuildContext context,
+    DioException error,
+  ) {
     final statusCode = error.response?.statusCode;
     String title;
     String message;
@@ -249,7 +255,7 @@ class ErrorDialogUtils {
         title = 'Not Found';
         message = 'The requested resource could not be found.';
         icon = Icons.search_off;
-        color = Colors.grey[700]!;
+        color = context.onSurfaceVariantColor!;
         break;
 
       case 409:
@@ -313,12 +319,12 @@ class ErrorDialogUtils {
           message =
               'Unable to connect to the server. Please check your internet connection.';
           icon = Icons.wifi_off;
-          color = Colors.grey[700]!;
+          color = context.onSurfaceVariantColor!;
         } else if (error.type == DioExceptionType.cancel) {
           title = 'Request Cancelled';
           message = 'The request was cancelled.';
           icon = Icons.cancel_outlined;
-          color = Colors.grey[600]!;
+          color = context.onSurfaceVariantColor!;
         } else {
           title = 'Network Error';
           message = 'A network error occurred. Please try again.';

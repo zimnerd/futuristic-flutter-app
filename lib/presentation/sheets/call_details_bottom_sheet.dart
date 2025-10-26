@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 import '../../data/models/chat_model.dart';
 import '../../data/models/user_model.dart';
 import '../theme/pulse_colors.dart';
@@ -49,8 +50,8 @@ class CallDetailsBottomSheet extends StatelessWidget {
     final userName = otherUser?.firstName ?? 'Unknown User';
 
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
+      decoration: BoxDecoration(
+        color: context.onSurfaceColor,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: SafeArea(
@@ -90,6 +91,7 @@ class CallDetailsBottomSheet extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 14,
                             color: _getStatusColor(
+                              context,
                               isIncoming,
                               isMissed,
                               duration,
@@ -102,7 +104,7 @@ class CallDetailsBottomSheet extends StatelessWidget {
                   ),
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.close),
+                    icon: Icon(Icons.close),
                     style: IconButton.styleFrom(
                       backgroundColor: Colors.grey[100],
                     ),
@@ -170,10 +172,10 @@ class CallDetailsBottomSheet extends StatelessWidget {
                       onCallBack!();
                     },
                     icon: Icon(isVideo ? Icons.videocam : Icons.phone),
-                    label: const Text('Call Back'),
+                    label: Text('Call Back'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: PulseColors.primary,
-                      foregroundColor: Colors.white,
+                      foregroundColor: context.onSurfaceColor,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       elevation: 0,
                       shape: RoundedRectangleBorder(
@@ -209,14 +211,21 @@ class CallDetailsBottomSheet extends StatelessWidget {
               color: Colors.grey[100],
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(row.icon, size: 20, color: Colors.grey[700]),
+            child: Icon(
+              row.icon,
+              size: 20,
+              color: context.onSurfaceVariantColor,
+            ),
           ),
           const SizedBox(width: 16),
           Expanded(
             flex: 2,
             child: Text(
               row.label,
-              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+              style: TextStyle(
+                fontSize: 14,
+                color: context.onSurfaceVariantColor,
+              ),
             ),
           ),
           Expanded(
@@ -246,13 +255,18 @@ class CallDetailsBottomSheet extends StatelessWidget {
     }
   }
 
-  Color _getStatusColor(bool isIncoming, bool isMissed, int duration) {
+  Color _getStatusColor(
+    BuildContext context,
+    bool isIncoming,
+    bool isMissed,
+    int duration,
+  ) {
     if (isMissed) {
       return Colors.red[700]!;
     } else if (duration > 0) {
       return Colors.green[700]!;
     } else {
-      return Colors.grey[700]!;
+      return context.onSurfaceVariantColor!;
     }
   }
 

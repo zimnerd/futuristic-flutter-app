@@ -9,6 +9,7 @@ import '../../blocs/premium/premium_event.dart';
 import '../../blocs/premium/premium_state.dart';
 import '../../widgets/common/pulse_toast.dart';
 import '../../../core/utils/logger.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// AI Features preferences with premium/admin controls
 class AiMatchingPreferences extends StatefulWidget {
@@ -73,14 +74,14 @@ class _AiMatchingPreferencesState extends State<AiMatchingPreferences> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Premium Feature Required'),
+        title: Text('Premium Feature Required'),
         content: Text(
           '${_getFeatureName(feature)} requires a premium subscription to use.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () {
@@ -89,7 +90,7 @@ class _AiMatchingPreferencesState extends State<AiMatchingPreferences> {
               context.push('/premium-upgrade');
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
-            child: const Text('Upgrade Now'),
+            child: Text('Upgrade Now'),
           ),
         ],
       ),
@@ -139,18 +140,18 @@ class _AiMatchingPreferencesState extends State<AiMatchingPreferences> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.surfaceColor,
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'AI Matching Settings',
           style: TextStyle(
             fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
+            color: context.onSurfaceColor,
           ),
         ),
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.surfaceColor,
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppColors.textPrimary),
+        iconTheme: IconThemeData(color: context.onSurfaceColor),
       ),
       body: BlocConsumer<PremiumBloc, PremiumState>(
         listener: (context, state) {
@@ -178,17 +179,21 @@ class _AiMatchingPreferencesState extends State<AiMatchingPreferences> {
                     ),
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: const Column(
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.psychology, color: Colors.white, size: 28),
+                          Icon(
+                            Icons.psychology,
+                            color: context.onSurfaceColor,
+                            size: 28,
+                          ),
                           SizedBox(width: 12),
                           Text(
                             'AI-Powered Dating',
                             style: TextStyle(
-                              color: Colors.white,
+                              color: context.onSurfaceColor,
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                             ),
@@ -222,14 +227,14 @@ class _AiMatchingPreferencesState extends State<AiMatchingPreferences> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: AppColors.surface,
+                    color: context.surfaceColor,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.border),
+                    border: Border.all(color: context.outlineColor),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Row(
+                      Row(
                         children: [
                           Icon(
                             Icons.info_outline,
@@ -241,7 +246,7 @@ class _AiMatchingPreferencesState extends State<AiMatchingPreferences> {
                             'About AI Features',
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
-                              color: AppColors.textPrimary,
+                              color: context.onSurfaceColor,
                             ),
                           ),
                         ],
@@ -251,7 +256,7 @@ class _AiMatchingPreferencesState extends State<AiMatchingPreferences> {
                         'AI features use machine learning to improve your dating experience. '
                         'Premium features require an active subscription and may have usage limits.',
                         style: TextStyle(
-                          color: AppColors.textSecondary,
+                          color: context.onSurfaceVariantColor,
                           fontSize: 12,
                         ),
                       ),
@@ -274,12 +279,12 @@ class _AiMatchingPreferencesState extends State<AiMatchingPreferences> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.surfaceColor,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isEnabled
               ? AppColors.primary.withValues(alpha: 0.3)
-              : AppColors.border,
+              : context.outlineColor,
         ),
       ),
       child: ListTile(
@@ -301,9 +306,9 @@ class _AiMatchingPreferencesState extends State<AiMatchingPreferences> {
             Expanded(
               child: Text(
                 _getFeatureName(feature),
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
+                  color: context.onSurfaceColor,
                 ),
               ),
             ),
@@ -314,10 +319,10 @@ class _AiMatchingPreferencesState extends State<AiMatchingPreferences> {
                   color: AppColors.primary,
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: const Text(
+                child: Text(
                   'PREMIUM',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: context.onSurfaceColor,
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
                   ),
@@ -330,7 +335,10 @@ class _AiMatchingPreferencesState extends State<AiMatchingPreferences> {
           padding: const EdgeInsets.only(top: 4),
           child: Text(
             _getFeatureDescription(feature),
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+            style: TextStyle(
+              color: context.onSurfaceVariantColor,
+              fontSize: 12,
+            ),
           ),
         ),
         trailing: Switch(

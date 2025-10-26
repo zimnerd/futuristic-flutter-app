@@ -8,6 +8,7 @@ import '../../blocs/live_streaming/live_streaming_event.dart';
 import '../../blocs/live_streaming/live_streaming_state.dart';
 import '../../widgets/common/pulse_toast.dart';
 import 'schedule_stream_screen.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Screen displaying list of scheduled streams with countdown timers
 class ScheduledStreamsScreen extends StatefulWidget {
@@ -69,18 +70,18 @@ class _ScheduledStreamsScreenState extends State<ScheduledStreamsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: _cardBackgroundColor,
-        title: const Text(
+        title: Text(
           'Cancel Stream',
           style: TextStyle(color: Colors.white),
         ),
-        content: const Text(
+        content: Text(
           'Are you sure you want to cancel this scheduled stream?',
-          style: TextStyle(color: Colors.grey),
+          style: TextStyle(color: context.outlineColor),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('No'),
+            child: Text('No'),
           ),
           TextButton(
             onPressed: () {
@@ -96,9 +97,9 @@ class _ScheduledStreamsScreenState extends State<ScheduledStreamsScreen> {
                 }
               });
             },
-            child: const Text(
+            child: Text(
               'Yes, Cancel',
-              style: TextStyle(color: Colors.red),
+              style: TextStyle(color: context.errorColor),
             ),
           ),
         ],
@@ -152,13 +153,13 @@ class _ScheduledStreamsScreenState extends State<ScheduledStreamsScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text(
+        title: Text(
           'Scheduled Streams',
           style: TextStyle(
-            color: Colors.white,
+            color: context.onSurfaceColor,
             fontSize: 20,
             fontWeight: FontWeight.w600,
           ),
@@ -178,7 +179,7 @@ class _ScheduledStreamsScreenState extends State<ScheduledStreamsScreen> {
         child: BlocBuilder<LiveStreamingBloc, LiveStreamingState>(
           builder: (context, state) {
             if (state is LiveStreamingLoading) {
-              return const Center(child: CircularProgressIndicator());
+              return Center(child: CircularProgressIndicator());
             }
 
             if (state is ScheduledStreamsLoaded) {
@@ -212,10 +213,13 @@ class _ScheduledStreamsScreenState extends State<ScheduledStreamsScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _navigateToScheduleScreen,
         backgroundColor: Theme.of(context).primaryColor,
-        icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text(
+        icon: Icon(Icons.add, color: Colors.white),
+        label: Text(
           'Schedule Stream',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+          style: TextStyle(
+            color: context.onSurfaceColor,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
     );
@@ -249,10 +253,10 @@ class _ScheduledStreamsScreenState extends State<ScheduledStreamsScreen> {
                   errorBuilder: (context, error, stackTrace) {
                     return Container(
                       color: Colors.grey[900],
-                      child: const Center(
+                      child: Center(
                         child: Icon(
                           Icons.broken_image,
-                          color: Colors.grey,
+                          color: context.outlineColor,
                           size: 48,
                         ),
                       ),
@@ -270,8 +274,8 @@ class _ScheduledStreamsScreenState extends State<ScheduledStreamsScreen> {
                 // Title
                 Text(
                   stream['title'] as String,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: context.onSurfaceColor,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
@@ -287,7 +291,10 @@ class _ScheduledStreamsScreenState extends State<ScheduledStreamsScreen> {
                     padding: const EdgeInsets.only(bottom: 8),
                     child: Text(
                       stream['description'] as String,
-                      style: const TextStyle(color: Colors.grey, fontSize: 14),
+                      style: TextStyle(
+                        color: context.outlineColor,
+                        fontSize: 14,
+                      ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -328,17 +335,20 @@ class _ScheduledStreamsScreenState extends State<ScheduledStreamsScreen> {
                 // Scheduled date and time
                 Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.calendar_today,
                       size: 14,
-                      color: Colors.grey,
+                      color: context.outlineColor,
                     ),
                     const SizedBox(width: 4),
                     Text(
                       DateFormat(
                         'MMM dd, yyyy • hh:mm a',
                       ).format(scheduledTime),
-                      style: const TextStyle(color: Colors.grey, fontSize: 12),
+                      style: TextStyle(
+                        color: context.outlineColor,
+                        fontSize: 12,
+                      ),
                     ),
                   ],
                 ),
@@ -361,16 +371,16 @@ class _ScheduledStreamsScreenState extends State<ScheduledStreamsScreen> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.people,
                             size: 14,
-                            color: Colors.grey,
+                            color: context.outlineColor,
                           ),
                           const SizedBox(width: 4),
                           Text(
                             'Max ${stream['maxViewers']} viewers',
-                            style: const TextStyle(
-                              color: Colors.grey,
+                            style: TextStyle(
+                              color: context.outlineColor,
                               fontSize: 12,
                             ),
                           ),
@@ -422,12 +432,12 @@ class _ScheduledStreamsScreenState extends State<ScheduledStreamsScreen> {
                   children: [
                     TextButton.icon(
                       onPressed: () => _handleEdit(stream),
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.edit,
                         size: 18,
-                        color: Colors.white,
+                        color: context.onSurfaceColor,
                       ),
-                      label: const Text(
+                      label: Text(
                         'Edit',
                         style: TextStyle(color: Colors.white),
                       ),
@@ -441,14 +451,14 @@ class _ScheduledStreamsScreenState extends State<ScheduledStreamsScreen> {
                     const SizedBox(width: 8),
                     TextButton.icon(
                       onPressed: () => _handleCancel(stream['id'] as String),
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.cancel,
                         size: 18,
-                        color: Colors.red,
+                        color: context.errorColor,
                       ),
-                      label: const Text(
+                      label: Text(
                         'Cancel',
-                        style: TextStyle(color: Colors.red),
+                        style: TextStyle(color: context.errorColor),
                       ),
                       style: TextButton.styleFrom(
                         backgroundColor: _redBackground,
@@ -514,12 +524,12 @@ class _ScheduledStreamsScreenState extends State<ScheduledStreamsScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.schedule, size: 80, color: Colors.grey[700]),
+          Icon(Icons.schedule, size: 80, color: context.onSurfaceVariantColor),
           const SizedBox(height: 24),
-          const Text(
+          Text(
             'No Scheduled Streams',
             style: TextStyle(
-              color: Colors.white,
+              color: context.onSurfaceColor,
               fontSize: 20,
               fontWeight: FontWeight.w600,
             ),
@@ -527,7 +537,10 @@ class _ScheduledStreamsScreenState extends State<ScheduledStreamsScreen> {
           const SizedBox(height: 8),
           Text(
             'Tap the + button to schedule a stream',
-            style: TextStyle(color: Colors.grey[600], fontSize: 14),
+            style: TextStyle(
+              color: context.onSurfaceVariantColor,
+              fontSize: 14,
+            ),
           ),
         ],
       ),
@@ -539,12 +552,12 @@ class _ScheduledStreamsScreenState extends State<ScheduledStreamsScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.error_outline, size: 80, color: Colors.red),
+          Icon(Icons.error_outline, size: 80, color: context.errorColor),
           const SizedBox(height: 24),
-          const Text(
+          Text(
             'Error Loading Streams',
             style: TextStyle(
-              color: Colors.white,
+              color: context.onSurfaceColor,
               fontSize: 20,
               fontWeight: FontWeight.w600,
             ),
@@ -555,17 +568,17 @@ class _ScheduledStreamsScreenState extends State<ScheduledStreamsScreen> {
             child: Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.grey, fontSize: 14),
+              style: TextStyle(color: context.outlineColor, fontSize: 14),
             ),
           ),
           const SizedBox(height: 24),
           ElevatedButton.icon(
             onPressed: _loadScheduledStreams,
-            icon: const Icon(Icons.refresh),
-            label: const Text('Retry'),
+            icon: Icon(Icons.refresh),
+            label: Text('Retry'),
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).primaryColor,
-              foregroundColor: Colors.white,
+              foregroundColor: context.onSurfaceColor,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),

@@ -3,7 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../domain/entities/user_profile.dart';
 import '../theme/pulse_colors.dart';
-import '../theme/theme_extensions.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Dialog for viewing and editing photo details
 ///
@@ -75,14 +75,14 @@ class _PhotoDetailsDialogState extends State<PhotoDetailsDialog> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Photo'),
-        content: const Text(
+        title: Text('Delete Photo'),
+        content: Text(
           'Are you sure you want to delete this photo? This action cannot be undone.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           TextButton(
             onPressed: () {
@@ -95,7 +95,7 @@ class _PhotoDetailsDialogState extends State<PhotoDetailsDialog> {
             style: TextButton.styleFrom(
               foregroundColor: Theme.of(context).colorScheme.error,
             ),
-            child: const Text('Delete'),
+            child: Text('Delete'),
           ),
         ],
       ),
@@ -119,7 +119,7 @@ class _PhotoDetailsDialogState extends State<PhotoDetailsDialog> {
             // Photo preview
             Container(
               height: 300,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
               ),
               child: Stack(
@@ -135,7 +135,7 @@ class _PhotoDetailsDialogState extends State<PhotoDetailsDialog> {
                       fit: BoxFit.cover,
                       placeholder: (context, url) => Container(
                         color: context.surfaceVariantColor,
-                        child: const Center(child: CircularProgressIndicator()),
+                        child: Center(child: CircularProgressIndicator()),
                       ),
                       errorWidget: (context, url, error) => Container(
                         color: context.surfaceVariantColor,
@@ -190,7 +190,7 @@ class _PhotoDetailsDialogState extends State<PhotoDetailsDialog> {
                     right: 16,
                     child: Container(
                       decoration: BoxDecoration(
-                        color: ThemeColors.getOverlayColor(context),
+                        color: context.surfaceColor,
                         shape: BoxShape.circle,
                       ),
                       child: IconButton(
@@ -223,7 +223,7 @@ class _PhotoDetailsDialogState extends State<PhotoDetailsDialog> {
                   // Description section
                   Row(
                     children: [
-                      const Text(
+                      Text(
                         'Description',
                         style: TextStyle(
                           fontSize: 16,
@@ -239,8 +239,8 @@ class _PhotoDetailsDialogState extends State<PhotoDetailsDialog> {
                               _isEditingDescription = true;
                             });
                           },
-                          icon: const Icon(Icons.edit, size: 16),
-                          label: const Text('Edit'),
+                          icon: Icon(Icons.edit, size: 16),
+                          label: Text('Edit'),
                         ),
                     ],
                   ),
@@ -270,7 +270,7 @@ class _PhotoDetailsDialogState extends State<PhotoDetailsDialog> {
                               _isEditingDescription = false;
                             });
                           },
-                          child: const Text('Cancel'),
+                          child: Text('Cancel'),
                         ),
                         const SizedBox(width: 8),
                         ElevatedButton(
@@ -279,7 +279,7 @@ class _PhotoDetailsDialogState extends State<PhotoDetailsDialog> {
                             backgroundColor: PulseColors.primary,
                             foregroundColor: context.theme.colorScheme.onPrimary,
                           ),
-                          child: const Text('Save'),
+                          child: Text('Save'),
                         ),
                       ],
                     ),
@@ -355,7 +355,7 @@ class _PhotoDetailsDialogState extends State<PhotoDetailsDialog> {
           Container(
             width: 1,
             height: 40,
-            color: ThemeColors.getDividerColor(context),
+            color: context.dividerColor,
           ),
           _buildAnalyticItem(
             icon: Icons.favorite,
@@ -366,7 +366,7 @@ class _PhotoDetailsDialogState extends State<PhotoDetailsDialog> {
             Container(
               width: 1,
               height: 40,
-              color: ThemeColors.getDividerColor(context),
+              color: context.dividerColor,
             ),
             _buildAnalyticItem(
               icon: Icons.trending_up,
@@ -390,7 +390,7 @@ class _PhotoDetailsDialogState extends State<PhotoDetailsDialog> {
         const SizedBox(height: 4),
         Text(
           value,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 2),
         Text(

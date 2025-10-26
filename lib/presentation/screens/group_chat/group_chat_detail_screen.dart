@@ -21,6 +21,7 @@ import '../../../presentation/theme/pulse_colors.dart';
 import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 import '../../widgets/common/initials_avatar.dart';
 import '../../widgets/common/pulse_toast.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Comprehensive group chat screen with real-time messaging, participant management,
 /// media sharing, voice/video calls, typing indicators, message reactions, and admin controls
@@ -229,7 +230,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
       backgroundColor: PulseColors.primary,
       elevation: 0,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: Colors.white),
+        icon: Icon(Icons.arrow_back, color: Colors.white),
         onPressed: () => Navigator.pop(context),
       ),
       title: Row(
@@ -252,8 +253,8 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
               children: [
                 Text(
                   widget.group.title,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: context.onSurfaceColor,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
@@ -279,7 +280,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
         // Voice call button
         if (widget.group.settings?.enableVoiceChat == true)
           IconButton(
-            icon: const Icon(Icons.call, color: Colors.white),
+            icon: Icon(Icons.call, color: Colors.white),
             onPressed: _startVoiceCall,
             tooltip: 'Start voice call',
           ),
@@ -287,14 +288,14 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
         // Video call button
         if (widget.group.settings?.enableVideoChat == true)
           IconButton(
-            icon: const Icon(Icons.videocam, color: Colors.white),
+            icon: Icon(Icons.videocam, color: Colors.white),
             onPressed: _startVideoCall,
             tooltip: 'Start video call',
           ),
 
         // More options
         PopupMenuButton<String>(
-          icon: const Icon(Icons.more_vert, color: Colors.white),
+          icon: Icon(Icons.more_vert, color: Colors.white),
           onSelected: _handleMenuAction,
           itemBuilder: (context) => [
             const PopupMenuItem(
@@ -358,13 +359,16 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                 ],
               ),
             ),
-            const PopupMenuItem(
+            PopupMenuItem(
               value: 'leave',
               child: Row(
                 children: [
-                  Icon(Icons.exit_to_app, size: 20, color: Colors.red),
-                  SizedBox(width: 12),
-                  Text('Leave Group', style: TextStyle(color: Colors.red)),
+                  Icon(Icons.exit_to_app, size: 20, color: context.errorColor),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Leave Group',
+                    style: TextStyle(color: context.errorColor),
+                  ),
                 ],
               ),
             ),
@@ -412,7 +416,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
               child: CircleAvatar(
                 radius: 16,
                 backgroundColor: PulseColors.primary.withValues(alpha: 0.2),
-                child: const Icon(Icons.person, size: 16),
+                child: Icon(Icons.person, size: 16),
               ),
             )
           else if (!isMe)
@@ -466,7 +470,8 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                         margin: const EdgeInsets.only(bottom: 8),
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: (isMe ? Colors.white : Colors.grey).withValues(
+                          color: (isMe ? Colors.white : context.outlineColor)
+                              .withValues(
                             alpha: 0.2,
                           ),
                           borderRadius: BorderRadius.circular(8),
@@ -482,7 +487,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                           style: TextStyle(
                             color: isMe
                                 ? Colors.white.withValues(alpha: 0.8)
-                                : Colors.grey[700],
+                                : context.onSurfaceVariantColor,
                             fontSize: 12,
                           ),
                           maxLines: 2,
@@ -509,7 +514,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                           style: TextStyle(
                             color: isMe
                                 ? Colors.white.withValues(alpha: 0.7)
-                                : Colors.grey[600],
+                                : context.onSurfaceVariantColor,
                             fontSize: 11,
                           ),
                         ),
@@ -544,20 +549,27 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.chat_bubble_outline, size: 80, color: Colors.grey[400]),
+          Icon(
+            Icons.chat_bubble_outline,
+            size: 80,
+            color: context.outlineColor.withValues(alpha: 0.2),
+          ),
           const SizedBox(height: 16),
-          const Text(
+          Text(
             'No messages yet',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Colors.grey,
+              color: context.outlineColor,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             'Be the first to say something!',
-            style: TextStyle(color: Colors.grey[600], fontSize: 14),
+            style: TextStyle(
+              color: context.onSurfaceVariantColor,
+              fontSize: 14,
+            ),
           ),
         ],
       ),
@@ -568,7 +580,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.onSurfaceColor,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -602,7 +614,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                 ? '${_typingUsers.first} is typing...'
                 : '${_typingUsers.length} people are typing...',
             style: TextStyle(
-              color: Colors.grey[600],
+              color: context.onSurfaceVariantColor,
               fontSize: 12,
               fontStyle: FontStyle.italic,
             ),
@@ -618,9 +630,9 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.grey[200],
+        color: context.outlineColor.withValues(alpha: 0.15),
         border: Border(
-          top: BorderSide(color: Colors.grey[300]!),
+          top: BorderSide(color: context.outlineColor.withValues(alpha: 0.3)),
           left: BorderSide(color: PulseColors.primary, width: 3),
         ),
       ),
@@ -641,7 +653,10 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                 const SizedBox(height: 4),
                 Text(
                   _replyToMessage!.content ?? '',
-                  style: TextStyle(color: Colors.grey[700], fontSize: 13),
+                  style: TextStyle(
+                    color: context.onSurfaceVariantColor,
+                    fontSize: 13,
+                  ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -649,7 +664,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.close, size: 20),
+            icon: Icon(Icons.close, size: 20),
             onPressed: () {
               setState(() {
                 _replyToMessage = null;
@@ -665,7 +680,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.onSurfaceColor,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -729,7 +744,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                   _messageController.text.trim().isEmpty
                       ? Icons.mic
                       : Icons.send,
-                  color: Colors.white,
+                  color: context.onSurfaceColor,
                   size: 20,
                 ),
               ),
@@ -750,7 +765,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
         FloatingActionButton(
           mini: true,
           heroTag: 'add_participants',
-          backgroundColor: Colors.white,
+          backgroundColor: context.surfaceColor,
           onPressed: _showAddParticipantsDialog,
           child: Icon(Icons.person_add, color: PulseColors.primary),
         ),
@@ -761,7 +776,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
           heroTag: 'view_participants',
           backgroundColor: PulseColors.primary,
           onPressed: _showParticipantsSheet,
-          child: const Icon(Icons.people, color: Colors.white),
+          child: Icon(Icons.people, color: Colors.white),
         ),
       ],
     );
@@ -838,8 +853,8 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.reply),
-              title: const Text('Reply'),
+              leading: Icon(Icons.reply),
+              title: Text('Reply'),
               onTap: () {
                 Navigator.pop(context);
                 setState(() {
@@ -849,8 +864,8 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
               },
             ),
             ListTile(
-              leading: const Icon(Icons.copy),
-              title: const Text('Copy'),
+              leading: Icon(Icons.copy),
+              title: Text('Copy'),
               onTap: () {
                 Clipboard.setData(ClipboardData(text: message.content ?? ''));
                 Navigator.pop(context);
@@ -863,10 +878,10 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
             ),
             if (isMe || _isAdmin())
               ListTile(
-                leading: const Icon(Icons.delete, color: Colors.red),
-                title: const Text(
+                leading: Icon(Icons.delete, color: context.errorColor),
+                title: Text(
                   'Delete',
-                  style: TextStyle(color: Colors.red),
+                  style: TextStyle(color: context.errorColor),
                 ),
                 onTap: () {
                   Navigator.pop(context);
@@ -875,8 +890,8 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
               ),
             if (!isMe && _isAdmin())
               ListTile(
-                leading: const Icon(Icons.flag, color: Colors.orange),
-                title: const Text(
+                leading: Icon(Icons.flag, color: Colors.orange),
+                title: Text(
                   'Report',
                   style: TextStyle(color: Colors.orange),
                 ),
@@ -924,7 +939,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
               _buildAttachmentOption(
                 icon: Icons.videocam,
                 label: 'Video',
-                color: Colors.red,
+                color: context.errorColor,
                 onTap: () {
                   Navigator.pop(context);
                   _pickVideo();
@@ -987,7 +1002,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                 padding: const EdgeInsets.all(16),
                 child: Row(
                   children: [
-                    const Text(
+                    Text(
                       'Participants',
                       style: TextStyle(
                         fontSize: 20,
@@ -997,7 +1012,10 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                     const Spacer(),
                     Text(
                       '${widget.group.participantCount} members',
-                      style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                      style: TextStyle(
+                        color: context.onSurfaceVariantColor,
+                        fontSize: 14,
+                      ),
                     ),
                   ],
                 ),
@@ -1040,9 +1058,9 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
             child: participant.profilePhoto == null
                 ? Text(
                     participant.firstName[0].toUpperCase(),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: context.onSurfaceColor,
                     ),
                   )
                 : null,
@@ -1057,7 +1075,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                 decoration: BoxDecoration(
                   color: Colors.green,
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 2),
+                  border: Border.all(color: context.onSurfaceColor, width: 2),
                 ),
               ),
             ),
@@ -1067,7 +1085,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
         children: [
           Text(
             participant.fullName,
-            style: const TextStyle(fontWeight: FontWeight.w600),
+            style: TextStyle(fontWeight: FontWeight.w600),
           ),
           const SizedBox(width: 8),
           if (isOwner)
@@ -1077,10 +1095,10 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                 color: Colors.amber,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Text(
+              child: Text(
                 'Owner',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: context.onSurfaceColor,
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
                 ),
@@ -1095,8 +1113,8 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
               ),
               child: Text(
                 participant.role.name.toUpperCase(),
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: context.onSurfaceColor,
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
                 ),
@@ -1107,7 +1125,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
       subtitle: Text(
         participant.isOnline ? 'Online' : 'Offline',
         style: TextStyle(
-          color: participant.isOnline ? Colors.green : Colors.grey,
+          color: participant.isOnline ? Colors.green : context.outlineColor,
           fontSize: 12,
         ),
       ),
@@ -1121,9 +1139,12 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                     value: 'makeAdmin',
                     child: Text('Make Admin'),
                   ),
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'remove',
-                    child: Text('Remove', style: TextStyle(color: Colors.red)),
+                    child: Text(
+                      'Remove',
+                      style: TextStyle(color: context.errorColor),
+                    ),
                   ),
                 ],
                 const PopupMenuItem(
@@ -1162,14 +1183,14 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Remove Participant'),
+        title: Text('Remove Participant'),
         content: Text(
           'Are you sure you want to remove ${participant.fullName} from this group?',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
@@ -1182,7 +1203,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
               );
               Navigator.pop(context);
             },
-            child: const Text('Remove', style: TextStyle(color: Colors.white)),
+            child: Text('Remove', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -1217,7 +1238,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                 controller: searchController,
                 decoration: InputDecoration(
                   hintText: 'Search users...',
-                  prefixIcon: const Icon(Icons.search),
+                  prefixIcon: Icon(Icons.search),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -1265,7 +1286,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                         title: Text(user['username'] ?? 'Unknown'),
                         subtitle: Text(user['firstName'] ?? ''),
                         trailing: IconButton(
-                          icon: const Icon(Icons.add_circle),
+                          icon: Icon(Icons.add_circle),
                           onPressed: () async {
                             try {
                               await _groupChatService.addParticipant(
@@ -1364,7 +1385,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                 autofocus: true,
                 decoration: InputDecoration(
                   hintText: 'Search in messages...',
-                  prefixIcon: const Icon(Icons.search),
+                  prefixIcon: Icon(Icons.search),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -1409,7 +1430,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                       return ListTile(
                         title: Text(
                           message['senderUsername'] ?? 'Unknown',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
+                          style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                         subtitle: Text(
                           message['content'] ?? '',
@@ -1486,7 +1507,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close),
+                      icon: Icon(Icons.close),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ],
@@ -1494,7 +1515,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
               ),
               Expanded(
                 child: media.isEmpty
-                    ? const Center(child: Text('No media in this conversation'))
+                    ? Center(child: Text('No media in this conversation'))
                     : GridView.builder(
                         controller: scrollController,
                         padding: const EdgeInsets.all(8),
@@ -1538,22 +1559,26 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                                   imageUrl: content,
                                   fit: BoxFit.cover,
                                   placeholder: (context, url) => Container(
-                                    color: Colors.grey[300],
-                                    child: const Center(
+                                    color: context.outlineColor.withValues(
+                                      alpha: 0.3,
+                                    ),
+                                    child: Center(
                                       child: CircularProgressIndicator(),
                                     ),
                                   ),
                                   errorWidget: (context, url, error) =>
                                       Container(
-                                        color: Colors.grey[300],
-                                        child: const Icon(Icons.broken_image),
+                                        color: context.outlineColor.withValues(
+                                          alpha: 0.3,
+                                        ),
+                                        child: Icon(Icons.broken_image),
                                       ),
                                 ),
                                 if (type == 'video')
-                                  const Center(
+                                  Center(
                                     child: Icon(
                                       Icons.play_circle_filled,
-                                      color: Colors.white,
+                                      color: context.onSurfaceColor,
                                       size: 40,
                                     ),
                                   ),
@@ -1583,7 +1608,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Group Settings'),
+        title: Text('Group Settings'),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -1610,7 +1635,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -1630,7 +1655,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                 }
               }
             },
-            child: const Text('Save'),
+            child: Text('Save'),
           ),
         ],
       ),
@@ -1654,13 +1679,13 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: const Text('Report Group'),
+          title: Text('Report Group'),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Why are you reporting this group?'),
+                Text('Why are you reporting this group?'),
                 const SizedBox(height: 16),
                 ...reasons.map(
                   (reason) => InkWell(
@@ -1699,7 +1724,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
+              child: Text('Cancel'),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
@@ -1731,7 +1756,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                         }
                       }
                     },
-              child: const Text(
+              child: Text(
                 'Submit Report',
                 style: TextStyle(color: Colors.white),
               ),
@@ -1746,14 +1771,14 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Leave Group'),
-        content: const Text(
+        title: Text('Leave Group'),
+        content: Text(
           'Are you sure you want to leave this group? You will no longer receive messages.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
@@ -1777,7 +1802,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                 }
               }
             },
-            child: const Text('Leave', style: TextStyle(color: Colors.white)),
+            child: Text('Leave', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -1791,7 +1816,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (context) => const Center(
+        builder: (context) => Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -1865,7 +1890,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (context) => const Center(
+        builder: (context) => Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -2086,14 +2111,14 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Message'),
-        content: const Text(
+        title: Text('Delete Message'),
+        content: Text(
           'Are you sure you want to delete this message? This cannot be undone.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
@@ -2118,7 +2143,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                 }
               }
             },
-            child: const Text('Delete', style: TextStyle(color: Colors.white)),
+            child: Text('Delete', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -2142,13 +2167,13 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: const Text('Report Message'),
+          title: Text('Report Message'),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Why are you reporting this message?'),
+                Text('Why are you reporting this message?'),
                 const SizedBox(height: 16),
                 ...reasons.map(
                   (reason) => InkWell(
@@ -2187,7 +2212,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
+              child: Text('Cancel'),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
@@ -2219,7 +2244,7 @@ class _GroupChatDetailScreenState extends State<GroupChatDetailScreen>
                         }
                       }
                     },
-              child: const Text(
+              child: Text(
                 'Submit Report',
                 style: TextStyle(color: Colors.white),
               ),

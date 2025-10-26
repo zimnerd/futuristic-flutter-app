@@ -30,6 +30,7 @@ import '../../widgets/profile/interests_selector.dart';
 import '../../../core/constants/relationship_goals_options.dart';
 import '../../../core/services/service_locator.dart';
 import '../../../core/network/api_client.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Profile section edit screen for editing individual profile sections
 ///
@@ -356,7 +357,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
             backgroundColor: Colors.transparent,
             elevation: 0,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: PulseColors.onSurface),
+              icon: Icon(Icons.arrow_back, color: PulseColors.onSurface),
               onPressed: () => _handleBackPress(),
             ),
             actions: [
@@ -418,7 +419,11 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
               color: PulseColors.primary,
               borderRadius: BorderRadius.circular(PulseRadii.md),
             ),
-            child: Icon(_getSectionIcon(), color: Colors.white, size: 24),
+            child: Icon(
+              _getSectionIcon(),
+              color: context.onSurfaceColor,
+              size: 24,
+            ),
           ),
           const SizedBox(width: PulseSpacing.md),
           Expanded(
@@ -604,8 +609,8 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
             padding: const EdgeInsets.only(bottom: PulseSpacing.md),
             child: OutlinedButton.icon(
               onPressed: _showPhotoReorderSheet,
-              icon: const Icon(Icons.reorder),
-              label: const Text('Reorder Photos'),
+              icon: Icon(Icons.reorder),
+              label: Text('Reorder Photos'),
               style: OutlinedButton.styleFrom(
                 foregroundColor: PulseColors.primary,
                 side: BorderSide(color: PulseColors.primary),
@@ -745,7 +750,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
                   child: Text(
                     'Main',
                     style: PulseTextStyles.labelSmall.copyWith(
-                      color: Colors.white,
+                      color: context.onSurfaceColor,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -765,10 +770,10 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
                       color: Colors.black.withValues(alpha: 0.6),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.info_outline,
                       size: 16,
-                      color: Colors.white,
+                      color: context.onSurfaceColor,
                     ),
                   ),
                 ),
@@ -787,7 +792,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
                     color: PulseColors.error.withValues(alpha: 0.9),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.close, size: 16, color: Colors.white),
+                  child: Icon(Icons.close, size: 16, color: Colors.white),
                 ),
               ),
             ),
@@ -832,7 +837,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
               child: Text(
                 'New',
                 style: PulseTextStyles.labelSmall.copyWith(
-                  color: Colors.white,
+                  color: context.onSurfaceColor,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -860,7 +865,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
                   color: PulseColors.error.withValues(alpha: 0.9),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.close, size: 16, color: Colors.white),
+                child: Icon(Icons.close, size: 16, color: Colors.white),
               ),
             ),
           ),
@@ -906,12 +911,12 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Photo Description'),
+        title: Text('Photo Description'),
         content: Text(description),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+            child: Text('Close'),
           ),
         ],
       ),
@@ -922,12 +927,12 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Photo'),
-        content: const Text('Are you sure you want to delete this photo?'),
+        title: Text('Delete Photo'),
+        content: Text('Are you sure you want to delete this photo?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           TextButton(
             onPressed: () {
@@ -947,7 +952,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
               });
             },
             style: TextButton.styleFrom(foregroundColor: PulseColors.error),
-            child: const Text('Delete'),
+            child: Text('Delete'),
           ),
         ],
       ),
@@ -962,8 +967,8 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.photo_library, color: Colors.black87),
-              title: const Text(
+              leading: Icon(Icons.photo_library, color: Colors.black87),
+              title: Text(
                 'Choose from gallery',
                 style: TextStyle(
                   color: Colors.black87,
@@ -976,8 +981,8 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.camera_alt, color: Colors.black87),
-              title: const Text(
+              leading: Icon(Icons.camera_alt, color: Colors.black87),
+              title: Text(
                 'Take a photo',
                 style: TextStyle(
                   color: Colors.black87,
@@ -1059,14 +1064,14 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
               openAppSettings();
             },
-            child: const Text('Open Settings'),
+            child: Text('Open Settings'),
           ),
         ],
       ),
@@ -1077,12 +1082,12 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Error'),
+        title: Text('Error'),
         content: Text(message),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
+            child: Text('OK'),
           ),
         ],
       ),
@@ -1824,7 +1829,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
       future: RelationshipGoalsOptions.getAll(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return Center(child: CircularProgressIndicator());
         }
 
         if (snapshot.hasError) {
@@ -1885,7 +1890,9 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
                           ? color.withValues(alpha: 0.1)
                           : PulseColors.surface,
                       border: Border.all(
-                        color: isSelected ? color : Colors.grey.shade300,
+                        color: isSelected
+                            ? color
+                            : context.outlineColor.withValues(alpha: 0.5),
                         width: isSelected ? 2 : 1,
                       ),
                       borderRadius: BorderRadius.circular(PulseRadii.md),
@@ -1899,7 +1906,9 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: isSelected ? color : Colors.grey.shade400,
+                              color: isSelected
+                                  ? color
+                                  : context.outlineColor.withValues(alpha: 0.5),
                               width: 1.5,
                             ),
                           ),
@@ -2193,7 +2202,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
           context: context,
           barrierDismissible: false,
           builder: (context) =>
-              const Center(child: CircularProgressIndicator()),
+              Center(child: CircularProgressIndicator()),
         );
       }
 
@@ -2584,18 +2593,18 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
     showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text(
+        title: Text(
           'Exit Setup?',
           style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
         ),
-        content: const Text(
+        content: Text(
           'Your progress will be saved. You can resume setup later.',
           style: TextStyle(color: Colors.black87),
         ),
         actions: [
           TextButton(
             onPressed: () => context.pop(),
-            child: const Text(
+            child: Text(
               'Continue Setup',
               style: TextStyle(
                 color: PulseColors.primary,
@@ -2610,9 +2619,12 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
                 context.go(AppRoutes.home);
               }
             },
-            child: const Text(
+            child: Text(
               'Exit',
-              style: TextStyle(color: Colors.red, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                color: context.errorColor,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],

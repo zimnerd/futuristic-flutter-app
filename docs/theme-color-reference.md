@@ -2,7 +2,7 @@
 
 ## Import Required
 ```dart
-import '../theme/theme_extensions.dart'; // For context extensions
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart'; // For context extensions
 ```
 
 ## Common Color Replacements

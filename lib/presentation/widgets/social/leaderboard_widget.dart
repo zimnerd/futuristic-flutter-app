@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Social gaming leaderboard widget with animations and rankings
 class LeaderboardWidget extends StatefulWidget {
@@ -110,7 +111,7 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget>
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.onSurfaceColor,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -157,9 +158,9 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget>
               color: Colors.white.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.emoji_events,
-              color: Colors.white,
+              color: context.onSurfaceColor,
               size: 20,
             ),
           ),
@@ -170,10 +171,10 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget>
               children: [
                 Text(
                   _getLeaderboardTitle(),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: context.onSurfaceColor,
                   ),
                 ),
                 Text(
@@ -192,12 +193,12 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget>
               color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(15),
             ),
-            child: const Text(
+            child: Text(
               'Weekly',
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: context.onSurfaceColor,
               ),
             ),
           ),
@@ -259,10 +260,10 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget>
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) {
                           return Container(
-                            color: Colors.grey.shade300,
+                            color: context.outlineColor.shade300,
                             child: Icon(
                               Icons.person,
-                              color: Colors.grey.shade600,
+                              color: context.outlineColor.shade600,
                               size: isWinner ? 40 : 30,
                             ),
                           );
@@ -279,7 +280,7 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget>
                       right: 0,
                       child: Container(
                         alignment: Alignment.center,
-                        child: const Icon(
+                        child: Icon(
                           Icons.star,
                           color: Colors.amber,
                           size: 24,
@@ -297,15 +298,18 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget>
                       decoration: BoxDecoration(
                         color: _getBadgeColor(entry.badgeType),
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
+                        border: Border.all(
+                          color: context.onSurfaceColor,
+                          width: 2,
+                        ),
                       ),
                       child: Center(
                         child: Text(
                           '${entry.rank}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: context.onSurfaceColor,
                           ),
                         ),
                       ),
@@ -394,7 +398,7 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget>
             radius: 25,
             backgroundImage: NetworkImage(entry.avatar),
             onBackgroundImageError: (error, stackTrace) {},
-            child: entry.avatar.isEmpty ? const Icon(Icons.person) : null,
+            child: entry.avatar.isEmpty ? Icon(Icons.person) : null,
           ),
 
           // Rank indicator
@@ -405,17 +409,19 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget>
               width: 20,
               height: 20,
               decoration: BoxDecoration(
-                color: entry.isCurrentUser ? PulseColors.primary : Colors.grey,
+                color: entry.isCurrentUser
+                    ? PulseColors.primary
+                    : context.outlineColor,
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 2),
+                border: Border.all(color: context.onSurfaceColor, width: 2),
               ),
               child: Center(
                 child: Text(
                   '${entry.rank}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 8,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: context.onSurfaceColor,
                   ),
                 ),
               ),
@@ -442,11 +448,11 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget>
                 color: PulseColors.primary,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Text(
+              child: Text(
                 'You',
                 style: TextStyle(
                   fontSize: 10,
-                  color: Colors.white,
+                  color: context.onSurfaceColor,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -471,11 +477,14 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget>
         children: [
           Text(
             '${entry.score}',
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           Text(
             'points',
-            style: TextStyle(fontSize: 10, color: Colors.grey[600]),
+            style: TextStyle(
+              fontSize: 10,
+              color: context.onSurfaceVariantColor,
+            ),
           ),
         ],
       ),
@@ -507,7 +516,7 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget>
             radius: 20,
             backgroundImage: NetworkImage(currentUser.avatar),
             onBackgroundImageError: (error, stackTrace) {},
-            child: currentUser.avatar.isEmpty ? const Icon(Icons.person) : null,
+            child: currentUser.avatar.isEmpty ? Icon(Icons.person) : null,
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -518,7 +527,7 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget>
                   children: [
                     Text(
                       'Your Rank: #${currentUser.rank}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
                       ),
@@ -537,7 +546,10 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget>
                 const SizedBox(height: 4),
                 Text(
                   'Keep going to reach the top 3!',
-                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: context.onSurfaceVariantColor,
+                  ),
                 ),
               ],
             ),
@@ -582,11 +594,11 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget>
       case BadgeType.gold:
         return Colors.amber;
       case BadgeType.silver:
-        return Colors.grey[400]!;
+        return context.outlineColor.withValues(alpha: 0.2);
       case BadgeType.bronze:
         return Colors.brown;
       case BadgeType.none:
-        return Colors.grey;
+        return context.outlineColor;
     }
   }
 }

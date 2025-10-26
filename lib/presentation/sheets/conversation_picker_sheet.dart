@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 import '../../blocs/chat_bloc.dart';
 import '../../data/models/conversation_model.dart';
@@ -168,14 +169,14 @@ class _ConversationPickerSheetState extends State<ConversationPickerSheet> {
             showDialog(
               context: context,
               builder: (context) => AlertDialog(
-                title: const Text('Forward Failed'),
-                content: const Text(
+                title: Text('Forward Failed'),
+                content: Text(
                   'Failed to forward message. Please try again.',
                 ),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Cancel'),
+                    child: Text('Cancel'),
                   ),
                   ElevatedButton(
                     onPressed: () {
@@ -185,7 +186,7 @@ class _ConversationPickerSheetState extends State<ConversationPickerSheet> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
                     ),
-                    child: const Text(
+                    child: Text(
                       'Retry',
                       style: TextStyle(color: Colors.white),
                     ),
@@ -198,8 +199,8 @@ class _ConversationPickerSheetState extends State<ConversationPickerSheet> {
       },
       child: Container(
         height: MediaQuery.of(context).size.height * 0.7,
-        decoration: const BoxDecoration(
-          color: Colors.white,
+        decoration: BoxDecoration(
+          color: context.onSurfaceColor,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: Column(
@@ -208,7 +209,7 @@ class _ConversationPickerSheetState extends State<ConversationPickerSheet> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: context.onSurfaceColor,
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(20),
                 ),
@@ -224,7 +225,7 @@ class _ConversationPickerSheetState extends State<ConversationPickerSheet> {
                 children: [
                   // Close button
                   IconButton(
-                    icon: const Icon(Icons.close),
+                    icon: Icon(Icons.close),
                     onPressed: () => Navigator.of(context).pop(),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
@@ -260,7 +261,7 @@ class _ConversationPickerSheetState extends State<ConversationPickerSheet> {
                                 _filteredConversations.length
                             ? 'Deselect All'
                             : 'Select All',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                         ),
@@ -274,7 +275,7 @@ class _ConversationPickerSheetState extends State<ConversationPickerSheet> {
                         : _handleForward,
                     style: TextButton.styleFrom(
                       foregroundColor: AppColors.primary,
-                      disabledForegroundColor: Colors.grey,
+                      disabledForegroundColor: context.outlineColor,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16,
                         vertical: 8,
@@ -295,7 +296,7 @@ class _ConversationPickerSheetState extends State<ConversationPickerSheet> {
                             _selectedConversationIds.isEmpty
                                 ? 'Forward'
                                 : 'Forward (${_selectedConversationIds.length})',
-                            style: const TextStyle(fontWeight: FontWeight.w600),
+                            style: TextStyle(fontWeight: FontWeight.w600),
                           ),
                   ),
                 ],
@@ -308,10 +309,10 @@ class _ConversationPickerSheetState extends State<ConversationPickerSheet> {
               child: TextField(
                 decoration: InputDecoration(
                   hintText: 'Search conversations...',
-                  prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                  prefixIcon: Icon(Icons.search, color: context.outlineColor),
                   suffixIcon: _searchQuery.isNotEmpty
                       ? IconButton(
-                          icon: const Icon(Icons.clear, color: Colors.grey),
+                          icon: Icon(Icons.clear, color: context.outlineColor),
                           onPressed: () {
                             _filterConversations('');
                           },
@@ -337,7 +338,7 @@ class _ConversationPickerSheetState extends State<ConversationPickerSheet> {
               child: BlocBuilder<ChatBloc, ChatState>(
                 builder: (context, state) {
                   if (state is ChatLoading) {
-                    return const Center(
+                    return Center(
                       child: CircularProgressIndicator(
                         valueColor: AlwaysStoppedAnimation<Color>(
                           AppColors.primary,
@@ -376,7 +377,9 @@ class _ConversationPickerSheetState extends State<ConversationPickerSheet> {
                                   ? Icons.chat_bubble_outline
                                   : Icons.search_off,
                               size: 64,
-                              color: Colors.grey[400],
+                              color: context.outlineColor.withValues(
+                                alpha: 0.2,
+                              ),
                             ),
                             const SizedBox(height: 16),
                             Text(
@@ -385,7 +388,7 @@ class _ConversationPickerSheetState extends State<ConversationPickerSheet> {
                                   : 'No conversations found',
                               style: TextStyle(
                                 fontSize: 16,
-                                color: Colors.grey[600],
+                                color: context.onSurfaceVariantColor,
                               ),
                             ),
                           ],
@@ -428,7 +431,7 @@ class _ConversationPickerSheetState extends State<ConversationPickerSheet> {
                                       border: Border.all(
                                         color: isSelected
                                             ? AppColors.primary
-                                            : Colors.grey.shade400,
+                                            : context.outlineColor.shade400,
                                         width: 2,
                                       ),
                                       color: isSelected
@@ -436,10 +439,10 @@ class _ConversationPickerSheetState extends State<ConversationPickerSheet> {
                                           : Colors.transparent,
                                     ),
                                     child: isSelected
-                                        ? const Icon(
+                                        ? Icon(
                                             Icons.check,
                                             size: 16,
-                                            color: Colors.white,
+                                            color: context.onSurfaceColor,
                                           )
                                         : null,
                                   ),
@@ -466,7 +469,7 @@ class _ConversationPickerSheetState extends State<ConversationPickerSheet> {
                                                     ? 'Unknown'
                                                     : conversation
                                                           .otherUserName,
-                                                style: const TextStyle(
+                                                style: TextStyle(
                                                   fontSize: 16,
                                                   fontWeight: FontWeight.w600,
                                                 ),
@@ -481,7 +484,9 @@ class _ConversationPickerSheetState extends State<ConversationPickerSheet> {
                                               ),
                                               style: TextStyle(
                                                 fontSize: 12,
-                                                color: Colors.grey.shade500,
+                                                color: context
+                                                    .outlineColor
+                                                    .shade500,
                                                 fontWeight: FontWeight.w400,
                                               ),
                                             ),
@@ -495,7 +500,8 @@ class _ConversationPickerSheetState extends State<ConversationPickerSheet> {
                                             conversation.lastMessage,
                                             style: TextStyle(
                                               fontSize: 14,
-                                              color: Colors.grey.shade600,
+                                              color:
+                                                  context.outlineColor.shade600,
                                             ),
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
@@ -521,14 +527,14 @@ class _ConversationPickerSheetState extends State<ConversationPickerSheet> {
                           Icon(
                             Icons.error_outline,
                             size: 64,
-                            color: Colors.red[300],
+                            color: context.errorColor.withValues(alpha: 0.2),
                           ),
                           const SizedBox(height: 16),
                           Text(
                             'Failed to load conversations',
                             style: TextStyle(
                               fontSize: 16,
-                              color: Colors.grey[600],
+                              color: context.onSurfaceVariantColor,
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -538,7 +544,7 @@ class _ConversationPickerSheetState extends State<ConversationPickerSheet> {
                                 const LoadConversations(),
                               );
                             },
-                            child: const Text('Retry'),
+                            child: Text('Retry'),
                           ),
                         ],
                       ),

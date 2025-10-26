@@ -6,7 +6,6 @@ import '../../blocs/interests/interests_bloc.dart';
 import '../../blocs/interests/interests_event.dart';
 import '../../blocs/interests/interests_state.dart';
 import '../../theme/pulse_colors.dart';
-import '../../theme/theme_extensions.dart';
 
 /// Enhanced interests selector with API integration
 class InterestsSelector extends StatefulWidget {
@@ -193,8 +192,8 @@ class _InterestsSelectorState extends State<InterestsSelector>
                         const RefreshInterests(),
                       );
                     },
-                    icon: const Icon(Icons.refresh),
-                    label: const Text('Retry'),
+                    icon: Icon(Icons.refresh),
+                    label: Text('Retry'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: PulseColors.primary,
                       foregroundColor: Theme.of(context).colorScheme.onPrimary,
@@ -330,13 +329,15 @@ class _InterestsSelectorState extends State<InterestsSelector>
                       borderRadius: BorderRadius.circular(8),
                     ),
                     indicatorSize: TabBarIndicatorSize.tab,
-                    labelColor: Theme.of(context).colorScheme.onPrimary,
-                    unselectedLabelColor: Theme.of(
-                      context,
-                    ).colorScheme.onSurfaceVariant,
-                    labelStyle: const TextStyle(
+                    labelStyle: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
+                      color: Theme.of(context).colorScheme.onPrimary,
+                    ),
+                    unselectedLabelStyle: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                     tabs: categories.map((category) {
                       return Tab(

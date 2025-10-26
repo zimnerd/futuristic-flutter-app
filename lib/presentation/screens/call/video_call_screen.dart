@@ -15,6 +15,7 @@ import '../../../core/network/api_client.dart';
 import '../../../core/utils/logger.dart';
 import '../../../core/services/call_invitation_service.dart';
 import '../../../core/models/call_invitation.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 class VideoCallScreen extends StatefulWidget {
   final UserProfile remoteUser;
@@ -218,7 +219,7 @@ class _VideoCallScreenState extends State<VideoCallScreen>
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: const Text('Incoming Call'),
+        title: Text('Incoming Call'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -230,31 +231,31 @@ class _VideoCallScreenState extends State<VideoCallScreen>
               child: widget.remoteUser.photos.isEmpty
                   ? Text(
                       widget.remoteUser.name[0].toUpperCase(),
-                      style: const TextStyle(fontSize: 24),
+                      style: TextStyle(fontSize: 24),
                     )
                   : null,
             ),
             const SizedBox(height: 16),
             Text(
               widget.remoteUser.name,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
-            const Text('Video call'),
+            Text('Video call'),
           ],
         ),
         actions: [
           TextButton(
             onPressed: _rejectCall,
-            child: const Text('Decline', style: TextStyle(color: Colors.red)),
+            child: Text('Decline', style: TextStyle(color: context.errorColor)),
           ),
           ElevatedButton(
             onPressed: _answerCall,
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.green,
-              foregroundColor: Colors.white,
+              foregroundColor: context.onSurfaceColor,
             ),
-            child: const Text('Accept'),
+            child: Text('Accept'),
           ),
         ],
       ),
@@ -539,9 +540,9 @@ class _VideoCallScreenState extends State<VideoCallScreen>
                     child: widget.remoteUser.photos.isEmpty
                         ? Text(
                             widget.remoteUser.name[0].toUpperCase(),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 48,
-                              color: Colors.white,
+                              color: context.onSurfaceColor,
                             ),
                           )
                         : null,
@@ -549,8 +550,8 @@ class _VideoCallScreenState extends State<VideoCallScreen>
                   const SizedBox(height: 24),
                   Text(
                     widget.remoteUser.name,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: context.onSurfaceColor,
                       fontSize: 24,
                       fontWeight: FontWeight.w600,
                     ),
@@ -559,7 +560,7 @@ class _VideoCallScreenState extends State<VideoCallScreen>
                   // NEW: Show connection status based on enum
                   Text(
                     _getCallStatusText(),
-                    style: const TextStyle(color: Colors.white70, fontSize: 16),
+                    style: TextStyle(color: Colors.white70, fontSize: 16),
                   ),
                 ],
               ),
@@ -590,8 +591,8 @@ class _VideoCallScreenState extends State<VideoCallScreen>
                           const SizedBox(height: 16),
                           Text(
                             'Waiting for ${widget.remoteUser.name.split(' ').first} to join...',
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: context.onSurfaceColor,
                               fontSize: 16,
                             ),
                           ),
@@ -675,9 +676,9 @@ class _VideoCallScreenState extends State<VideoCallScreen>
                   color: Colors.black.withValues(alpha: 0.5),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.keyboard_arrow_down,
-                  color: Colors.white,
+                  color: context.onSurfaceColor,
                   size: 24,
                 ),
               ),
@@ -687,8 +688,8 @@ class _VideoCallScreenState extends State<VideoCallScreen>
               children: [
                 Text(
                   widget.remoteUser.name,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: context.onSurfaceColor,
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
                   ),
@@ -697,7 +698,7 @@ class _VideoCallScreenState extends State<VideoCallScreen>
                   const SizedBox(height: 4),
                   Text(
                     _formatDuration(_callDuration),
-                    style: const TextStyle(color: Colors.white70, fontSize: 14),
+                    style: TextStyle(color: Colors.white70, fontSize: 14),
                   ),
                 ],
               ],
@@ -709,9 +710,9 @@ class _VideoCallScreenState extends State<VideoCallScreen>
                 color: Colors.black.withValues(alpha: 0.5),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.camera_alt,
-                color: Colors.white,
+                color: context.onSurfaceColor,
                 size: 24,
               ),
             ),

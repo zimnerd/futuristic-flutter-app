@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Generates a consistent color from a string (e.g., group name)
 Color _generateColorFromString(String text) {
@@ -89,7 +90,7 @@ class InitialsAvatar extends StatelessWidget {
             style:
                 textStyle ??
                 TextStyle(
-                  color: Colors.white,
+                  color: context.onSurfaceColor,
                   fontSize: radius * 0.6, // Scale font size with radius
                   fontWeight: FontWeight.bold,
                 ),

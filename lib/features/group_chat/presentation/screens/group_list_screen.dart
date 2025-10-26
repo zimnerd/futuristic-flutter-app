@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 import '../../../../presentation/blocs/group_chat/group_chat_bloc.dart';
 import '../../data/models.dart';
 import '../../data/group_chat_service.dart';
@@ -52,7 +53,7 @@ class _GroupListScreenState extends State<GroupListScreen>
         elevation: 0,
         backgroundColor: const Color(0xFF6E3BFF),
         foregroundColor: Colors.white,
-        title: const Text(
+        title: Text(
           'My Groups',
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
         ),
@@ -60,8 +61,8 @@ class _GroupListScreenState extends State<GroupListScreen>
           controller: _tabController,
           indicatorColor: Colors.white,
           indicatorWeight: 3,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
+          labelStyle: const TextStyle(color: Colors.white),
+          unselectedLabelStyle: const TextStyle(color: Colors.white70),
           tabs: const [
             Tab(
               text: 'Groups',
@@ -77,7 +78,7 @@ class _GroupListScreenState extends State<GroupListScreen>
         ),
         actions: [
           PopupMenuButton<String>(
-            icon: const Icon(Icons.add),
+            icon: Icon(Icons.add),
             tooltip: 'Create new',
             offset: const Offset(0, 50),
             shape: RoundedRectangleBorder(
@@ -96,13 +97,13 @@ class _GroupListScreenState extends State<GroupListScreen>
                       color: Colors.blue.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(Icons.group_add, color: Colors.blue),
+                    child: Icon(Icons.group_add, color: Colors.blue),
                   ),
-                  title: const Text(
+                  title: Text(
                     'Create Group',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  subtitle: const Text(
+                  subtitle: Text(
                     'Start a new group conversation',
                     style: TextStyle(fontSize: 12),
                   ),
@@ -118,13 +119,13 @@ class _GroupListScreenState extends State<GroupListScreen>
                       color: Colors.purple.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(Icons.live_tv, color: Colors.purple),
+                    child: Icon(Icons.live_tv, color: Colors.purple),
                   ),
-                  title: const Text(
+                  title: Text(
                     'Start Live Session',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  subtitle: const Text(
+                  subtitle: Text(
                     'Host a live session',
                     style: TextStyle(fontSize: 12),
                   ),
@@ -466,7 +467,7 @@ class _GroupListScreenState extends State<GroupListScreen>
                               ), // 0.2 * 255 ≈ 51
                               borderRadius: BorderRadius.circular(16),
                             ),
-                            child: const Icon(
+                            child: Icon(
                               Icons.video_call_rounded,
                               color: Colors.white,
                               size: 32,
@@ -727,7 +728,7 @@ class _GroupListScreenState extends State<GroupListScreen>
                                   borderRadius: BorderRadius.circular(16),
                                 ),
                               ),
-                              child: const Text(
+                              child: Text(
                                 'Cancel',
                                 style: TextStyle(
                                   fontSize: 16,
@@ -853,7 +854,7 @@ class _GroupListScreenState extends State<GroupListScreen>
                                 ),
                                 elevation: 2,
                               ),
-                              child: const Text(
+                              child: Text(
                                 'Create',
                                 style: TextStyle(
                                   fontSize: 16,
@@ -1053,7 +1054,7 @@ class _GroupCard extends StatelessWidget {
                                 color: Colors.green.withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(6),
                               ),
-                              child: const Icon(
+                              child: Icon(
                                 Icons.videocam,
                                 size: 14,
                                 color: Colors.green,
@@ -1067,7 +1068,7 @@ class _GroupCard extends StatelessWidget {
                                 color: Colors.blue.withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(6),
                               ),
-                              child: const Icon(
+                              child: Icon(
                                 Icons.mic,
                                 size: 14,
                                 color: Colors.blue,
@@ -1165,11 +1166,18 @@ class _LiveSessionCard extends StatelessWidget {
             const SizedBox(height: 4),
             Row(
               children: [
-                Icon(Icons.people, size: 14, color: Colors.grey[600]),
+                Icon(
+                  Icons.people,
+                  size: 14,
+                  color: context.onSurfaceVariantColor,
+                ),
                 const SizedBox(width: 4),
                 Text(
                   '${session.currentParticipants}/${session.maxParticipants}',
-                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: context.onSurfaceVariantColor,
+                  ),
                 ),
                 if (session.isFull) ...[
                   const SizedBox(width: 8),
@@ -1182,7 +1190,7 @@ class _LiveSessionCard extends StatelessWidget {
                       color: Colors.red,
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Text(
+                    child: Text(
                       'FULL',
                       style: TextStyle(
                         fontSize: 10,
@@ -1201,7 +1209,7 @@ class _LiveSessionCard extends StatelessWidget {
           style: ElevatedButton.styleFrom(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           ),
-          child: const Text('Join'),
+          child: Text('Join'),
         ),
       ),
     );

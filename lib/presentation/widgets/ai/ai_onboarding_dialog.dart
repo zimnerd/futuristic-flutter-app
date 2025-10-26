@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../business_logic/blocs/ai_preferences_bloc.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// AI onboarding dialog to introduce users to AI features
 class AiOnboardingDialog extends StatefulWidget {
@@ -112,13 +113,13 @@ class _AiOnboardingDialogState extends State<AiOnboardingDialog>
                       'AI Setup',
                       style: Theme.of(context).textTheme.headlineSmall
                           ?.copyWith(
-                            color: Colors.white,
+                            color: context.onSurfaceColor,
                             fontWeight: FontWeight.bold,
                           ),
                     ),
                     IconButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(Icons.close, color: Colors.white70),
+                      icon: Icon(Icons.close, color: Colors.white70),
                     ),
                   ],
                 ),
@@ -161,7 +162,7 @@ class _AiOnboardingDialogState extends State<AiOnboardingDialog>
                             shape: BoxShape.circle,
                             color: index == _currentPage
                                 ? Colors.purple
-                                : Colors.grey.shade600,
+                                : context.outlineColor.shade600,
                           ),
                         );
                       }),
@@ -178,7 +179,7 @@ class _AiOnboardingDialogState extends State<AiOnboardingDialog>
                                 curve: Curves.easeInOut,
                               );
                             },
-                            child: const Text(
+                            child: Text(
                               'Back',
                               style: TextStyle(color: Colors.white70),
                             ),
@@ -195,7 +196,7 @@ class _AiOnboardingDialogState extends State<AiOnboardingDialog>
                                 },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.purple,
-                            foregroundColor: Colors.white,
+                            foregroundColor: context.onSurfaceColor,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -237,7 +238,7 @@ class _AiOnboardingDialogState extends State<AiOnboardingDialog>
             page.title,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              color: Colors.white,
+              color: context.onSurfaceColor,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -260,13 +261,13 @@ class _AiOnboardingDialogState extends State<AiOnboardingDialog>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.privacy_tip_outlined, size: 64, color: Colors.cyan),
+          Icon(Icons.privacy_tip_outlined, size: 64, color: Colors.cyan),
           const SizedBox(height: 32),
           Text(
             'Your Privacy Choices',
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              color: Colors.white,
+              color: context.onSurfaceColor,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -324,7 +325,7 @@ class _AiOnboardingDialogState extends State<AiOnboardingDialog>
                 Text(
                   title,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: Colors.white,
+                    color: context.onSurfaceColor,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -344,7 +345,7 @@ class _AiOnboardingDialogState extends State<AiOnboardingDialog>
             onChanged: onChanged,
             activeThumbColor: Colors.cyan,
             activeTrackColor: Colors.cyan.withValues(alpha: 0.3),
-            inactiveTrackColor: Colors.grey.withValues(alpha: 0.3),
+            inactiveTrackColor: context.outlineColor.withValues(alpha: 0.3),
           ),
         ],
       ),

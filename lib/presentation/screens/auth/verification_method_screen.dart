@@ -9,6 +9,7 @@ import '../../blocs/auth/auth_state.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 import '../../widgets/common/pulse_toast.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Screen for selecting verification method (Email or WhatsApp)
 /// Shown after first login if user hasn't verified via either method
@@ -68,12 +69,12 @@ class _VerificationMethodScreenState extends State<VerificationMethodScreen> {
                       child: Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: PulseColors.surfaceVariant,
+                          color: Theme.of(context).colorScheme.surfaceContainerHighest,
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.arrow_back,
-                          color: PulseColors.onSurface,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                     ),
@@ -82,12 +83,12 @@ class _VerificationMethodScreenState extends State<VerificationMethodScreen> {
                 const SizedBox(height: 40),
 
                 // Title
-                const Text(
+                Text(
                   'Verify Your Account',
                   style: TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
-                    color: PulseColors.onSurface,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -97,7 +98,7 @@ class _VerificationMethodScreenState extends State<VerificationMethodScreen> {
                   'Choose how you\'d like to verify your account',
                   style: TextStyle(
                     fontSize: 16,
-                    color: PulseColors.onSurfaceVariant,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
                 const SizedBox(height: 40),
@@ -143,12 +144,12 @@ class _VerificationMethodScreenState extends State<VerificationMethodScreen> {
                           size: 20,
                         ),
                       ),
-                      const Expanded(
+                      Expanded(
                         child: Text(
                           'You\'ll receive a verification code on your chosen method. Keep your device handy.',
                           style: TextStyle(
                             fontSize: 13,
-                            color: PulseColors.onSurface,
+                            color: Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
                       ),
@@ -207,18 +208,18 @@ class _VerificationMethodScreenState extends State<VerificationMethodScreen> {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: PulseColors.onSurface,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     description,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 13,
-                      color: PulseColors.onSurfaceVariant,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],
@@ -228,13 +229,13 @@ class _VerificationMethodScreenState extends State<VerificationMethodScreen> {
               Container(
                 width: 24,
                 height: 24,
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   color: PulseColors.primary,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.check,
-                  color: Colors.white,
+                  color: context.onSurfaceColor,
                   size: 16,
                 ),
               ),
@@ -297,10 +298,10 @@ class _VerificationMethodScreenState extends State<VerificationMethodScreen> {
                   valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                 ),
               )
-            : const Text(
+            : Text(
                 'Continue',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: context.onSurfaceColor,
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),

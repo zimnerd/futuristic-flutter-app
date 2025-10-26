@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../data/models/premium.dart';
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Showcase widget for premium features with interactive demonstrations
 class PremiumFeaturesShowcase extends StatefulWidget {
@@ -93,14 +94,14 @@ class _PremiumFeaturesShowcaseState extends State<PremiumFeaturesShowcase>
               padding: const EdgeInsets.all(20),
               child: Row(
                 children: [
-                  const Icon(Icons.star, color: Colors.white, size: 24),
+                  Icon(Icons.star, color: context.onSurfaceColor, size: 24),
                   const SizedBox(width: 8),
-                  const Text(
+                  Text(
                     'Premium Features',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: context.onSurfaceColor,
                     ),
                   ),
                   const Spacer(),
@@ -115,9 +116,9 @@ class _PremiumFeaturesShowcaseState extends State<PremiumFeaturesShowcase>
                     ),
                     child: Text(
                       '${_currentIndex + 1}/${widget.features.length}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
-                        color: Colors.white,
+                        color: context.onSurfaceColor,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -188,7 +189,7 @@ class _PremiumFeaturesShowcaseState extends State<PremiumFeaturesShowcase>
                 shape: BoxShape.circle,
               ),
               child: Center(
-                child: Text(feature.icon, style: const TextStyle(fontSize: 40)),
+                child: Text(feature.icon, style: TextStyle(fontSize: 40)),
               ),
             ),
 
@@ -197,10 +198,10 @@ class _PremiumFeaturesShowcaseState extends State<PremiumFeaturesShowcase>
             // Feature name
             Text(
               feature.displayName,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: context.onSurfaceColor,
               ),
               textAlign: TextAlign.center,
             ),
@@ -253,20 +254,20 @@ class PremiumFeaturesGrid extends StatelessWidget {
       itemCount: features.length,
       itemBuilder: (context, index) {
         final feature = features[index];
-        return _buildFeatureGridItem(feature);
+        return _buildFeatureGridItem(context, feature);
       },
     );
   }
 
-  Widget _buildFeatureGridItem(PremiumFeature feature) {
+  Widget _buildFeatureGridItem(BuildContext context, PremiumFeature feature) {
     return GestureDetector(
       onTap: () => onFeatureSelected?.call(feature),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.onSurfaceColor,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey.shade200, width: 1),
+          border: Border.all(color: context.outlineColor.shade200, width: 1),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.05),
@@ -287,7 +288,7 @@ class PremiumFeaturesGrid extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
               child: Center(
-                child: Text(feature.icon, style: const TextStyle(fontSize: 24)),
+                child: Text(feature.icon, style: TextStyle(fontSize: 24)),
               ),
             ),
 
@@ -296,7 +297,7 @@ class PremiumFeaturesGrid extends StatelessWidget {
             // Feature name
             Text(
               feature.displayName,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: Colors.black87,
@@ -329,21 +330,21 @@ class PremiumFeaturesList extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: features
-          .map((feature) => _buildFeatureListItem(feature))
+          .map((feature) => _buildFeatureListItem(context, feature))
           .toList(),
     );
   }
 
-  Widget _buildFeatureListItem(PremiumFeature feature) {
+  Widget _buildFeatureListItem(BuildContext context, PremiumFeature feature) {
     return GestureDetector(
       onTap: () => onFeatureSelected?.call(feature),
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.onSurfaceColor,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.shade200, width: 1),
+          border: Border.all(color: context.outlineColor.shade200, width: 1),
         ),
         child: Row(
           children: [
@@ -356,7 +357,7 @@ class PremiumFeaturesList extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
               child: Center(
-                child: Text(feature.icon, style: const TextStyle(fontSize: 20)),
+                child: Text(feature.icon, style: TextStyle(fontSize: 20)),
               ),
             ),
 
@@ -369,7 +370,7 @@ class PremiumFeaturesList extends StatelessWidget {
                 children: [
                   Text(
                     feature.displayName,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                       color: Colors.black87,
@@ -379,7 +380,10 @@ class PremiumFeaturesList extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       feature.description,
-                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: context.onSurfaceVariantColor,
+                      ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -389,7 +393,11 @@ class PremiumFeaturesList extends StatelessWidget {
             ),
 
             // Arrow indicator
-            Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey[400]),
+            Icon(
+              Icons.arrow_forward_ios,
+              size: 16,
+              color: context.outlineColor.withValues(alpha: 0.2),
+            ),
           ],
         ),
       ),

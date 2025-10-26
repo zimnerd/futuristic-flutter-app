@@ -10,6 +10,7 @@ import 'package:photo_view/photo_view_gallery.dart';
 
 import '../../../domain/entities/message.dart';
 import '../common/pulse_toast.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Full-screen image viewer with gesture navigation and caption support
 class ChatImageViewer extends StatefulWidget {
@@ -54,16 +55,16 @@ class _ChatImageViewerState extends State<ChatImageViewer> {
         iconTheme: const IconThemeData(color: Colors.white),
         title: Text(
           '${_currentIndex + 1} / ${widget.images.length}',
-          style: const TextStyle(color: Colors.white),
+          style: TextStyle(color: Colors.white),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.download),
+            icon: Icon(Icons.download),
             onPressed: () => _saveImage(context),
             tooltip: 'Save to gallery',
           ),
           IconButton(
-            icon: const Icon(Icons.share),
+            icon: Icon(Icons.share),
             onPressed: () => _shareImage(context),
             tooltip: 'Share',
           ),
@@ -97,7 +98,7 @@ class _ChatImageViewerState extends State<ChatImageViewer> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.broken_image,
                           color: Colors.white54,
                           size: 64,
@@ -126,7 +127,7 @@ class _ChatImageViewerState extends State<ChatImageViewer> {
                 ),
               );
             },
-            backgroundDecoration: const BoxDecoration(color: Colors.black),
+            backgroundDecoration: BoxDecoration(color: Colors.black),
           ),
 
           // Caption overlay (bottom)
@@ -171,7 +172,7 @@ class _ChatImageViewerState extends State<ChatImageViewer> {
       child: SafeArea(
         child: Text(
           caption,
-          style: const TextStyle(color: Colors.white, fontSize: 16),
+          style: TextStyle(color: context.onSurfaceColor, fontSize: 16),
           textAlign: TextAlign.center,
         ),
       ),

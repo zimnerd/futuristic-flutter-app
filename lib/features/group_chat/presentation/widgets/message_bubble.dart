@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 import '../../data/models.dart';
 import '../../../../presentation/widgets/common/pulse_toast.dart';
 
@@ -52,7 +53,7 @@ class MessageBubble extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: isMe
                       ? Theme.of(context).primaryColor
-                      : Colors.grey[300],
+                      : context.outlineColor.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Column(
@@ -124,7 +125,7 @@ class MessageBubble extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 4),
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: Colors.grey[200],
+        color: context.outlineColor.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(8),
         border: Border(
           left: BorderSide(color: Theme.of(context).primaryColor, width: 3),
@@ -170,7 +171,7 @@ class MessageBubble extends StatelessWidget {
 
   Widget _buildImageMessage() {
     final imageUrl = message.metadata?['url'] as String?;
-    if (imageUrl == null) return const Text('Image not available');
+    if (imageUrl == null) return Text('Image not available');
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
@@ -181,14 +182,14 @@ class MessageBubble extends StatelessWidget {
         placeholder: (context, url) => Container(
           width: 200,
           height: 200,
-          color: Colors.grey[300],
+          color: context.outlineColor.withValues(alpha: 0.3),
           child: const Center(child: CircularProgressIndicator()),
         ),
         errorWidget: (context, url, error) => Container(
           width: 200,
           height: 200,
-          color: Colors.grey[300],
-          child: const Icon(Icons.error),
+          color: context.outlineColor.withValues(alpha: 0.3),
+          child: Icon(Icons.error),
         ),
       ),
     );
@@ -280,12 +281,12 @@ class MessageBubble extends StatelessWidget {
                     ? Theme.of(context).primaryColor.withValues(
                         alpha: Theme.of(context).primaryColor.a * 0.2,
                       )
-                    : Colors.grey[200],
+                    : context.outlineColor.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: hasMyReaction
                       ? Theme.of(context).primaryColor
-                      : Colors.grey[300]!,
+                      : context.outlineColor.withValues(alpha: 0.3)!,
                 ),
               ),
               child: Row(
@@ -322,16 +323,16 @@ class MessageBubble extends StatelessWidget {
           children: [
             if (onReply != null)
               ListTile(
-                leading: const Icon(Icons.reply),
-                title: const Text('Reply'),
+                leading: Icon(Icons.reply),
+                title: Text('Reply'),
                 onTap: () {
                   Navigator.pop(context);
                   onReply?.call();
                 },
               ),
             ListTile(
-              leading: const Icon(Icons.copy),
-              title: const Text('Copy'),
+              leading: Icon(Icons.copy),
+              title: Text('Copy'),
               onTap: () {
                 Clipboard.setData(ClipboardData(text: message.content));
                 Navigator.pop(context);
@@ -339,8 +340,8 @@ class MessageBubble extends StatelessWidget {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.add_reaction_outlined),
-              title: const Text('React'),
+              leading: Icon(Icons.add_reaction_outlined),
+              title: Text('React'),
               onTap: () {
                 Navigator.pop(context);
                 _showReactionPicker(context);
@@ -348,8 +349,8 @@ class MessageBubble extends StatelessWidget {
             ),
             if (isMe && onDelete != null)
               ListTile(
-                leading: const Icon(Icons.delete, color: Colors.red),
-                title: const Text(
+                leading: Icon(Icons.delete, color: Colors.red),
+                title: Text(
                   'Delete',
                   style: TextStyle(color: Colors.red),
                 ),
@@ -375,7 +376,7 @@ class MessageBubble extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
+              Text(
                 'React to message',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),

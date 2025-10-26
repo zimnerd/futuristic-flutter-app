@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../data/models/subscription_usage.dart';
+
 
 /// Widget to display feature usage with progress indicators
 class UsageIndicator extends StatelessWidget {
@@ -14,14 +16,15 @@ class UsageIndicator extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.surfaceColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border, width: 1),
+        border: Border.all(color: context.outlineColor, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildUsageItem(
+            context,
             'Matches',
             usage.getFeatureUsage('matches'),
             Icons.favorite,
@@ -29,6 +32,7 @@ class UsageIndicator extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           _buildUsageItem(
+            context,
             'Super Likes',
             usage.getFeatureUsage('super_likes'),
             Icons.star,
@@ -36,6 +40,7 @@ class UsageIndicator extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           _buildUsageItem(
+            context,
             'Boosts',
             usage.getFeatureUsage('boosts'),
             Icons.trending_up,
@@ -43,6 +48,7 @@ class UsageIndicator extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           _buildUsageItem(
+            context,
             'Messages',
             usage.getFeatureUsage('messages'),
             Icons.message,
@@ -54,6 +60,7 @@ class UsageIndicator extends StatelessWidget {
   }
 
   Widget _buildUsageItem(
+    BuildContext context,
     String label,
     UsageCounter counter,
     IconData icon,
@@ -86,7 +93,7 @@ class UsageIndicator extends StatelessWidget {
                   Text(
                     label,
                     style: AppTextStyles.labelMedium.copyWith(
-                      color: AppColors.textPrimary,
+                      color: context.onSurfaceColor,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -97,7 +104,7 @@ class UsageIndicator extends StatelessWidget {
                     style: AppTextStyles.bodySmall.copyWith(
                       color: isNearLimit
                           ? AppColors.warning
-                          : AppColors.textSecondary,
+                          : context.onSurfaceVariantColor,
                     ),
                   ),
                 ],
@@ -109,7 +116,7 @@ class UsageIndicator extends StatelessWidget {
                 style: AppTextStyles.labelSmall.copyWith(
                   color: isNearLimit
                       ? AppColors.warning
-                      : AppColors.textSecondary,
+                      : context.onSurfaceVariantColor,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -119,7 +126,7 @@ class UsageIndicator extends StatelessWidget {
           const SizedBox(height: 8),
           LinearProgressIndicator(
             value: percentage,
-            backgroundColor: AppColors.border,
+            backgroundColor: context.outlineColor,
             valueColor: AlwaysStoppedAnimation<Color>(
               isNearLimit ? AppColors.warning : color,
             ),

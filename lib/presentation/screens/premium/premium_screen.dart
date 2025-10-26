@@ -11,7 +11,7 @@ import '../../blocs/premium/premium_event.dart';
 import '../../blocs/premium/premium_state.dart';
 import '../../sheets/coin_purchase_sheet.dart';
 import '../../theme/pulse_colors.dart';
-import '../../theme/theme_extensions.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 import '../../widgets/common/pulse_loading_widget.dart';
 import '../../widgets/common/pulse_error_widget.dart';
 import '../../widgets/premium/subscription_plans_widget.dart';
@@ -54,14 +54,14 @@ class _PremiumScreenState extends State<PremiumScreen>
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Premium'),
+        title: Text('Premium'),
         backgroundColor: context.primaryColor,
-        foregroundColor: context.onPrimaryColor,
+        foregroundColor: context.primaryColor,
         bottom: TabBar(
           controller: _tabController,
-          labelColor: context.onPrimaryColor,
-          unselectedLabelColor: context.onPrimaryColor.withValues(alpha: 0.7),
-          indicatorColor: context.onPrimaryColor,
+          labelColor: context.primaryColor,
+          unselectedLabelColor: context.primaryColor.withValues(alpha: 0.7),
+          indicatorColor: context.primaryColor,
           tabs: isSmallScreen
               ? const [
                   Tab(icon: Icon(Icons.star)),
@@ -113,7 +113,7 @@ class _PremiumScreenState extends State<PremiumScreen>
             );
           }
 
-          return const Center(child: Text('Welcome to Premium!'));
+          return Center(child: Text('Welcome to Premium!'));
         },
       ),
     );
@@ -200,8 +200,8 @@ class _PremiumScreenState extends State<PremiumScreen>
             onPressed: () {
               context.read<PremiumBloc>().add(LoadPremiumData());
             },
-            icon: const Icon(Icons.refresh),
-            label: const Text('Retry'),
+            icon: Icon(Icons.refresh),
+            label: Text('Retry'),
           ),
         ],
       ),
@@ -253,44 +253,44 @@ class _PremiumScreenState extends State<PremiumScreen>
       child: Column(
         children: [
           ListTile(
-            leading: const Icon(Icons.receipt_long),
-            title: const Text(
+            leading: Icon(Icons.receipt_long),
+            title: Text(
               'Billing History',
-              style: TextStyle(color: Colors.black87),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
             ),
-            subtitle: const Text(
+            subtitle: Text(
               'View your payment history',
-              style: TextStyle(color: Colors.black87),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
             ),
-            trailing: const Icon(Icons.arrow_forward_ios),
+            trailing: Icon(Icons.arrow_forward_ios),
             onTap: () => _showBillingHistory(),
           ),
           const Divider(height: 1),
           ListTile(
-            leading: const Icon(Icons.credit_card),
-            title: const Text(
+            leading: Icon(Icons.credit_card),
+            title: Text(
               'Payment Methods',
-              style: TextStyle(color: Colors.black87),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
             ),
-            subtitle: const Text(
+            subtitle: Text(
               'Manage your payment options',
-              style: TextStyle(color: Colors.black87),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
             ),
-            trailing: const Icon(Icons.arrow_forward_ios),
+            trailing: Icon(Icons.arrow_forward_ios),
             onTap: () => _showPaymentMethods(),
           ),
           const Divider(height: 1),
           ListTile(
-            leading: const Icon(Icons.help_outline),
-            title: const Text(
+            leading: Icon(Icons.help_outline),
+            title: Text(
               'Premium Support',
-              style: TextStyle(color: Colors.black87),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
             ),
-            subtitle: const Text(
+            subtitle: Text(
               'Get help with your subscription',
-              style: TextStyle(color: Colors.black87),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
             ),
-            trailing: const Icon(Icons.arrow_forward_ios),
+            trailing: Icon(Icons.arrow_forward_ios),
             onTap: () => _showPremiumSupport(),
           ),
           if (state.subscription != null) ...[
@@ -301,11 +301,11 @@ class _PremiumScreenState extends State<PremiumScreen>
                 'Cancel Subscription',
                 style: TextStyle(color: context.errorColor),
               ),
-              subtitle: const Text(
+              subtitle: Text(
                 'Cancel your premium subscription',
-                style: TextStyle(color: Colors.black87),
+                style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
               ),
-              trailing: const Icon(Icons.arrow_forward_ios),
+              trailing: Icon(Icons.arrow_forward_ios),
               onTap: () => _showCancellationDialog(state.subscription!),
             ),
           ],
@@ -400,7 +400,7 @@ class _PremiumScreenState extends State<PremiumScreen>
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
-                    child: const Text('Cancel'),
+                    child: Text('Cancel'),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -410,10 +410,10 @@ class _PremiumScreenState extends State<PremiumScreen>
                     onPressed: () => _confirmPurchase(plan),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: context.primaryColor,
-                      foregroundColor: context.onPrimaryColor,
+                      foregroundColor: context.primaryColor,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
-                    child: const Text('Subscribe'),
+                    child: Text('Subscribe'),
                   ),
                 ),
               ],
@@ -585,7 +585,7 @@ class _PremiumScreenState extends State<PremiumScreen>
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
-                    child: const Text('Close'),
+                    child: Text('Close'),
                   ),
                 ),
               ],
@@ -648,25 +648,25 @@ class _PremiumScreenState extends State<PremiumScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        surfaceTintColor: Theme.of(context).colorScheme.surface,
         title: Text(
           'Cancel Subscription',
           style: TextStyle(
-            color: Colors.grey.shade900,
+            color: Theme.of(context).colorScheme.onSurface,
             fontWeight: FontWeight.bold,
           ),
         ),
         content: Text(
           'Are you sure you want to cancel your premium subscription? '
           'You will lose access to premium features at the end of your billing period.',
-          style: TextStyle(color: Colors.grey.shade800, fontSize: 14),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 14),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
             style: TextButton.styleFrom(foregroundColor: PulseColors.primary),
-            child: const Text(
+            child: Text(
               'Keep Subscription',
               style: TextStyle(fontWeight: FontWeight.w600),
             ),
@@ -676,8 +676,8 @@ class _PremiumScreenState extends State<PremiumScreen>
               Navigator.of(context).pop();
               context.read<PremiumBloc>().add(CancelSubscription());
             },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text(
+            style: TextButton.styleFrom(foregroundColor: context.errorColor),
+            child: Text(
               'Cancel Subscription',
               style: TextStyle(fontWeight: FontWeight.w600),
             ),

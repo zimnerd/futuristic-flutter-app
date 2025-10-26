@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:line_icons/line_icons.dart';
-
-import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Explore/Feature Hub Screen - Centralized access to all app features
 /// FIXES: Feature discovery crisis - makes hidden features discoverable
@@ -12,7 +11,7 @@ class ExploreScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: PulseColors.surface,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async {
@@ -24,13 +23,13 @@ class ExploreScreen extends StatelessWidget {
               // App Bar
               SliverAppBar(
                 floating: true,
-                backgroundColor: PulseColors.surface,
+                backgroundColor: Theme.of(context).colorScheme.surface,
                 elevation: 0,
                 title: Text(
                   'Explore',
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: PulseColors.onSurface,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
               ),
@@ -99,7 +98,7 @@ class ExploreScreen extends StatelessWidget {
           title,
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.bold,
-            color: PulseColors.onSurface,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
         const SizedBox(height: 4),
@@ -107,7 +106,7 @@ class ExploreScreen extends StatelessWidget {
           subtitle,
           style: Theme.of(
             context,
-          ).textTheme.bodyMedium?.copyWith(color: PulseColors.onSurfaceVariant),
+          ).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
       ],
     );
@@ -139,7 +138,7 @@ class ExploreScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: feature.color.withValues(alpha: 0.3),
@@ -180,7 +179,11 @@ class ExploreScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: Icon(feature.icon, color: Colors.white, size: 28),
+                  child: Icon(
+                    feature.icon,
+                    color: context.onSurfaceColor,
+                    size: 28,
+                  ),
                 ),
                 const SizedBox(height: 12),
 
@@ -189,7 +192,7 @@ class ExploreScreen extends StatelessWidget {
                   feature.title,
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: PulseColors.onSurface,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                   textAlign: TextAlign.center,
                   maxLines: 2,
@@ -201,7 +204,7 @@ class ExploreScreen extends StatelessWidget {
                 Text(
                   feature.description,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: PulseColors.onSurfaceVariant,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                   textAlign: TextAlign.center,
                   maxLines: 2,

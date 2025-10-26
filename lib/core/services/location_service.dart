@@ -9,6 +9,7 @@ import '../models/location_models.dart';
 import '../../data/services/heat_map_service.dart';
 import '../../domain/services/api_service.dart';
 import '../di/service_locator.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 import 'permission_service.dart';
 
 /// Location permission status
@@ -275,7 +276,7 @@ class LocationService {
           context: context,
           barrierDismissible: false,
           builder: (BuildContext dialogContext) => AlertDialog(
-            title: const Text(
+            title: Text(
               '📍 Location Services Required',
               style: TextStyle(
                 fontSize: 20,
@@ -283,7 +284,7 @@ class LocationService {
                 color: Colors.black,
               ),
             ),
-            content: const Text(
+            content: Text(
               'Location services are disabled. Please enable them to use location features.',
               style: TextStyle(fontSize: 16, color: Colors.black),
             ),
@@ -293,9 +294,9 @@ class LocationService {
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(dialogContext).pop(false),
-                child: const Text(
+                child: Text(
                   'Cancel',
-                  style: TextStyle(color: Colors.grey),
+                  style: TextStyle(color: context.outlineColor),
                 ),
               ),
               ElevatedButton(
@@ -310,7 +311,7 @@ class LocationService {
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: const Text('Enable Location'),
+                child: Text('Enable Location'),
               ),
             ],
           ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../data/models/premium.dart';
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Pricing card widget for displaying subscription plans
 ///
@@ -101,14 +102,14 @@ class PricingCard extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.star, color: Colors.white, size: 14),
+                      Icon(Icons.star, color: context.onSurfaceColor, size: 14),
                       const SizedBox(width: 4),
                       Text(
                         ribbonText,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: context.onSurfaceColor,
                           letterSpacing: 0.5,
                         ),
                       ),
@@ -209,7 +210,7 @@ class PricingCard extends StatelessWidget {
                                 ),
                                 child: Text(
                                   'SAVE ${plan.discountPercent}%',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.bold,
                                     color: Color(0xFFFF3B5C),
@@ -240,9 +241,9 @@ class PricingCard extends StatelessWidget {
                           ),
                         ),
                         child: isSelected
-                            ? const Icon(
+                            ? Icon(
                                 Icons.check,
-                                color: Colors.white,
+                                color: context.onSurfaceColor,
                                 size: 18,
                               )
                             : null,
@@ -301,9 +302,9 @@ class PricingCard extends StatelessWidget {
                                       : PulseColors.success,
                                   shape: BoxShape.circle,
                                 ),
-                                child: const Icon(
+                                child: Icon(
                                   Icons.check,
-                                  color: Colors.white,
+                                  color: context.onSurfaceColor,
                                   size: 14,
                                 ),
                               ),
@@ -311,7 +312,7 @@ class PricingCard extends StatelessWidget {
                               Expanded(
                                 child: Text(
                                   feature,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 14,
                                     height: 1.4,
                                   ),
@@ -469,7 +470,7 @@ class CompactPricingCard extends StatelessWidget {
                 children: [
                   Text(
                     plan.name,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
@@ -497,7 +498,7 @@ class CompactPricingCard extends StatelessWidget {
                 ),
               ),
               child: isSelected
-                  ? const Icon(Icons.check, color: Colors.white, size: 16)
+                  ? Icon(Icons.check, color: context.onSurfaceColor, size: 16)
                   : null,
             ),
           ],

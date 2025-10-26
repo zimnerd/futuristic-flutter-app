@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 class ProfileForm extends StatelessWidget {
   final TextEditingController nameController;
@@ -38,38 +39,34 @@ class ProfileForm extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildBasicInfoSection(),
+        _buildBasicInfoSection(context),
         const SizedBox(height: 24),
         _buildAboutSection(context),
         const SizedBox(height: 24),
         _buildWorkEducationSection(context),
         const SizedBox(height: 24),
-        _buildPreferencesSection(),
+        _buildPreferencesSection(context),
         const SizedBox(height: 24),
-        _buildInterestsSection(),
+        _buildInterestsSection(context),
       ],
     );
   }
 
-  Widget _buildBasicInfoSection() {
+  Widget _buildBasicInfoSection(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Builder(
-          builder: (context) {
-            final isDark = Theme.of(context).brightness == Brightness.dark;
-            return Text(
-              'Basic Information',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: isDark ? Colors.white : Colors.black87,
-              ),
-            );
-          },
+        Text(
+          'Basic Information',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: context.textPrimary,
+          ),
         ),
         const SizedBox(height: 16),
         _buildTextField(
+          context: context,
           controller: nameController,
           label: 'Name',
           hint: 'Enter your name',
@@ -85,6 +82,7 @@ class ProfileForm extends StatelessWidget {
           children: [
             Expanded(
               child: _buildTextField(
+                context: context,
                 controller: ageController,
                 label: 'Age',
                 hint: '18',
@@ -105,6 +103,7 @@ class ProfileForm extends StatelessWidget {
             const SizedBox(width: 16),
             Expanded(
               child: _buildDropdown<String>(
+                context: context,
                 label: 'Gender',
                 value: selectedGender,
                 items: ['Woman', 'Man', 'Non-binary', 'Other'],
@@ -118,9 +117,6 @@ class ProfileForm extends StatelessWidget {
   }
 
   Widget _buildAboutSection(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final headingColor = isDark ? Colors.white : Colors.black87;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -129,11 +125,12 @@ class ProfileForm extends StatelessWidget {
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: headingColor,
+            color: context.textPrimary,
           ),
         ),
         const SizedBox(height: 16),
         _buildTextField(
+          context: context,
           controller: bioController,
           label: 'Bio',
           hint: 'Tell us about yourself...',
@@ -145,9 +142,6 @@ class ProfileForm extends StatelessWidget {
   }
 
   Widget _buildWorkEducationSection(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final headingColor = isDark ? Colors.white : Colors.black87;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -156,23 +150,26 @@ class ProfileForm extends StatelessWidget {
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: headingColor,
+            color: context.textPrimary,
           ),
         ),
         const SizedBox(height: 16),
         _buildTextField(
+          context: context,
           controller: jobController,
           label: 'Job Title',
           hint: 'Software Engineer',
         ),
         const SizedBox(height: 16),
         _buildTextField(
+          context: context,
           controller: companyController,
           label: 'Company',
           hint: 'Google',
         ),
         const SizedBox(height: 16),
         _buildTextField(
+          context: context,
           controller: schoolController,
           label: 'School',
           hint: 'Vaal University',
@@ -181,37 +178,31 @@ class ProfileForm extends StatelessWidget {
     );
   }
 
-  Widget _buildPreferencesSection() {
-    return Builder(
-      builder: (context) {
-        final isDark = Theme.of(context).brightness == Brightness.dark;
-        final headingColor = isDark ? Colors.white : Colors.black87;
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Dating Preferences',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: headingColor,
-              ),
-            ),
-            const SizedBox(height: 16),
-            _buildDropdown<String>(
-              label: 'Looking for',
-              value: selectedPreference,
-              items: ['Men', 'Women', 'Everyone'],
-              onChanged: onPreferenceChanged,
-            ),
-          ],
-        );
-      },
+  Widget _buildPreferencesSection(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Dating Preferences',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: context.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 16),
+        _buildDropdown<String>(
+          context: context,
+          label: 'Looking for',
+          value: selectedPreference,
+          items: ['Men', 'Women', 'Everyone'],
+          onChanged: onPreferenceChanged,
+        ),
+      ],
     );
   }
 
-  Widget _buildInterestsSection() {
+  Widget _buildInterestsSection(BuildContext context) {
     final availableInterests = [
       'Photography',
       'Travel',
@@ -239,62 +230,52 @@ class ProfileForm extends StatelessWidget {
       'Yoga',
     ];
 
-    return Builder(
-      builder: (context) {
-        final isDark = Theme.of(context).brightness == Brightness.dark;
-        final headingColor = isDark ? Colors.white : Colors.black87;
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Interests',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: headingColor,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Interests',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: context.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 16),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: availableInterests.map((interest) {
+            final isSelected = selectedInterests.contains(interest);
+            return FilterChip(
+              label: Text(interest),
+              selected: isSelected,
+              onSelected: (selected) {
+                final newInterests = [...selectedInterests];
+                if (selected) {
+                  newInterests.add(interest);
+                } else {
+                  newInterests.remove(interest);
+                }
+                onInterestsChanged(newInterests);
+              },
+              backgroundColor: context.isDarkMode
+                  ? context.borderColor.withValues(alpha: 0.2)
+                  : context.borderColor.withValues(alpha: 0.1),
+              selectedColor: PulseColors.primary,
+              labelStyle: TextStyle(
+                color: isSelected
+                    ? context.textOnPrimary : context.textPrimary,
               ),
-            ),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: availableInterests.map((interest) {
-                final isSelected = selectedInterests.contains(interest);
-                return FilterChip(
-                  label: Text(interest),
-                  selected: isSelected,
-                  onSelected: (selected) {
-                    final newInterests = [...selectedInterests];
-                    if (selected) {
-                      newInterests.add(interest);
-                    } else {
-                      newInterests.remove(interest);
-                    }
-                    onInterestsChanged(newInterests);
-                  },
-                  backgroundColor:
-                      Theme.of(context).brightness == Brightness.dark
-                      ? Colors.grey.shade800
-                      : Colors.grey.shade100,
-                  selectedColor: PulseColors.primary,
-                  labelStyle: TextStyle(
-                    color: isSelected
-                        ? Colors.white
-                        : (Theme.of(context).brightness == Brightness.dark
-                              ? Colors.white70
-                              : Colors.black87),
-                  ),
-                );
-              }).toList(),
-            ),
-          ],
-        );
-      },
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 
   Widget _buildTextField({
+    required BuildContext context,
     required TextEditingController controller,
     required String label,
     String? hint,
@@ -309,10 +290,10 @@ class ProfileForm extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
-            color: Colors.black87,
+            color: context.textPrimary,
           ),
         ),
         const SizedBox(height: 8),
@@ -327,11 +308,15 @@ class ProfileForm extends StatelessWidget {
             hintText: hint,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey[300]!),
+              borderSide: BorderSide(
+                color: context.outlineColor.withValues(alpha: 0.3),
+              ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey[300]!),
+              borderSide: BorderSide(
+                color: context.outlineColor.withValues(alpha: 0.3),
+              ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
@@ -339,7 +324,7 @@ class ProfileForm extends StatelessWidget {
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Colors.red),
+              borderSide: BorderSide(color: context.errorColor),
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
@@ -353,6 +338,7 @@ class ProfileForm extends StatelessWidget {
   }
 
   Widget _buildDropdown<T>({
+    required BuildContext context,
     required String label,
     required T value,
     required List<T> items,
@@ -363,10 +349,10 @@ class ProfileForm extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
-            color: Colors.black87,
+            color: context.textPrimary,
           ),
         ),
         const SizedBox(height: 8),
@@ -375,7 +361,10 @@ class ProfileForm extends StatelessWidget {
           items: items.map((item) {
             return DropdownMenuItem<T>(
               value: item,
-              child: Text(item.toString()),
+              child: Text(
+                item.toString(),
+                style: TextStyle(color: context.textPrimary),
+              ),
             );
           }).toList(),
           onChanged: (newValue) {
@@ -386,11 +375,15 @@ class ProfileForm extends StatelessWidget {
           decoration: InputDecoration(
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey[300]!),
+              borderSide: BorderSide(
+                color: context.outlineColor.withValues(alpha: 0.3),
+              ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey[300]!),
+              borderSide: BorderSide(
+                color: context.outlineColor.withValues(alpha: 0.3),
+              ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),

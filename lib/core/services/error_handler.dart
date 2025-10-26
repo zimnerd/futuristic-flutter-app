@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:logger/logger.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Centralized error handler for all HTTP and network errors
 /// Displays user-friendly popup dialogs for all error types
@@ -194,7 +195,10 @@ class ErrorHandler {
               SizedBox(height: 16),
               Text(
                 'You can try again or contact support if the problem persists.',
-                style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: context.onSurfaceVariantColor,
+                ),
               ),
             ],
           ],

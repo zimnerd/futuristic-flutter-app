@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:line_icons/line_icons.dart';
 import '../../../core/theme/pulse_design_system.dart';
 import '../../../core/network/api_client.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Modern Main Navigation Wrapper with PulseLink Design
 ///
@@ -208,7 +209,9 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
 
     // Use theme colors for active state
     final activeColor = PulseColors.backgroundDark;
-    final inactiveColor = isDark ? PulseColors.grey500 : PulseColors.grey400;
+    final inactiveColor = isDark
+        ? context.borderColor.shade500
+        : context.borderColor.shade400;
 
     return AnimatedBuilder(
       animation: _animationController,
@@ -261,7 +264,7 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
                         children: [
                           Icon(
                             item.activeIcon,
-                            color: Colors.white,
+                            color: context.onSurfaceColor,
                             size: isSmallScreen ? 20 : 24,
                           ),
                           if (!isSmallScreen) ...[
@@ -269,7 +272,7 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
                             Text(
                               item.label,
                               style: TextStyle(
-                                color: Colors.white,
+                                color: context.onSurfaceColor,
                                 fontSize: isMediumScreen ? 13 : 15,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -283,13 +286,13 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.red,
+                                color: context.errorColor,
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Text(
                                 badgeCount > 99 ? '99+' : badgeCount.toString(),
                                 style: TextStyle(
-                                  color: Colors.white,
+                                  color: context.onSurfaceColor,
                                   fontSize: isMediumScreen ? 10 : 12,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -325,7 +328,7 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.red,
+                                color: context.errorColor,
                                 borderRadius: BorderRadius.circular(8),
                                 border: Border.all(
                                   color: isDark
@@ -337,7 +340,7 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
                               child: Text(
                                 badgeCount > 99 ? '99+' : badgeCount.toString(),
                                 style: TextStyle(
-                                  color: Colors.white,
+                                  color: context.onSurfaceColor,
                                   fontSize: isSmallScreen ? 8 : 10,
                                   fontWeight: FontWeight.bold,
                                 ),

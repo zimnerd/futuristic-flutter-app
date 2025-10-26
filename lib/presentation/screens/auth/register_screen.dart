@@ -271,7 +271,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [PulseColors.surface, const Color(0xFFF8F9FA)],
+              colors: [Theme.of(context).colorScheme.surface, Theme.of(context).colorScheme.surfaceContainerHighest],
             ),
           ),
           child: SafeArea(
@@ -291,7 +291,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     // Back button
                     IconButton(
                       onPressed: () => context.go(AppRoutes.welcome),
-                      icon: const Icon(Icons.arrow_back),
+                      icon: Icon(Icons.arrow_back),
                       padding: EdgeInsets.zero,
                       alignment: Alignment.centerLeft,
                     ),
@@ -301,7 +301,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     Text(
                       'Create Account',
                       style: PulseTextStyles.displayMedium.copyWith(
-                        color: PulseColors.onSurface,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -309,7 +309,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     Text(
                       'Join PulseLink and find your perfect match',
                       style: PulseTextStyles.bodyLarge.copyWith(
-                        color: PulseColors.onSurfaceVariant,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
                     const SizedBox(height: PulseSpacing.xxl),
@@ -450,7 +450,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           controller: _nameController,
                           hintText: 'Username',
                           keyboardType: TextInputType.name,
-                          prefixIcon: const Icon(Icons.person),
+                          prefixIcon:  Icon(Icons.person),
                           errorText: _usernameError != null ? ' ' : null,
                           onChanged: _onUsernameChanged,
                         ),
@@ -461,7 +461,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           controller: _emailController,
                           hintText: 'Email Address',
                           keyboardType: TextInputType.emailAddress,
-                          prefixIcon: const Icon(Icons.email),
+                          prefixIcon: Icon(Icons.email),
                           errorText: _emailError != null ? ' ' : null,
                           onChanged: _onEmailChanged,
                         ),
@@ -472,7 +472,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           controller: _passwordController,
                           hintText: 'Password',
                           obscureText: _obscurePassword,
-                          prefixIcon: const Icon(Icons.lock),
+                          prefixIcon: Icon(Icons.lock),
                           errorText: _passwordError != null ? ' ' : null,
                           onChanged: _onPasswordChanged,
                           suffixIcon: IconButton(
@@ -535,7 +535,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   TextSpan(
                                     text: 'I agree to the ',
                                     style: PulseTextStyles.bodyMedium.copyWith(
-                                      color: PulseColors.onSurfaceVariant,
+                                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                                     ),
                                     children: [
                                       TextSpan(

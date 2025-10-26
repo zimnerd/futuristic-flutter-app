@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Typing indicator widget for chat interface
 class TypingIndicator extends StatefulWidget {
@@ -70,7 +71,7 @@ class _TypingIndicatorState extends State<TypingIndicator>
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: Colors.grey[200],
+            color: context.outlineColor.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(
               20,
             ).copyWith(bottomLeft: const Radius.circular(4)),
@@ -82,7 +83,7 @@ class _TypingIndicatorState extends State<TypingIndicator>
                 'typing',
                 style: TextStyle(
                   fontSize: 14,
-                  color: Colors.grey[600],
+                  color: context.onSurfaceVariantColor,
                   fontStyle: FontStyle.italic,
                 ),
               ),

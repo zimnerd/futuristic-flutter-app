@@ -10,6 +10,7 @@ import '../../blocs/event/event_state.dart';
 import '../../widgets/common/robust_network_image.dart';
 import '../../widgets/common/pulse_toast.dart';
 import '../../widgets/events/event_analytics_indicators.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 class EventDetailsScreen extends StatefulWidget {
   final String eventId;
@@ -43,7 +44,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
           }
 
           if (state is EventLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(child: CircularProgressIndicator());
           }
 
           if (state is EventError) {
@@ -51,20 +52,28 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
+                  Icon(
+                    Icons.error_outline,
+                    size: 64,
+                    color: context.errorColor.withValues(alpha: 0.7),
+                  ),
                   const SizedBox(height: 16),
                   Text(
                     'Failed to load event details',
                     style: Theme.of(
                       context,
-                    ).textTheme.titleLarge?.copyWith(color: Colors.red[300]),
+                    ).textTheme.titleLarge?.copyWith(
+                      color: context.errorColor.withValues(alpha: 0.7),
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     state.message,
                     style: Theme.of(
                       context,
-                    ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+                    ).textTheme.bodyMedium?.copyWith(
+                      color: context.onSurfaceVariantColor,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 24),
@@ -72,7 +81,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                     onPressed: () => context.read<EventBloc>().add(
                       LoadEventDetails(widget.eventId),
                     ),
-                    child: const Text('Retry'),
+                    child: Text('Retry'),
                   ),
                 ],
               ),
@@ -88,7 +97,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
               return _buildEventDetails(context, event);
             } catch (e) {
               // Event not in the loaded list, show loading
-              return const Center(child: CircularProgressIndicator());
+              return Center(child: CircularProgressIndicator());
             }
           }
 
@@ -98,7 +107,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
           }
 
           // Still loading or not found
-          return const Center(child: CircularProgressIndicator());
+          return Center(child: CircularProgressIndicator());
         },
       ),
     );
@@ -144,7 +153,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
           )
         else
           // Simple app bar without image
-          SliverAppBar(pinned: true, title: const Text('Event Details')),
+          SliverAppBar(pinned: true, title: Text('Event Details')),
 
         // Event content
         SliverPadding(
@@ -221,20 +230,20 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                 if (event.categoryDetails?.icon != null)
                   Text(
                     event.categoryDetails!.icon!,
-                    style: const TextStyle(fontSize: 14),
+                    style: TextStyle(fontSize: 14),
                   )
                 else
-                  const Icon(
+                  Icon(
                     Icons.category_outlined,
                     size: 14,
-                    color: Colors.white,
+                    color: context.onSurfaceColor,
                   ),
                 const SizedBox(width: 6),
                 Text(
                   event.categoryDetails?.name.toUpperCase() ??
                       event.category.toUpperCase(),
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: context.onSurfaceColor,
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 0.5,
@@ -347,7 +356,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.onSurfaceColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -451,7 +460,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
               Text(
                 label,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Colors.grey[600],
+                  color: context.onSurfaceVariantColor,
                   fontWeight: FontWeight.w600,
                   fontSize: 12,
                   letterSpacing: 0.5,
@@ -501,10 +510,10 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                 : () => _joinEvent(context, event),
             style: ElevatedButton.styleFrom(
               backgroundColor: event.isAttending
-                  ? Colors.grey[300]
+                  ? context.outlineColor.withValues(alpha: 0.3)
                   : Theme.of(context).primaryColor,
               foregroundColor: event.isAttending
-                  ? Colors.grey[700]
+                  ? context.onSurfaceVariantColor
                   : Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
@@ -521,7 +530,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                 const SizedBox(width: 8),
                 Text(
                   event.isAttending ? 'Leave Event' : 'Join Event',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 0.5,
@@ -573,13 +582,15 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  side: BorderSide(color: Colors.red.withValues(alpha: 0.3)),
+                  side: BorderSide(
+                    color: context.errorColor.withValues(alpha: 0.3),
+                  ),
                 ),
-                icon: const Icon(Icons.flag, size: 18, color: Colors.red),
-                label: const Text(
+                icon: Icon(Icons.flag, size: 18, color: context.errorColor),
+                label: Text(
                   'Report',
                   style: TextStyle(
-                    color: Colors.red,
+                    color: context.errorColor,
                     fontWeight: FontWeight.w600,
                   ),
                 ),

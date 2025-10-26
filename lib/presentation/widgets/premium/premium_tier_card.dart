@@ -5,6 +5,7 @@ import '../../blocs/premium/premium_bloc.dart';
 import '../../blocs/premium/premium_event.dart';
 import '../../theme/pulse_colors.dart';
 import '../common/pulse_button.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Premium tier card with features and pricing
 class PremiumTierCard extends StatefulWidget {
@@ -105,7 +106,7 @@ class _PremiumTierCardState extends State<PremiumTierCard>
                       ? Colors.transparent
                       : widget.tier == PremiumTier.premium
                       ? PulseColors.primary
-                      : Colors.grey.shade300,
+                      : context.outlineColor.shade300,
                   width: widget.tier == PremiumTier.premium ? 2 : 1,
                 ),
                 boxShadow: [
@@ -154,7 +155,7 @@ class _PremiumTierCardState extends State<PremiumTierCard>
                                       fontSize: 14,
                                       color: widget.isSelected
                                           ? Colors.white70
-                                          : Colors.grey[600],
+                                          : context.onSurfaceVariantColor,
                                     ),
                                   ),
                                 ],
@@ -252,12 +253,12 @@ class _PremiumTierCardState extends State<PremiumTierCard>
                       top: 15,
                       right: 15,
                       child: Container(
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
+                        decoration: BoxDecoration(
+                          color: context.onSurfaceColor,
                           shape: BoxShape.circle,
                         ),
                         padding: const EdgeInsets.all(4),
-                        child: const Icon(
+                        child: Icon(
                           Icons.check,
                           color: PulseColors.primary,
                           size: 16,
@@ -309,7 +310,7 @@ class _PremiumTierCardState extends State<PremiumTierCard>
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         children: [
-          Text(feature.icon, style: const TextStyle(fontSize: 18)),
+          Text(feature.icon, style: TextStyle(fontSize: 18)),
           const SizedBox(width: 12),
           Expanded(
             child: Text(

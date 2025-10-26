@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../navigation/app_router.dart';
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Clean, modern landing page for first-time users
 /// Focuses on clear value proposition and simple CTAs
@@ -70,17 +71,25 @@ class _LandingScreenState extends State<LandingScreen>
 
   @override
   Widget build(BuildContext context) {
+    final isDark = context.isDarkMode;
+    
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              PulseColors.primary,
-              PulseColors.secondary,
-              Color(0xFF1A1B5C),
-            ],
+            colors: isDark
+                ? [
+                    const Color(0xFF0A0F2D),
+                    const Color(0xFF1A1B5C),
+                    const Color(0xFF0A0F2D),
+                  ]
+                : const [
+                    PulseColors.primary,
+                    PulseColors.secondary,
+                    Color(0xFF1A1B5C),
+                  ],
           ),
         ),
         child: SafeArea(
@@ -163,10 +172,10 @@ class _LandingScreenState extends State<LandingScreen>
               ),
             ],
           ),
-          child: const Icon(
+          child: Icon(
             Icons.favorite,
             size: 50,
-            color: Colors.white,
+            color: context.onSurfaceColor,
           ),
         ),
 
@@ -182,7 +191,7 @@ class _LandingScreenState extends State<LandingScreen>
           child: Text(
             'PulseLink',
             style: PulseTextStyles.displayLarge.copyWith(
-              color: Colors.white,
+              color: context.onSurfaceColor,
               fontWeight: FontWeight.w700,
               fontSize: 42,
               letterSpacing: -1,
@@ -258,7 +267,7 @@ class _LandingScreenState extends State<LandingScreen>
         children: [
           Icon(
             icon,
-            color: Colors.white,
+            color: context.onSurfaceColor,
             size: 32,
           ),
           const SizedBox(height: PulseSpacing.sm),
@@ -363,7 +372,7 @@ class _LandingScreenState extends State<LandingScreen>
           child: ElevatedButton(
             onPressed: () => context.go(AppRoutes.register),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
+              backgroundColor: context.surfaceColor,
               foregroundColor: PulseColors.primary,
               elevation: 8,
               shadowColor: Colors.black.withValues(alpha: 0.3),
@@ -416,7 +425,7 @@ class _LandingScreenState extends State<LandingScreen>
               Text(
                 'Sign In',
                 style: PulseTextStyles.bodyMedium.copyWith(
-                  color: Colors.white,
+                  color: context.onSurfaceColor,
                   fontWeight: FontWeight.w600,
                   decoration: TextDecoration.underline,
                   decorationColor: Colors.white,
@@ -455,7 +464,7 @@ class _LandingScreenState extends State<LandingScreen>
               children: [
                 Icon(
                   icon,
-                  color: Colors.white,
+                  color: context.onSurfaceColor,
                   size: 28,
                 ),
                 const SizedBox(height: 4),

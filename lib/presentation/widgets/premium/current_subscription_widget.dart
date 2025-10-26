@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../data/models/premium.dart';
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 class CurrentSubscriptionWidget extends StatelessWidget {
   final UserSubscription? subscription;
@@ -41,7 +42,7 @@ class CurrentSubscriptionWidget extends StatelessWidget {
                 if (onManageSubscription != null)
                   TextButton(
                     onPressed: onManageSubscription,
-                    child: const Text('Manage'),
+                    child: Text('Manage'),
                   ),
               ],
             ),
@@ -66,7 +67,7 @@ class CurrentSubscriptionWidget extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: Colors.grey[200],
+            color: context.outlineColor.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(20),
           ),
           child: Text(
@@ -74,7 +75,7 @@ class CurrentSubscriptionWidget extends StatelessWidget {
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.bold,
-              color: Colors.grey[700],
+              color: context.onSurfaceVariantColor,
             ),
           ),
         ),
@@ -92,7 +93,9 @@ class CurrentSubscriptionWidget extends StatelessWidget {
           'Upgrade to unlock premium features and enhance your dating experience.',
           style: Theme.of(
             context,
-          ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+          ).textTheme.bodyMedium?.copyWith(
+            color: context.onSurfaceVariantColor,
+          ),
         ),
 
         const SizedBox(height: 16),
@@ -103,13 +106,13 @@ class CurrentSubscriptionWidget extends StatelessWidget {
             onPressed: onManageSubscription,
             style: ElevatedButton.styleFrom(
               backgroundColor: PulseColors.primary,
-              foregroundColor: Colors.white,
+              foregroundColor: context.onSurfaceColor,
               padding: const EdgeInsets.symmetric(vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            child: const Text(
+            child: Text(
               'Upgrade Now',
               style: TextStyle(fontWeight: FontWeight.w600),
             ),
@@ -121,7 +124,7 @@ class CurrentSubscriptionWidget extends StatelessWidget {
 
   Widget _buildActivePlan(BuildContext context, UserSubscription subscription) {
     final isActive = subscription.status == SubscriptionStatus.active;
-    final statusColor = _getStatusColor(subscription.status);
+    final statusColor = _getStatusColor(context, subscription.status);
     final statusText = _getStatusText(subscription.status);
 
     return Column(
@@ -165,7 +168,11 @@ class CurrentSubscriptionWidget extends StatelessWidget {
         if (subscription.nextBillingDate != null) ...[
           Row(
             children: [
-              Icon(Icons.schedule, size: 16, color: Colors.grey[600]),
+              Icon(
+                Icons.schedule,
+                size: 16,
+                color: context.onSurfaceVariantColor,
+              ),
               const SizedBox(width: 6),
               Text(
                 isActive
@@ -173,7 +180,9 @@ class CurrentSubscriptionWidget extends StatelessWidget {
                     : 'Expires: ${_formatDate(subscription.nextBillingDate!)}',
                 style: Theme.of(
                   context,
-                ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+                ).textTheme.bodyMedium?.copyWith(
+                  color: context.onSurfaceVariantColor,
+                ),
               ),
             ],
           ),
@@ -182,13 +191,19 @@ class CurrentSubscriptionWidget extends StatelessWidget {
 
         Row(
           children: [
-            Icon(Icons.calendar_today, size: 16, color: Colors.grey[600]),
+            Icon(
+              Icons.calendar_today,
+              size: 16,
+              color: context.onSurfaceVariantColor,
+            ),
             const SizedBox(width: 6),
             Text(
               'Started: ${_formatDate(subscription.startDate)}',
               style: Theme.of(
                 context,
-              ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+              ).textTheme.bodyMedium?.copyWith(
+                color: context.onSurfaceVariantColor,
+              ),
             ),
           ],
         ),
@@ -243,16 +258,16 @@ class CurrentSubscriptionWidget extends StatelessWidget {
     );
   }
 
-  Color _getStatusColor(SubscriptionStatus status) {
+  Color _getStatusColor(BuildContext context, SubscriptionStatus status) {
     switch (status) {
       case SubscriptionStatus.active:
         return Colors.green;
       case SubscriptionStatus.cancelled:
         return Colors.red;
       case SubscriptionStatus.expired:
-        return Colors.grey;
+        return context.outlineColor;
       case SubscriptionStatus.inactive:
-        return Colors.grey;
+        return context.outlineColor;
       case SubscriptionStatus.pastDue:
         return Colors.orange;
       case SubscriptionStatus.suspended:

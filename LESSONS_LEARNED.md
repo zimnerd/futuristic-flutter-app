@@ -4539,7 +4539,7 @@ void _initiateCall(BuildContext context, bool isVideo) {
       title: Text(isVideo ? 'Video Call' : 'Voice Call'),
       content: Text('${isVideo ? 'Video'} calling ${widget.otherUserName}...'),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+        TextButton(onPressed: () => Navigator.pop(context), child: Text('Cancel')),
       ],
     ),
   );
@@ -4606,11 +4606,11 @@ void _initiateCall(BuildContext context, bool isVideo) {
 ```dart
 IconButton(
   onPressed: () => _initiateCall(context, false), // Audio call
-  icon: const Icon(Icons.phone),
+  icon:  Icon(Icons.phone),
 ),
 IconButton(
   onPressed: () => _initiateCall(context, true), // Video call
-  icon: const Icon(Icons.videocam),
+  icon:  Icon(Icons.videocam),
 ),
 ```
 
@@ -5606,8 +5606,8 @@ try {
 showDialog(
   context: context,
   builder: (context) => AlertDialog(
-    title: const Text('Video Call'),
-    content: const Text('Video calling will be implemented with WebRTC integration.'),
+    title: Text('Video Call'),
+    content: Text('Video calling will be implemented with WebRTC integration.'),
     // ...
   ),
 );
@@ -5616,8 +5616,8 @@ showDialog(
 showDialog(
   context: context,
   builder: (context) => AlertDialog(
-    title: const Text('Voice Call'),
-    content: const Text('Voice calling will be implemented with WebRTC integration.'),
+    title: Text('Voice Call'),
+    content: Text('Voice calling will be implemented with WebRTC integration.'),
     // ...
   ),
 );
@@ -5642,7 +5642,7 @@ showDialog(
     actions: [
       TextButton(
         onPressed: () => Navigator.pop(context),
-        child: const Text('Cancel'),
+        child: Text('Cancel'),
       ),
       ElevatedButton(
         onPressed: () {
@@ -5652,7 +5652,7 @@ showDialog(
         style: ElevatedButton.styleFrom(
           backgroundColor: PulseColors.primary,
         ),
-        child: const Text('Start Call'),
+        child: Text('Start Call'),
       ),
     ],
   ),
@@ -5675,7 +5675,7 @@ showDialog(
     actions: [
       TextButton(
         onPressed: () => Navigator.pop(context),
-        child: const Text('Cancel'),
+        child: Text('Cancel'),
       ),
       ElevatedButton(
         onPressed: () {
@@ -5685,7 +5685,7 @@ showDialog(
         style: ElevatedButton.styleFrom(
           backgroundColor: PulseColors.primary,
         ),
-        child: const Text('Start Call'),
+        child: Text('Start Call'),
       ),
     ],
   ),
@@ -6565,8 +6565,8 @@ class _InterestsSelectorState extends State<InterestsSelector>
                             const RefreshInterests(),
                           );
                     },
-                    icon: const Icon(Icons.refresh),
-                    label: const Text('Retry'),
+                    icon:  Icon(Icons.refresh),
+                    label: Text('Retry'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: PulseColors.primary,
                       foregroundColor: Colors.white,
@@ -6598,7 +6598,7 @@ class _InterestsSelectorState extends State<InterestsSelector>
                     controller: _searchController,
                     decoration: InputDecoration(
                       hintText: 'Search interests...',
-                      prefixIcon: const Icon(Icons.search),
+                      prefixIcon:  Icon(Icons.search),
                     ),
                   ),
                 ),
@@ -9148,7 +9148,7 @@ Widget _buildUploadingPhotoCard(PhotoUploadProgress progress, {Key? key}) {
               color: PulseColors.success.withValues(alpha: 0.9),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.check_circle, color: Colors.white, size: 48),
+            child:  Icon(Icons.check_circle, color: Colors.white, size: 48),
           ),
         ),
 
@@ -9163,21 +9163,21 @@ Widget _buildUploadingPhotoCard(PhotoUploadProgress progress, {Key? key}) {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.error_outline, color: PulseColors.error, size: 32),
-                const Text('Upload Failed', style: TextStyle(color: Colors.white)),
+                 Icon(Icons.error_outline, color: PulseColors.error, size: 32),
+                Text('Upload Failed', style: TextStyle(color: Colors.white)),
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     ElevatedButton.icon(
                       onPressed: () => widget.onRetryUpload!(progress.tempId),
-                      icon: const Icon(Icons.refresh),
-                      label: const Text('Retry'),
+                      icon:  Icon(Icons.refresh),
+                      label: Text('Retry'),
                     ),
                     IconButton(
                       onPressed: () => context.read<ProfileBloc>().add(
                         ClearUploadProgress(tempId: progress.tempId),
                       ),
-                      icon: const Icon(Icons.close),
+                      icon:  Icon(Icons.close),
                     ),
                   ],
                 ),
@@ -11949,7 +11949,7 @@ PulseButton(
   text: 'Get Started',
   variant: PulseButtonVariant.primary,
   onPressed: () => context.goToRegister(),
-  icon: const Icon(Icons.arrow_forward),
+  icon:  Icon(Icons.arrow_forward),
   fullWidth: true,
 )
 
@@ -13664,9 +13664,9 @@ class ChatImageMessage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline, color: Colors.white, size: 48),
+             Icon(Icons.error_outline, color: Colors.white, size: 48),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Upload Failed',
               style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
             ),
@@ -13677,8 +13677,8 @@ class ChatImageMessage extends StatelessWidget {
                 // Retry button
                 ElevatedButton.icon(
                   onPressed: onRetryUpload,
-                  icon: const Icon(Icons.refresh),
-                  label: const Text('Retry'),
+                  icon:  Icon(Icons.refresh),
+                  label: Text('Retry'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
                     foregroundColor: Colors.red,
@@ -13688,8 +13688,8 @@ class ChatImageMessage extends StatelessWidget {
                 // Delete button
                 OutlinedButton.icon(
                   onPressed: onDeleteUpload,
-                  icon: const Icon(Icons.delete),
-                  label: const Text('Delete'),
+                  icon:  Icon(Icons.delete),
+                  label: Text('Delete'),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.white,
                     side: const BorderSide(color: Colors.white),
@@ -13739,11 +13739,11 @@ class ChatImageViewer extends StatefulWidget {
         title: Text('${_currentIndex + 1} / ${widget.images.length}'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.download),
+            icon:  Icon(Icons.download),
             onPressed: () => _saveImage(context),
           ),
           IconButton(
-            icon: const Icon(Icons.share),
+            icon:  Icon(Icons.share),
             onPressed: () => _shareImage(context),
           ),
         ],
@@ -14655,8 +14655,8 @@ import '../profile/profile_details_screen.dart';
 ```dart
 // ❌ WRONG - No explicit text colors on white background
 SwitchListTile(
-  title: const Text('Verified only'), // Uses theme default (may be white!)
-  subtitle: const Text('Show only verified users'),
+  title: Text('Verified only'), // Uses theme default (may be white!)
+  subtitle: Text('Show only verified users'),
   value: _verifiedOnly,
   onChanged: (value) { setState(() => _verifiedOnly = value); },
 )
@@ -15041,4 +15041,134 @@ When refactoring call/real-time systems:
 - Backend logs showing REST API usage
 - Agora console showing channel usage patterns
 - User testing feedback
+
+---
+
+## 🎨 Dark/Light Theme Architecture (October 2025)
+
+### ✅ THE GOLDEN RULE: ALWAYS USE THEME EXTENSIONS
+
+**Never hardcode colors. EVER.** Use `context.*Color` properties from `core/theme/theme_extensions.dart`.
+
+```dart
+// ✅ CORRECT - Adapts to dark/light mode automatically
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
+
+return Container(
+  color: context.surfaceColor,                    // White in light, Navy in dark
+  child: Text('Hello', style: TextStyle(
+    color: context.textPrimary,                   // Auto-adjusts contrast
+  )),
+);
+
+// ❌ WRONG - Breaks dark mode visibility
+return Container(
+  color: Colors.white,                            // Always white - no dark mode
+  child: Text('Hello', style: TextStyle(
+    color: Colors.black,                          // Always black - invisible on dark
+  )),
+);
+```
+
+### Available Theme Properties
+
+**Surface Colors:**
+- `context.surfaceColor` - Main background (Light: #FFFFFF, Dark: #0A0F2D)
+- `context.surfaceElevated` - Elevated cards (Light: #FFFFFF, Dark: #202124)
+- `context.backgroundColor` - Page background (Light: #F8F9FA, Dark: #0A0F2D)
+- `context.surfaceVariantColor` - Secondary surfaces
+
+**Text Hierarchy (WCAG Compliant):**
+- `context.textPrimary` - Headlines, primary content (7:1 contrast)
+- `context.textSecondary` - Subtitles, metadata (4.5:1 contrast)
+- `context.textTertiary` - Hints, disabled text (3:1 contrast)
+- `context.textOnPrimary` - Text on colored buttons
+- `context.onSurfaceColor` - Alias for textPrimary
+
+**Borders & Dividers:**
+- `context.borderColor` - Form field borders (Light: #DADCE0, Dark: #5F6368)
+- `context.borderLight` - Subtle dividers (Light: #DADCE0, Dark: #3C4043)
+- `context.dividerColor` - List separators (Light: 0.3 opacity, Dark: 0.2 opacity)
+- `context.outlineColor` - Alias for borderColor
+
+**Interactive Elements:**
+- `context.primaryColor` - Buttons, primary actions (#6E3BFF)
+- `context.accentColor` - Secondary highlights (#00C2FF)
+- `context.successColor` - Confirmations (#00D95F)
+- `context.errorColor` - Destructive actions (#FF3B5C)
+- `context.disabledColor` - Inactive elements
+
+**Utilities:**
+- `context.isDarkMode` - Boolean check (e.g., `if (context.isDarkMode) {...}`)
+- `context.colorScheme` - Access Material 3 ColorScheme directly
+
+### Common Fixes Applied (Oct 2025)
+
+**1. Deprecated TabBar Properties**
+```dart
+// ❌ OLD (Flutter < 3.16)
+TabBar(
+  labelColor: Colors.white,
+  unselectedLabelColor: Colors.white70,
+)
+
+// ✅ NEW (Flutter 3.16+, Material 3)
+TabBar(
+  labelStyle: const TextStyle(color: Colors.white),
+  unselectedLabelStyle: const TextStyle(color: Colors.white70),
+)
+```
+
+**2. Hardcoded White/Black Colors**
+```dart
+// ❌ Before: Not theme-aware
+Container(color: Colors.white)
+Text('Label', style: TextStyle(color: Colors.black))
+
+// ✅ After: Theme-aware
+Container(color: context.surfaceColor)
+Text('Label', style: TextStyle(color: context.textPrimary))
+```
+
+**3. Border Colors Without Theme**
+```dart
+// ❌ Before
+Border.all(color: Colors.grey[300])
+
+// ✅ After
+Border.all(color: context.borderLight)
+```
+
+### Files Requiring This Pattern
+
+**Already Updated:**
+- `lib/presentation/widgets/common/pulse_loading.dart` ✅
+- `lib/presentation/screens/matching/ai_matching_screen.dart` ✅
+- `lib/features/events/presentation/screens/event_communication_screen.dart` ✅
+- `lib/features/group_chat/presentation/screens/group_list_screen.dart` ✅
+- `lib/presentation/widgets/ai/ai_insights_dashboard.dart` ✅
+- `lib/presentation/widgets/profile/interests_selector.dart` ✅
+- `lib/presentation/widgets/call/video_effects_panel.dart` ✅
+
+**Screens Still Using Hardcoded Colors (Need Updates):**
+- `lib/presentation/screens/discovery/discovery_screen.dart` - Many hardcoded whites
+- `lib/features/group_chat/presentation/screens/group_list_screen.dart` - Many hardcoded whites
+- `lib/presentation/widgets/messaging/conversation_picker_sheet.dart` - White hardcoded
+
+### Checklist for New Code
+
+- [ ] Import `package:pulse_dating_app/core/theme/theme_extensions.dart`
+- [ ] Never use `Colors.white`, `Colors.black`, `Colors.grey` for text/backgrounds
+- [ ] Use `context.surfaceColor` for backgrounds
+- [ ] Use `context.textPrimary` for main text, `context.textSecondary` for secondary
+- [ ] Use `context.borderColor` for borders
+- [ ] Replace deprecated `labelColor`/`unselectedLabelColor` with `labelStyle`/`unselectedLabelStyle`
+- [ ] Test in both light AND dark mode before submitting
+
+### Why This Matters
+
+1. **Accessibility**: Ensures WCAG AA/AAA contrast ratios in both themes
+2. **Brand Consistency**: Dark Navy background (#0A0F2D) matches web design
+3. **Maintenance**: Single source of truth - change theme extensions, all screens update
+4. **User Experience**: No more invisible text or jarring color shifts in dark mode
 

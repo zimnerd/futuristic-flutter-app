@@ -7,6 +7,7 @@ import '../../../blocs/call_bloc.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/pulse_toast.dart';
 import '../../../data/models/call_model.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 class CallScreen extends StatefulWidget {
   final CallModel? initialCall;
@@ -100,7 +101,7 @@ class _CallScreenState extends State<CallScreen> {
                 height: 160,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.white, width: 2),
+                  border: Border.all(color: context.onSurfaceColor, width: 2),
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(10),
@@ -133,7 +134,7 @@ class _CallScreenState extends State<CallScreen> {
     return Container(
       width: double.infinity,
       height: double.infinity,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
@@ -148,23 +149,23 @@ class _CallScreenState extends State<CallScreen> {
             backgroundImage: call.receiverAvatar != null
                 ? CachedNetworkImageProvider(call.receiverAvatar!)
                 : null,
-            backgroundColor: Colors.white.withValues(alpha: 0.2),
+            backgroundColor: context.surfaceColor.withValues(alpha: 0.2),
             child: call.receiverAvatar == null
                 ? Text(
                     call.receiverName[0].toUpperCase(),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 48,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: context.onSurfaceColor,
                     ),
                   )
                 : null,
           ),
           const SizedBox(height: 24),
-          const Text(
+          Text(
             'Waiting for video...',
             style: TextStyle(
-              color: Colors.white,
+              color: context.onSurfaceColor,
               fontSize: 18,
               fontWeight: FontWeight.w500,
             ),
@@ -178,7 +179,7 @@ class _CallScreenState extends State<CallScreen> {
     return Container(
       width: double.infinity,
       height: double.infinity,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
@@ -193,14 +194,14 @@ class _CallScreenState extends State<CallScreen> {
             backgroundImage: call.receiverAvatar != null
                 ? CachedNetworkImageProvider(call.receiverAvatar!)
                 : null,
-            backgroundColor: Colors.white.withValues(alpha: 0.2),
+            backgroundColor: context.surfaceColor.withValues(alpha: 0.2),
             child: call.receiverAvatar == null
                 ? Text(
                     call.receiverName[0].toUpperCase(),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 60,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: context.onSurfaceColor,
                     ),
                   )
                 : null,
@@ -208,8 +209,8 @@ class _CallScreenState extends State<CallScreen> {
           const SizedBox(height: 32),
           Text(
             call.receiverName,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: context.onSurfaceColor,
               fontSize: 28,
               fontWeight: FontWeight.w600,
             ),
@@ -236,7 +237,7 @@ class _CallScreenState extends State<CallScreen> {
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            icon: Icon(Icons.arrow_back, color: Colors.white),
             onPressed: () {
               context.read<CallBloc>().add(const EndCall());
             },
@@ -245,8 +246,8 @@ class _CallScreenState extends State<CallScreen> {
             child: Text(
               statusText,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: context.onSurfaceColor,
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
@@ -308,7 +309,7 @@ class _CallScreenState extends State<CallScreen> {
               ),
               _buildControlButton(
                 icon: Icons.flip_camera_ios,
-                backgroundColor: Colors.white.withValues(alpha: 0.3),
+                backgroundColor: context.surfaceColor.withValues(alpha: 0.3),
                 onPressed: () {
                   context.read<CallBloc>().add(const SwitchCamera());
                 },
@@ -382,7 +383,7 @@ class _CallScreenState extends State<CallScreen> {
       height: size,
       decoration: BoxDecoration(color: backgroundColor, shape: BoxShape.circle),
       child: IconButton(
-        icon: Icon(icon, color: Colors.white, size: size * 0.4),
+        icon: Icon(icon, color: context.onSurfaceColor, size: size * 0.4),
         onPressed: onPressed,
       ),
     );

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../domain/entities/message.dart';
 import 'media_viewer.dart';
 import '../common/robust_network_image.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Modern grid widget for displaying multiple media items in chat messages
 class MediaGrid extends StatelessWidget {
@@ -172,16 +173,16 @@ class MediaGrid extends StatelessWidget {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.photo_library_rounded,
-                                color: Colors.white,
+                                color: context.onSurfaceColor,
                                 size: 32,
                               ),
                               const SizedBox(height: 4),
                               Text(
                                 '+$remainingCount',
-                                style: const TextStyle(
-                                  color: Colors.white,
+                                style: TextStyle(
+                                  color: context.onSurfaceColor,
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                 ),

@@ -4,6 +4,7 @@ import '../../../domain/entities/message.dart';
 import '../../theme/pulse_colors.dart';
 import 'chat_image_viewer.dart';
 import '../common/robust_network_image.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Enhanced chat image message widget with upload status, captions, and actions
 class ChatImageMessage extends StatelessWidget {
@@ -79,11 +80,11 @@ class ChatImageMessage extends StatelessWidget {
 
                 // Upload status overlay
                 if (mediaAttachment.uploadStatus != MediaUploadStatus.uploaded)
-                  _buildUploadOverlay(mediaAttachment),
+                  _buildUploadOverlay(context, mediaAttachment),
 
                 // Failed upload retry button
                 if (mediaAttachment.uploadStatus == MediaUploadStatus.failed)
-                  _buildFailedOverlay(),
+                  _buildFailedOverlay(context, mediaAttachment),
               ],
             ),
 
@@ -111,7 +112,7 @@ class ChatImageMessage extends StatelessWidget {
     );
   }
 
-  Widget _buildUploadOverlay(MediaAttachment attachment) {
+  Widget _buildUploadOverlay(BuildContext context, MediaAttachment attachment) {
     return Positioned.fill(
       child: Container(
         decoration: BoxDecoration(
@@ -136,8 +137,8 @@ class ChatImageMessage extends StatelessWidget {
                 attachment.uploadStatus == MediaUploadStatus.uploading
                     ? 'Uploading...'
                     : 'Upload failed',
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: context.onSurfaceColor,
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
@@ -149,7 +150,7 @@ class ChatImageMessage extends StatelessWidget {
     );
   }
 
-  Widget _buildFailedOverlay() {
+  Widget _buildFailedOverlay(BuildContext context, MediaAttachment attachment) {
     return Positioned.fill(
       child: Container(
         decoration: BoxDecoration(
@@ -160,21 +161,25 @@ class ChatImageMessage extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.error_outline, color: Colors.white, size: 48),
+              Icon(
+                Icons.error_outline,
+                color: context.onSurfaceColor,
+                size: 48,
+              ),
               const SizedBox(height: 16),
               ElevatedButton.icon(
                 onPressed: onRetryUpload,
-                icon: const Icon(Icons.refresh),
-                label: const Text('Retry'),
+                icon: Icon(Icons.refresh),
+                label: Text('Retry'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: PulseColors.primary,
-                  foregroundColor: Colors.white,
+                  foregroundColor: context.onSurfaceColor,
                 ),
               ),
               const SizedBox(height: 8),
               TextButton(
                 onPressed: onDeleteUpload,
-                child: const Text(
+                child: Text(
                   'Delete',
                   style: TextStyle(color: Colors.white70),
                 ),
@@ -225,8 +230,8 @@ class ChatImageMessage extends StatelessWidget {
             // View full screen
             if (attachment.uploadStatus == MediaUploadStatus.uploaded)
               ListTile(
-                leading: const Icon(Icons.fullscreen),
-                title: const Text('View Full Screen'),
+                leading: Icon(Icons.fullscreen),
+                title: Text('View Full Screen'),
                 onTap: () {
                   Navigator.pop(context);
                   onViewFullScreen();
@@ -237,8 +242,8 @@ class ChatImageMessage extends StatelessWidget {
             if (attachment.uploadStatus == MediaUploadStatus.uploaded &&
                 onSaveToGallery != null)
               ListTile(
-                leading: const Icon(Icons.download),
-                title: const Text('Save to Gallery'),
+                leading: Icon(Icons.download),
+                title: Text('Save to Gallery'),
                 onTap: () {
                   Navigator.pop(context);
                   onSaveToGallery();
@@ -249,8 +254,8 @@ class ChatImageMessage extends StatelessWidget {
             if (attachment.uploadStatus == MediaUploadStatus.failed &&
                 onRetryUpload != null)
               ListTile(
-                leading: const Icon(Icons.refresh),
-                title: const Text('Retry Upload'),
+                leading: Icon(Icons.refresh),
+                title: Text('Retry Upload'),
                 onTap: () {
                   Navigator.pop(context);
                   onRetryUpload();
@@ -260,10 +265,10 @@ class ChatImageMessage extends StatelessWidget {
             // Delete message
             if (onDeleteMessage != null)
               ListTile(
-                leading: const Icon(Icons.delete, color: Colors.red),
-                title: const Text(
+                leading: Icon(Icons.delete, color: context.errorColor),
+                title: Text(
                   'Delete Message',
-                  style: TextStyle(color: Colors.red),
+                  style: TextStyle(color: context.errorColor),
                 ),
                 onTap: () {
                   Navigator.pop(context);

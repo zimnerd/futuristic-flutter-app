@@ -13,6 +13,7 @@ import '../../widgets/common/pulse_loading_widget.dart';
 import '../../widgets/common/pulse_error_widget.dart';
 import '../../widgets/premium/premium_feature_card.dart';
 import '../../widgets/premium/pricing_card.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Premium Features Showcase Screen
 ///
@@ -278,13 +279,13 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
                     child: Row(
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.close, color: Colors.white),
+                          icon: Icon(Icons.close, color: Colors.white),
                           onPressed: () => context.pop(),
                         ),
                         const Spacer(),
                         TextButton(
                           onPressed: () => context.pop(),
-                          child: const Text(
+                          child: Text(
                             'Maybe Later',
                             style: TextStyle(color: Colors.white70),
                           ),
@@ -306,22 +307,22 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
                             color: Colors.white.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.workspace_premium,
                             size: 50,
-                            color: Colors.white,
+                            color: context.onSurfaceColor,
                           ),
                         ),
 
                         const SizedBox(height: 24),
 
                         // Headline
-                        const Text(
+                        Text(
                           'Upgrade to Premium',
                           style: TextStyle(
                             fontSize: 32,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: context.onSurfaceColor,
                             height: 1.2,
                           ),
                           textAlign: TextAlign.center,
@@ -517,7 +518,7 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
               flex: 2,
               child: Text(
                 feature,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
@@ -587,7 +588,7 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'Money-Back Guarantee',
                             style: TextStyle(
                               fontSize: 15,
@@ -621,7 +622,7 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'Secure Payments',
                             style: TextStyle(
                               fontSize: 15,
@@ -659,7 +660,7 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'Cancel Anytime',
                             style: TextStyle(
                               fontSize: 15,
@@ -737,7 +738,8 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
                     Row(
                       children: List.generate(
                         testimonial['rating'] as int,
-                        (index) => const Icon(
+                        (index) =>
+                            Icon(
                           Icons.star,
                           color: Colors.amber,
                           size: 16,
@@ -747,7 +749,7 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
                     const SizedBox(height: 8),
                     Text(
                       testimonial['text'] as String,
-                      style: const TextStyle(fontSize: 14, height: 1.4),
+                      style: TextStyle(fontSize: 14, height: 1.4),
                     ),
                     const SizedBox(height: 8),
                     Text(
@@ -807,7 +809,7 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
       onPressed: () => _handleSubscribe(plan, type),
       style: ElevatedButton.styleFrom(
         backgroundColor: PulseColors.primary,
-        foregroundColor: Colors.white,
+        foregroundColor: context.onSurfaceColor,
         padding: const EdgeInsets.symmetric(vertical: 16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         elevation: 2,
@@ -815,12 +817,12 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text(
+          Text(
             'Upgrade Now',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
           const SizedBox(width: 8),
-          const Icon(Icons.arrow_forward, size: 20),
+          Icon(Icons.arrow_forward, size: 20),
         ],
       ),
     );
@@ -887,7 +889,7 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
 
               Text(
                 plan.formattedPrice,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                 ),
@@ -904,7 +906,7 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'What you\'ll get:',
                       style: TextStyle(
                         fontSize: 14,
@@ -928,7 +930,7 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
                                 Expanded(
                                   child: Text(
                                     feature,
-                                    style: const TextStyle(fontSize: 13),
+                                    style: TextStyle(fontSize: 13),
                                   ),
                                 ),
                               ],
@@ -951,7 +953,7 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         side: BorderSide(color: PulseColors.outline),
                       ),
-                      child: const Text('Cancel'),
+                      child: Text('Cancel'),
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -961,10 +963,10 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
                       onPressed: () => _confirmPurchase(plan),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: PulseColors.primary,
-                        foregroundColor: Colors.white,
+                        foregroundColor: context.onSurfaceColor,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
-                      child: const Text('Subscribe'),
+                      child: Text('Subscribe'),
                     ),
                   ),
                 ],
@@ -1065,7 +1067,7 @@ class _PremiumShowcaseScreenState extends State<PremiumShowcaseScreen>
                   children: [
                     Text(
                       description,
-                      style: const TextStyle(fontSize: 16, height: 1.5),
+                      style: TextStyle(fontSize: 16, height: 1.5),
                     ),
                     const SizedBox(height: 16),
                     Text(

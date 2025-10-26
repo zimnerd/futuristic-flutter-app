@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../data/models/photo_upload_progress.dart';
 import '../../../data/services/photo_upload_service.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Widget to display photo upload progress
 class PhotoUploadProgressIndicator extends StatelessWidget {
@@ -36,9 +37,9 @@ class PhotoUploadProgressIndicator extends StatelessWidget {
                 // Progress bar
                 LinearProgressIndicator(
                   value: progress.progress,
-                  backgroundColor: Colors.grey[200],
+                  backgroundColor: context.outlineColor.withValues(alpha: 0.15),
                   valueColor: AlwaysStoppedAnimation<Color>(
-                    _getStatusColor(progress.status),
+                    _getStatusColor(context, progress.status),
                   ),
                 ),
                 if (showDetails) ...[
@@ -49,7 +50,7 @@ class PhotoUploadProgressIndicator extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          _getStatusIcon(progress.status),
+                          _getStatusIcon(context, progress.status),
                           const SizedBox(width: 8),
                           Text(
                             _getStatusText(progress.status),
@@ -73,7 +74,9 @@ class PhotoUploadProgressIndicator extends StatelessWidget {
                       progress.error!,
                       style: Theme.of(
                         context,
-                      ).textTheme.bodySmall?.copyWith(color: Colors.red),
+                      ).textTheme.bodySmall?.copyWith(
+                        color: context.errorColor,
+                      ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -87,10 +90,10 @@ class PhotoUploadProgressIndicator extends StatelessWidget {
     );
   }
 
-  Color _getStatusColor(UploadStatus status) {
+  Color _getStatusColor(BuildContext context, UploadStatus status) {
     switch (status) {
       case UploadStatus.pending:
-        return Colors.grey;
+        return context.outlineColor;
       case UploadStatus.uploading:
       case UploadStatus.processing:
         return Colors.blue;
@@ -103,19 +106,19 @@ class PhotoUploadProgressIndicator extends StatelessWidget {
     }
   }
 
-  Icon _getStatusIcon(UploadStatus status) {
+  Icon _getStatusIcon(BuildContext context, UploadStatus status) {
     switch (status) {
       case UploadStatus.pending:
-        return const Icon(Icons.schedule, size: 16, color: Colors.grey);
+        return Icon(Icons.schedule, size: 16, color: context.outlineColor);
       case UploadStatus.uploading:
       case UploadStatus.processing:
-        return const Icon(Icons.cloud_upload, size: 16, color: Colors.blue);
+        return Icon(Icons.cloud_upload, size: 16, color: Colors.blue);
       case UploadStatus.completed:
-        return const Icon(Icons.check_circle, size: 16, color: Colors.green);
+        return Icon(Icons.check_circle, size: 16, color: Colors.green);
       case UploadStatus.failed:
-        return const Icon(Icons.error, size: 16, color: Colors.red);
+        return Icon(Icons.error, size: 16, color: context.errorColor);
       case UploadStatus.cancelled:
-        return const Icon(Icons.cancel, size: 16, color: Colors.orange);
+        return Icon(Icons.cancel, size: 16, color: Colors.orange);
     }
   }
 
@@ -183,7 +186,7 @@ class BatchUploadProgressIndicator extends StatelessWidget {
                 // Overall progress bar
                 LinearProgressIndicator(
                   value: batchProgress.overallProgress,
-                  backgroundColor: Colors.grey[200],
+                  backgroundColor: context.outlineColor.withValues(alpha: 0.15),
                   minHeight: 8,
                 ),
                 const SizedBox(height: 8),
@@ -207,7 +210,7 @@ class BatchUploadProgressIndicator extends StatelessWidget {
                         context,
                         '${batchProgress.failedCount}',
                         'Failed',
-                        color: Colors.red,
+                        color: context.errorColor,
                       ),
                   ],
                 ),

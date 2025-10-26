@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/constants/api_constants.dart';
 
@@ -122,13 +123,13 @@ class _ParticipantPickerDialogState extends State<ParticipantPickerDialog> {
               padding: const EdgeInsets.all(20),
               child: Row(
                 children: [
-                  const Icon(Icons.person_add, size: 24),
+                  Icon(Icons.person_add, size: 24),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'Add Participants',
                           style: TextStyle(
                             fontSize: 20,
@@ -148,7 +149,7 @@ class _ParticipantPickerDialogState extends State<ParticipantPickerDialog> {
                   ),
                   IconButton(
                     onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close),
+                    icon: Icon(Icons.close),
                   ),
                 ],
               ),
@@ -166,10 +167,10 @@ class _ParticipantPickerDialogState extends State<ParticipantPickerDialog> {
                 },
                 decoration: InputDecoration(
                   hintText: 'Search users...',
-                  prefixIcon: const Icon(Icons.search),
+                  prefixIcon: Icon(Icons.search),
                   suffixIcon: _searchController.text.isNotEmpty
                       ? IconButton(
-                          icon: const Icon(Icons.clear),
+                          icon: Icon(Icons.clear),
                           onPressed: () {
                             _searchController.clear();
                             setState(() {});
@@ -203,7 +204,7 @@ class _ParticipantPickerDialogState extends State<ParticipantPickerDialog> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text('Cancel'),
+                      child: Text('Cancel'),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -239,7 +240,7 @@ class _ParticipantPickerDialogState extends State<ParticipantPickerDialog> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text('Add'),
+                      child: Text('Add'),
                     ),
                   ),
                 ],
@@ -261,7 +262,7 @@ class _ParticipantPickerDialogState extends State<ParticipantPickerDialog> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline, size: 48, color: Colors.red),
+            Icon(Icons.error_outline, size: 48, color: Colors.red),
             const SizedBox(height: 16),
             Text(
               _error!,
@@ -271,8 +272,8 @@ class _ParticipantPickerDialogState extends State<ParticipantPickerDialog> {
             const SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: _loadUsers,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
+              icon: Icon(Icons.refresh),
+              label: Text('Retry'),
             ),
           ],
         ),
@@ -286,13 +287,20 @@ class _ParticipantPickerDialogState extends State<ParticipantPickerDialog> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.person_search, size: 64, color: Colors.grey[400]),
+            Icon(
+              Icons.person_search,
+              size: 64,
+              color: context.outlineColor.withValues(alpha: 0.5),
+            ),
             const SizedBox(height: 16),
             Text(
               _searchController.text.isEmpty
                   ? 'No users found'
                   : 'No users match your search',
-              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+              style: TextStyle(
+                fontSize: 16,
+                color: context.onSurfaceVariantColor,
+              ),
             ),
           ],
         ),
@@ -357,7 +365,7 @@ class _ParticipantPickerDialogState extends State<ParticipantPickerDialog> {
                     width: 2,
                   ),
                 ),
-                child: const Icon(Icons.check, size: 12, color: Colors.white),
+                child: Icon(Icons.check, size: 12, color: Colors.white),
               ),
             ),
         ],
@@ -372,7 +380,7 @@ class _ParticipantPickerDialogState extends State<ParticipantPickerDialog> {
       subtitle: location != null
           ? Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.location_on,
                   size: 12,
                   color: Color(0xFF5F6368),

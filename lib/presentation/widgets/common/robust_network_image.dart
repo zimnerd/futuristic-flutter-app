@@ -33,7 +33,7 @@ class RobustNetworkImage extends StatelessWidget {
   Widget build(BuildContext context) {
     // If no URL provided, show error widget immediately
     if (imageUrl == null || imageUrl!.isEmpty) {
-      return _buildErrorWidget();
+      return _buildErrorWidget(context);
     }
 
     Widget imageWidget = CachedNetworkImage(
@@ -41,8 +41,8 @@ class RobustNetworkImage extends StatelessWidget {
       width: width,
       height: height,
       fit: fit,
-      placeholder: (context, url) => _buildPlaceholder(),
-      errorWidget: (context, url, error) => _buildErrorWidget(),
+      placeholder: (context, url) => _buildPlaceholder(context),
+      errorWidget: (context, url, error) => _buildErrorWidget(context),
       errorListener: (error) {
         // Log 404 and other errors silently instead of throwing exceptions
         debugPrint('Image failed to load: $imageUrl - Error: $error');
@@ -57,7 +57,7 @@ class RobustNetworkImage extends StatelessWidget {
     return imageWidget;
   }
 
-  Widget _buildPlaceholder() {
+  Widget _buildPlaceholder(BuildContext context) {
     // If custom placeholder provided, use it
     if (placeholder != null) {
       return placeholder!;
@@ -95,17 +95,19 @@ class RobustNetworkImage extends StatelessWidget {
     return Container(
       width: width,
       height: height,
-      color: Colors.grey[200],
-      child: const Center(
+      color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.15),
+      child: Center(
         child: CircularProgressIndicator(
           strokeWidth: 2,
-          valueColor: AlwaysStoppedAnimation<Color>(Colors.grey),
+          valueColor: AlwaysStoppedAnimation<Color>(
+            Theme.of(context).colorScheme.outline,
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildErrorWidget() {
+  Widget _buildErrorWidget(BuildContext context) {
     if (errorWidget != null) {
       return errorWidget!;
     }
@@ -118,14 +120,14 @@ class RobustNetworkImage extends StatelessWidget {
         height: height,
         fit: fit,
         errorBuilder: (context, error, stackTrace) =>
-            _buildDefaultErrorWidget(),
+            _buildDefaultErrorWidget(context),
       );
     }
 
-    return _buildDefaultErrorWidget();
+    return _buildDefaultErrorWidget(context);
   }
 
-  Widget _buildDefaultErrorWidget() {
+  Widget _buildDefaultErrorWidget(BuildContext context) {
     return Container(
       width: width,
       height: height,
@@ -135,14 +137,19 @@ class RobustNetworkImage extends StatelessWidget {
         children: [
           Icon(
             Icons.image_not_supported_outlined,
-            color: Colors.grey[400],
+            color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
             size: (width != null && width! < 100) ? 24 : 48,
           ),
           if (width == null || width! >= 100) ...[
             const SizedBox(height: 8),
             Text(
               'Image unavailable',
-              style: TextStyle(color: Colors.grey[500], fontSize: 12),
+              style: TextStyle(
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                fontSize: 12,
+              ),
               textAlign: TextAlign.center,
             ),
           ],
@@ -174,11 +181,13 @@ class ProfileNetworkImage extends StatelessWidget {
       width: size,
       height: size,
       borderRadius: borderRadius ?? BorderRadius.circular(size / 2),
-      errorWidget: _buildAvatarErrorWidget(),
+      errorWidget: Builder(
+        builder: (context) => _buildAvatarErrorWidget(context),
+      ),
     );
   }
 
-  Widget _buildAvatarErrorWidget() {
+  Widget _buildAvatarErrorWidget(BuildContext context) {
     IconData avatarIcon;
     Color avatarColor;
 
@@ -193,7 +202,9 @@ class ProfileNetworkImage extends StatelessWidget {
         break;
       default:
         avatarIcon = Icons.person;
-        avatarColor = Colors.grey[400]!;
+        avatarColor = Theme.of(
+          context,
+        ).colorScheme.outline.withValues(alpha: 0.2);
     }
 
     return Container(
@@ -232,11 +243,13 @@ class EventNetworkImage extends StatelessWidget {
       width: width,
       height: height,
       borderRadius: borderRadius,
-      errorWidget: _buildEventErrorWidget(),
+      errorWidget: Builder(
+        builder: (context) => _buildEventErrorWidget(context),
+      ),
     );
   }
 
-  Widget _buildEventErrorWidget() {
+  Widget _buildEventErrorWidget(BuildContext context) {
     IconData eventIcon;
     Color eventColor;
 
@@ -272,7 +285,9 @@ class EventNetworkImage extends StatelessWidget {
         break;
       default:
         eventIcon = Icons.event;
-        eventColor = Colors.grey[400]!;
+        eventColor = Theme.of(
+          context,
+        ).colorScheme.outline.withValues(alpha: 0.2);
     }
 
     return Container(

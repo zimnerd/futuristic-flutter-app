@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 import '../../../../presentation/blocs/group_chat/group_chat_bloc.dart';
 import '../../../../presentation/widgets/common/pulse_toast.dart';
 import '../../data/group_chat_webrtc_service.dart';
@@ -195,7 +196,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
         color: Colors.grey[900],
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isLocal ? Colors.blue : Colors.grey[700]!,
+          color: isLocal ? Colors.blue : context.onSurfaceVariantColor!,
           width: 2,
         ),
       ),
@@ -234,7 +235,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
                       child: Icon(
                         Icons.person,
                         size: 40,
-                        color: Colors.grey[600],
+                        color: context.onSurfaceVariantColor,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -262,7 +263,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
                         color: Colors.red.withValues(alpha: 0.8),
                         borderRadius: BorderRadius.circular(6),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.mic_off,
                         size: 16,
                         color: Colors.white,
@@ -276,7 +277,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
                         color: Colors.red.withValues(alpha: 0.8),
                         borderRadius: BorderRadius.circular(6),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.videocam_off,
                         size: 16,
                         color: Colors.white,
@@ -300,7 +301,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
                     color: Colors.blue.withValues(alpha: 0.8),
                     borderRadius: BorderRadius.circular(6),
                   ),
-                  child: const Text(
+                  child: Text(
                     'You',
                     style: TextStyle(
                       color: Colors.white,
@@ -439,7 +440,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
             ),
           ),
           const SizedBox(width: 8),
-          const Text(
+          Text(
             'LIVE',
             style: TextStyle(
               color: Colors.white,
@@ -456,12 +457,12 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('End Call?'),
-        content: const Text('Are you sure you want to end this call?'),
+        title: Text('End Call?'),
+        content: Text('Are you sure you want to end this call?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           TextButton(
             onPressed: () {
@@ -469,7 +470,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
               context.read<GroupChatBloc>().add(EndVideoCall());
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('End Call'),
+            child: Text('End Call'),
           ),
         ],
       ),

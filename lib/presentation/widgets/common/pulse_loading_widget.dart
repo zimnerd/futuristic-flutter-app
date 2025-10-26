@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Common loading widget with Pulse branding
 class PulseLoadingWidget extends StatefulWidget {
@@ -89,7 +90,7 @@ class _PulseLoadingWidgetState extends State<PulseLoadingWidget>
                     ),
                     child: Icon(
                       Icons.favorite,
-                      color: Colors.white,
+                      color: context.onSurfaceColor,
                       size: widget.size * 0.4,
                     ),
                   ),
@@ -103,7 +104,9 @@ class _PulseLoadingWidgetState extends State<PulseLoadingWidget>
               widget.message!,
               style: Theme.of(
                 context,
-              ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+              ).textTheme.bodyMedium?.copyWith(
+                color: context.onSurfaceVariantColor,
+              ),
               textAlign: TextAlign.center,
             ),
           ],

@@ -5,6 +5,7 @@ import '../../blocs/safety/safety_bloc.dart';
 import '../../../core/services/service_locator.dart';
 import '../../../core/services/permission_service.dart';
 import '../common/pulse_toast.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Emergency button widget for quick access to safety features
 class EmergencyButtonWidget extends StatelessWidget {
@@ -26,7 +27,7 @@ class EmergencyButtonWidget extends StatelessWidget {
               backgroundColor: isEmergencyMode
                   ? Colors.red
                   : Colors.red.shade600,
-              foregroundColor: Colors.white,
+              foregroundColor: context.onSurfaceColor,
               elevation: isEmergencyMode ? 12 : 6,
               shadowColor: Colors.red.withValues(alpha: 0.5),
               shape: RoundedRectangleBorder(
@@ -47,7 +48,7 @@ class EmergencyButtonWidget extends StatelessWidget {
                   children: [
                     Text(
                       isEmergencyMode ? 'EMERGENCY ACTIVE' : 'EMERGENCY',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
@@ -56,7 +57,7 @@ class EmergencyButtonWidget extends StatelessWidget {
                       isEmergencyMode
                           ? 'Tap to cancel alert'
                           : 'Tap for immediate help',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
                       ),
@@ -87,15 +88,15 @@ class EmergencyButtonWidget extends StatelessWidget {
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: Colors.white,
+          backgroundColor: context.surfaceColor,
           title: Row(
             children: [
-              const Icon(Icons.warning, color: Colors.red),
+              Icon(Icons.warning, color: context.errorColor),
               const SizedBox(width: 8),
               Text(
                 'Emergency Alert',
                 style: TextStyle(
-                  color: Colors.grey.shade900,
+                  color: context.outlineColor.shade900,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -104,7 +105,10 @@ class EmergencyButtonWidget extends StatelessWidget {
           content: Text(
             'This will immediately notify your emergency contacts and send your location. '
             'Are you in immediate danger?',
-            style: TextStyle(color: Colors.grey.shade800, fontSize: 16),
+            style: TextStyle(
+              color: context.outlineColor.shade800,
+              fontSize: 16,
+            ),
           ),
           actions: [
             TextButton(
@@ -112,7 +116,7 @@ class EmergencyButtonWidget extends StatelessWidget {
               child: Text(
                 'Cancel',
                 style: TextStyle(
-                  color: Colors.grey.shade700,
+                  color: context.outlineColor.shade700,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -124,9 +128,9 @@ class EmergencyButtonWidget extends StatelessWidget {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
-                foregroundColor: Colors.white,
+                foregroundColor: context.onSurfaceColor,
               ),
-              child: const Text('YES, SEND ALERT'),
+              child: Text('YES, SEND ALERT'),
             ),
           ],
         );
@@ -139,17 +143,20 @@ class EmergencyButtonWidget extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: Colors.white,
+          backgroundColor: context.surfaceColor,
           title: Text(
             'Cancel Emergency Alert',
             style: TextStyle(
-              color: Colors.grey.shade900,
+              color: context.outlineColor.shade900,
               fontWeight: FontWeight.bold,
             ),
           ),
           content: Text(
             'Are you sure you want to cancel the emergency alert?',
-            style: TextStyle(color: Colors.grey.shade800, fontSize: 16),
+            style: TextStyle(
+              color: context.outlineColor.shade800,
+              fontSize: 16,
+            ),
           ),
           actions: [
             TextButton(
@@ -157,7 +164,7 @@ class EmergencyButtonWidget extends StatelessWidget {
               child: Text(
                 'Keep Active',
                 style: TextStyle(
-                  color: Colors.grey.shade700,
+                  color: context.outlineColor.shade700,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -171,7 +178,7 @@ class EmergencyButtonWidget extends StatelessWidget {
                   message: 'Emergency alert cancelled',
                 );
               },
-              child: const Text('Cancel Alert'),
+              child: Text('Cancel Alert'),
             ),
           ],
         );

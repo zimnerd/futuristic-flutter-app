@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Languages multi-selector for user profile
 /// Maps to Profile.languages field in backend Prisma schema
@@ -62,10 +63,10 @@ class ProfileLanguagesSection extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final containerColor = isDark
         ? Colors.white.withValues(alpha: 0.05)
-        : Colors.grey.shade50;
+        : context.outlineColor.shade50;
     final borderColor = isDark
         ? Colors.white.withValues(alpha: 0.1)
-        : Colors.grey.withValues(alpha: 0.3);
+        : context.outlineColor.withValues(alpha: 0.3);
     final textColor =
         Theme.of(context).textTheme.bodyLarge?.color ??
         (isDark ? Colors.white : Colors.black87);
@@ -89,7 +90,7 @@ class ProfileLanguagesSection extends StatelessWidget {
                   color: PulseColors.secondary.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.language,
                   color: PulseColors.secondary,
                   size: 20,
@@ -181,10 +182,10 @@ class ProfileLanguagesSection extends StatelessWidget {
                         : isDisabled
                         ? (isDark
                               ? Colors.white.withValues(alpha: 0.02)
-                              : Colors.grey.shade100)
+                              : context.outlineColor.shade100)
                         : (isDark
                               ? Colors.white.withValues(alpha: 0.05)
-                              : Colors.grey.shade50),
+                              : context.outlineColor.shade50),
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
                       color: isSelected
@@ -192,7 +193,7 @@ class ProfileLanguagesSection extends StatelessWidget {
                           : isDisabled
                           ? (isDark
                                 ? Colors.white.withValues(alpha: 0.05)
-                                : Colors.grey.shade200)
+                                : context.outlineColor.shade200)
                           : borderColor,
                       width: isSelected ? 1.5 : 1,
                     ),
@@ -226,7 +227,7 @@ class ProfileLanguagesSection extends StatelessWidget {
                       ),
                       if (isSelected) ...[
                         const SizedBox(width: 6),
-                        const Icon(
+                        Icon(
                           Icons.check_circle,
                           color: PulseColors.secondary,
                           size: 14,
@@ -250,7 +251,7 @@ class ProfileLanguagesSection extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.translate,
                     size: 16,
                     color: PulseColors.secondary,

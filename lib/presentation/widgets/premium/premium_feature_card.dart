@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Reusable card widget for displaying premium features
 ///
@@ -83,7 +84,7 @@ class PremiumFeatureCard extends StatelessWidget {
                   ),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(icon, color: Colors.white, size: 24),
+                child: Icon(icon, color: context.onSurfaceColor, size: 24),
               ),
 
               const SizedBox(width: 16),
@@ -98,7 +99,7 @@ class PremiumFeatureCard extends StatelessWidget {
                         Expanded(
                           child: Text(
                             title,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                               height: 1.3,
@@ -117,13 +118,13 @@ class PremiumFeatureCard extends StatelessWidget {
                               ),
                               borderRadius: BorderRadius.circular(6),
                             ),
-                            child: const Row(
+                            child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(
                                   Icons.workspace_premium,
                                   size: 12,
-                                  color: Colors.white,
+                                  color: context.onSurfaceColor,
                                 ),
                                 SizedBox(width: 4),
                                 Text(
@@ -131,7 +132,7 @@ class PremiumFeatureCard extends StatelessWidget {
                                   style: TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.white,
+                                    color: context.onSurfaceColor,
                                     letterSpacing: 0.5,
                                   ),
                                 ),
@@ -255,7 +256,7 @@ class FeatureComparisonRow extends StatelessWidget {
             flex: 2,
             child: Text(
               title,
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
             ),
           ),
           Expanded(child: _buildValue(freeValue, false)),

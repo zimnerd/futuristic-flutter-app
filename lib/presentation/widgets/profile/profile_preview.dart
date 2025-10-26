@@ -5,6 +5,7 @@ import '../../theme/pulse_colors.dart';
 import '../../../domain/entities/user_profile.dart';
 import '../common/robust_network_image.dart';
 import '../verification/verification_badge.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Widget that shows how the profile will appear to other users
 class ProfilePreview extends StatelessWidget {
@@ -16,7 +17,7 @@ class ProfilePreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: context.backgroundColor,
       body: Stack(
         children: [
           // Main content
@@ -38,8 +39,8 @@ class ProfilePreview extends StatelessWidget {
                   begin: Alignment.bottomCenter,
                   end: Alignment.topCenter,
                   colors: [
-                    Colors.black.withValues(alpha: 0.8),
-                    Colors.black.withValues(alpha: 0.4),
+                    context.surfaceColor.withValues(alpha: 0.95),
+                    context.surfaceColor.withValues(alpha: 0.6),
                     Colors.transparent,
                   ],
                 ),
@@ -55,8 +56,8 @@ class ProfilePreview extends StatelessWidget {
                       Expanded(
                         child: Text(
                           '${profile.name}, ${profile.age}',
-                          style: const TextStyle(
-                            color: Colors.white,
+                          style: TextStyle(
+                            color: context.onSurfaceColor,
                             fontSize: 28,
                             fontWeight: FontWeight.w700,
                           ),
@@ -74,18 +75,25 @@ class ProfilePreview extends StatelessWidget {
                   // Distance and online status
                   Row(
                     children: [
-                      Icon(Icons.location_on, color: Colors.white70, size: 16),
+                      Icon(
+                        Icons.location_on,
+                        color: context.textSecondary,
+                        size: 16,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         '2 km away', // This would be calculated
-                        style: TextStyle(color: Colors.white70, fontSize: 14),
+                        style: TextStyle(
+                          color: context.textSecondary,
+                          fontSize: 14,
+                        ),
                       ),
                       const SizedBox(width: 16),
                       if (profile.isOnline) ...[
                         Container(
                           width: 8,
                           height: 8,
-                          decoration: const BoxDecoration(
+                          decoration: BoxDecoration(
                             color: PulseColors.success,
                             shape: BoxShape.circle,
                           ),
@@ -93,7 +101,10 @@ class ProfilePreview extends StatelessWidget {
                         const SizedBox(width: 4),
                         Text(
                           'Online now',
-                          style: TextStyle(color: Colors.white70, fontSize: 14),
+                          style: TextStyle(
+                            color: context.textSecondary,
+                            fontSize: 14,
+                          ),
                         ),
                       ],
                     ],
@@ -105,8 +116,8 @@ class ProfilePreview extends StatelessWidget {
                   if (profile.bio.isNotEmpty) ...[
                     Text(
                       profile.bio,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: context.onSurfaceColor,
                         fontSize: 16,
                         height: 1.4,
                       ),
@@ -119,7 +130,7 @@ class ProfilePreview extends StatelessWidget {
                   // Job and education
                   if (profile.job?.isNotEmpty == true ||
                       profile.school?.isNotEmpty == true) ...[
-                    _buildInfoChips(),
+                    _buildInfoChips(context),
                     const SizedBox(height: 16),
                   ],
 
@@ -128,13 +139,13 @@ class ProfilePreview extends StatelessWidget {
                     Text(
                       'Interests',
                       style: TextStyle(
-                        color: Colors.white70,
+                        color: context.textSecondary,
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(height: 8),
-                    _buildInterestChips(),
+                    _buildInterestChips(context),
                   ],
                 ],
               ),
@@ -154,10 +165,10 @@ class ProfilePreview extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    const Text(
+                    Text(
                       'Profile Preview',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: context.onSurfaceColor,
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
                       ),
@@ -169,12 +180,12 @@ class ProfilePreview extends StatelessWidget {
                         icon: Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.5),
+                            color: context.surfaceColor.withValues(alpha: 0.3),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.close,
-                            color: Colors.white,
+                            color: context.onSurfaceColor,
                             size: 20,
                           ),
                         ),
@@ -200,7 +211,7 @@ class ProfilePreview extends StatelessWidget {
                         right: entry.key < profile.photos.length - 1 ? 4 : 0,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.3),
+                        color: context.onSurfaceColor.withValues(alpha: 0.3),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -250,41 +261,41 @@ class ProfilePreview extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoChips() {
+  Widget _buildInfoChips(BuildContext context) {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
       children: [
         if (profile.job?.isNotEmpty == true)
-          _buildInfoChip(Icons.work, profile.job!),
+          _buildInfoChip(context, Icons.work, profile.job!),
         if (profile.company?.isNotEmpty == true)
-          _buildInfoChip(Icons.business, profile.company!),
+          _buildInfoChip(context, Icons.business, profile.company!),
         if (profile.school?.isNotEmpty == true)
-          _buildInfoChip(Icons.school, profile.school!),
+          _buildInfoChip(context, Icons.school, profile.school!),
       ],
     );
   }
 
-  Widget _buildInfoChip(IconData icon, String text) {
+  Widget _buildInfoChip(BuildContext context, IconData icon, String text) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.2),
+        color: context.surfaceColor.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.3),
+          color: context.borderColor.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: Colors.white, size: 14),
+          Icon(icon, color: context.onSurfaceColor, size: 14),
           const SizedBox(width: 6),
           Text(
             text,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: context.onSurfaceColor,
               fontSize: 13,
               fontWeight: FontWeight.w500,
             ),
@@ -294,7 +305,7 @@ class ProfilePreview extends StatelessWidget {
     );
   }
 
-  Widget _buildInterestChips() {
+  Widget _buildInterestChips(BuildContext context) {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
@@ -312,8 +323,8 @@ class ProfilePreview extends StatelessWidget {
           ),
           child: Text(
             interest,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: context.onSurfaceColor,
               fontSize: 12,
               fontWeight: FontWeight.w500,
             ),

@@ -15,6 +15,7 @@ import '../../navigation/app_router.dart';
 import '../profile/profile_details_screen.dart';
 import '../../widgets/common/robust_network_image.dart';
 import '../../widgets/verification/verification_badge.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Who Liked You Screen - Premium Feature
 ///
@@ -80,7 +81,7 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
     return Scaffold(
       backgroundColor: PulseColors.backgroundLight,
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Who Liked You',
           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
@@ -91,8 +92,8 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
           IconButton(
             icon: Badge(
               isLabelVisible: _currentFilter != WhoLikedYouFilter.all,
-              label: const Text('!'),
-              child: const Icon(Icons.filter_list),
+              label: Text('!'),
+              child: Icon(Icons.filter_list),
             ),
             onPressed: _showFilters,
             tooltip: 'Filter',
@@ -193,7 +194,7 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
         margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
-          color: PulseColors.grey100,
+          color: context.borderColor.shade100,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -266,14 +267,18 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
                 Icon(
                   icon,
                   size: 16,
-                  color: isSelected ? PulseColors.primary : PulseColors.grey600,
+                  color: isSelected
+                      ? PulseColors.primary
+                      : context.borderColor.shade600,
                 ),
               if (icon != null) const SizedBox(height: 2),
               Text(
                 label,
                 textAlign: TextAlign.center,
                 style: PulseTypography.labelSmall.copyWith(
-                  color: isSelected ? PulseColors.primary : PulseColors.grey600,
+                  color: isSelected
+                      ? PulseColors.primary
+                      : context.borderColor.shade600,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                 ),
               ),
@@ -322,7 +327,7 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
               child: Icon(
                 Icons.favorite_border,
                 size: 60,
-                color: PulseColors.grey400,
+                color: context.borderColor.shade400,
               ),
             ),
             const SizedBox(height: 24),
@@ -330,7 +335,7 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
               'No one has liked you yet',
               style: PulseTypography.h3.copyWith(
                 fontWeight: FontWeight.bold,
-                color: PulseColors.grey900,
+                color: context.borderColor.shade900,
               ),
               textAlign: TextAlign.center,
             ),
@@ -338,7 +343,7 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
             Text(
               'Keep swiping and someone will like you soon!',
               style: PulseTypography.bodyLarge.copyWith(
-                color: PulseColors.grey600,
+                color: context.borderColor.shade600,
               ),
               textAlign: TextAlign.center,
             ),
@@ -347,8 +352,8 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
               onPressed: () {
                 context.pop();
               },
-              icon: const Icon(Icons.explore),
-              label: const Text('Start Swiping'),
+              icon: Icon(Icons.explore),
+              label: Text('Start Swiping'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: PulseColors.primary,
                 foregroundColor: PulseColors.white,
@@ -380,7 +385,7 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
               'Something went wrong',
               style: PulseTypography.h3.copyWith(
                 fontWeight: FontWeight.bold,
-                color: PulseColors.grey900,
+                color: context.borderColor.shade900,
               ),
               textAlign: TextAlign.center,
             ),
@@ -388,15 +393,15 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
             Text(
               message,
               style: PulseTypography.bodyLarge.copyWith(
-                color: PulseColors.grey600,
+                color: context.borderColor.shade600,
               ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
             ElevatedButton.icon(
               onPressed: _loadWhoLikedYou,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Try Again'),
+              icon: Icon(Icons.refresh),
+              label: Text('Try Again'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: PulseColors.primary,
                 foregroundColor: PulseColors.white,
@@ -466,7 +471,7 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
                   shape: BoxShape.circle,
                   gradient: PulseGradients.primary,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.workspace_premium,
                   size: 40,
                   color: PulseColors.white,
@@ -479,7 +484,7 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
                 'Unlock Who Liked You',
                 style: PulseTypography.h2.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: PulseColors.grey900,
+                  color: context.borderColor.shade900,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -489,7 +494,7 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
               Text(
                 'Upgrade to Premium to see who liked you and match instantly!',
                 style: PulseTypography.bodyLarge.copyWith(
-                  color: PulseColors.grey600,
+                  color: context.borderColor.shade600,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -531,7 +536,7 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Upgrade to Premium',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
@@ -542,7 +547,7 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
               // Close button
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Maybe Later'),
+                child: Text('Maybe Later'),
               ),
             ],
           ),
@@ -576,14 +581,14 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
                 title,
                 style: PulseTypography.bodyLarge.copyWith(
                   fontWeight: FontWeight.w600,
-                  color: PulseColors.grey900,
+                  color:context.borderColor.shade900,
                 ),
               ),
               const SizedBox(height: 4),
               Text(
                 description,
                 style: PulseTypography.bodyMedium.copyWith(
-                  color: PulseColors.grey600,
+                  color: context.borderColor.shade600,
                 ),
               ),
             ],
@@ -653,12 +658,12 @@ class _UserGridCard extends StatelessWidget {
                 width: double.infinity,
                 height: double.infinity,
                 placeholder: Container(
-                  color: PulseColors.grey300,
+                  color: context.borderColor.shade300,
                   child: const Center(child: CircularProgressIndicator()),
                 ),
                 errorWidget: Container(
-                  color: PulseColors.grey300,
-                  child: const Icon(
+                  color: context.borderColor.shade300,
+                  child: Icon(
                     Icons.person,
                     size: 60,
                     color: PulseColors.white,
@@ -716,7 +721,7 @@ class _UserGridCard extends StatelessWidget {
                             shape: BoxShape.circle,
                             color: PulseColors.white.withValues(alpha: 0.9),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.lock,
                             color: PulseColors.primary,
                             size: 24,
@@ -779,7 +784,7 @@ class _UserGridCard extends StatelessWidget {
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.location_on,
                             color: Colors.white70,
                             size: 14,
@@ -826,7 +831,7 @@ class _UserGridCard extends StatelessWidget {
                           ),
                         ],
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.favorite,
                         color: PulseColors.success,
                         size: 20,
@@ -879,7 +884,7 @@ class _LoadingCardState extends State<_LoadingCard>
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        color: PulseColors.grey200,
+        color:context.borderColor.shade200,
       ),
       child: AnimatedBuilder(
         animation: _animation,
@@ -891,9 +896,9 @@ class _LoadingCardState extends State<_LoadingCard>
                 begin: Alignment(_animation.value - 1, 0),
                 end: Alignment(_animation.value, 0),
                 colors: [
-                  PulseColors.grey200,
-                  PulseColors.grey300,
-                  PulseColors.grey200,
+                  context.borderColor.shade200,
+                  context.borderColor.shade300,
+                  context.borderColor.shade200,
                 ],
               ),
             ),
@@ -951,7 +956,7 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: PulseColors.grey300,
+                color: context.borderColor.shade300,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -965,7 +970,7 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
                     'Filters',
                     style: PulseTypography.h3.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: PulseColors.grey900,
+                      color: context.borderColor.shade900,
                     ),
                   ),
                   const Spacer(),
@@ -995,14 +1000,14 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
               title: Text(
                 'Verified only',
                 style: PulseTypography.bodyMedium.copyWith(
-                  color: PulseColors.grey900,
+                  color: context.borderColor.shade900,
                   fontWeight: FontWeight.w600,
                 ),
               ),
               subtitle: Text(
                 'Show only verified users',
                 style: PulseTypography.bodySmall.copyWith(
-                  color: PulseColors.grey600,
+                  color: context.borderColor.shade600,
                 ),
               ),
               value: _verifiedOnly,
@@ -1018,14 +1023,14 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
               title: Text(
                 'Super Likes only',
                 style: PulseTypography.bodyMedium.copyWith(
-                  color: PulseColors.grey900,
+                  color: context.borderColor.shade900,
                   fontWeight: FontWeight.w600,
                 ),
               ),
               subtitle: Text(
                 'Show only users who super liked you',
                 style: PulseTypography.bodySmall.copyWith(
-                  color: PulseColors.grey600,
+                  color: context.borderColor.shade600,
                 ),
               ),
               value: _superLikesOnly,
@@ -1057,7 +1062,7 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Apply Filters',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),

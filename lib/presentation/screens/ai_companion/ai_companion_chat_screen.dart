@@ -13,6 +13,7 @@ import '../../widgets/common/pulse_error_widget.dart';
 import '../../widgets/chat/ai_message_input.dart';
 import '../../widgets/common/pulse_toast.dart';
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Chat screen for AI companion conversations
 class AiCompanionChatScreen extends StatefulWidget {
@@ -61,7 +62,7 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
               child: widget.companion.avatarUrl.isEmpty
                   ? Text(
                       widget.companion.personality.emoji,
-                      style: const TextStyle(fontSize: 16),
+                      style: TextStyle(fontSize: 16),
                     )
                   : null,
             ),
@@ -72,14 +73,17 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
                 children: [
                   Text(
                     widget.companion.name,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                   Text(
                     widget.companion.personality.displayName,
-                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: context.onSurfaceVariantColor,
+                    ),
                   ),
                 ],
               ),
@@ -89,7 +93,7 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
         actions: [
           IconButton(
             onPressed: () => _showCompanionInfo(),
-            icon: const Icon(Icons.info_outline),
+            icon: Icon(Icons.info_outline),
           ),
         ],
       ),
@@ -100,7 +104,7 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
             child: BlocBuilder<AiCompanionBloc, AiCompanionState>(
               builder: (context, state) {
                 if (state is AiCompanionLoading) {
-                  return const Center(child: PulseLoadingWidget());
+                  return Center(child: PulseLoadingWidget());
                 }
 
                 if (state is AiCompanionError) {
@@ -122,7 +126,7 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
                 }
 
                 if (state is AiCompanionConversationLoading) {
-                  return const Center(child: PulseLoadingWidget());
+                  return Center(child: PulseLoadingWidget());
                 }
 
                 // Initialize empty conversation if no state
@@ -180,20 +184,23 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
               child: widget.companion.avatarUrl.isEmpty
                   ? Text(
                       widget.companion.personality.emoji,
-                      style: const TextStyle(fontSize: 32),
+                      style: TextStyle(fontSize: 32),
                     )
                   : null,
             ),
             const SizedBox(height: 16),
             Text(
               'Start chatting with ${widget.companion.name}!',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               widget.companion.description,
-              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+              style: TextStyle(
+                fontSize: 14,
+                color: context.onSurfaceVariantColor,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -263,7 +270,9 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
           ),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: isUser ? PulseColors.primary : Colors.grey[200],
+            color: isUser
+                ? PulseColors.primary
+                : context.outlineColor.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(20),
           ),
           child: Column(
@@ -283,7 +292,9 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
                   Text(
                     _formatTimestamp(message.timestamp),
                     style: TextStyle(
-                      color: isUser ? Colors.white70 : Colors.grey[600],
+                      color: isUser
+                          ? Colors.white70
+                          : context.onSurfaceVariantColor,
                       fontSize: 12,
                     ),
                   ),
@@ -312,11 +323,11 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
           ),
         );
       case MessageStatus.sent:
-        return const Icon(Icons.check, size: 14, color: Colors.white70);
+        return Icon(Icons.check, size: 14, color: Colors.white70);
       case MessageStatus.delivered:
-        return const Icon(Icons.done_all, size: 14, color: Colors.white70);
+        return Icon(Icons.done_all, size: 14, color: Colors.white70);
       case MessageStatus.failed:
-        return const Icon(Icons.error_outline, size: 14, color: Colors.red);
+        return Icon(Icons.error_outline, size: 14, color: context.errorColor);
       default:
         return const SizedBox.shrink();
     }
@@ -462,11 +473,11 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
             context: context,
             barrierDismissible: false,
             builder: (dialogContext) => AlertDialog(
-              title: const Text('Recording Voice Message'),
-              content: const Column(
+              title: Text('Recording Voice Message'),
+              content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.mic, size: 64, color: Colors.red),
+                  Icon(Icons.mic, size: 64, color: context.errorColor),
                   SizedBox(height: 16),
                   Text('Tap stop when finished'),
                 ],
@@ -489,7 +500,7 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
                       );
                     }
                   },
-                  child: const Text('Stop Recording'),
+                  child: Text('Stop Recording'),
                 ),
               ],
             ),
@@ -530,8 +541,8 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
         maxChildSize: 0.9,
         minChildSize: 0.3,
         builder: (context, scrollController) => Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
+          decoration: BoxDecoration(
+            color: context.onSurfaceColor,
             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
           child: SingleChildScrollView(
@@ -550,27 +561,30 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
                     child: widget.companion.avatarUrl.isEmpty
                         ? Text(
                             widget.companion.personality.emoji,
-                            style: const TextStyle(fontSize: 32),
+                            style: TextStyle(fontSize: 32),
                           )
                         : null,
                   ),
                   const SizedBox(height: 16),
                   Text(
                     widget.companion.name,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   Text(
                     widget.companion.personality.displayName,
-                    style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: context.onSurfaceVariantColor,
+                    ),
                   ),
                   const SizedBox(height: 16),
                   Text(
                     widget.companion.description,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 14),
+                    style: TextStyle(fontSize: 14),
                   ),
                   const SizedBox(height: 20),
                   Row(
@@ -604,9 +618,12 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
         const SizedBox(height: 4),
         Text(
           value,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
-        Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+        Text(
+          label,
+          style: TextStyle(fontSize: 12, color: context.onSurfaceVariantColor),
+        ),
       ],
     );
   }
@@ -620,8 +637,8 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.copy),
-              title: const Text('Copy Message'),
+              leading: Icon(Icons.copy),
+              title: Text('Copy Message'),
               onTap: () {
                 // Copy message to clipboard logic here
                 Navigator.pop(context);
@@ -629,8 +646,8 @@ class _AiCompanionChatScreenState extends State<AiCompanionChatScreen> {
             ),
             if (!message.isFromCompanion)
               ListTile(
-                leading: const Icon(Icons.edit),
-                title: const Text('Edit Message'),
+                leading: Icon(Icons.edit),
+                title: Text('Edit Message'),
                 onTap: () {
                   Navigator.pop(context);
                   // Edit message logic here

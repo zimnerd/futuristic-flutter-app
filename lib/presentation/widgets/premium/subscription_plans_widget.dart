@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../data/models/premium.dart';
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Widget for displaying available subscription plans
 class SubscriptionPlansWidget extends StatelessWidget {
@@ -40,7 +41,7 @@ class SubscriptionPlansWidget extends StatelessWidget {
               ? Colors.green
               : isPopular
               ? PulseColors.primary
-              : Colors.grey[300]!,
+              : context.outlineColor.withValues(alpha: 0.3),
           width: isCurrentPlan || isPopular ? 2 : 1,
         ),
         gradient: isPopular
@@ -75,8 +76,8 @@ class SubscriptionPlansWidget extends StatelessWidget {
                 ),
                 child: Text(
                   plan.promoText ?? 'POPULAR',
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: context.onSurfaceColor,
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                   ),
@@ -95,10 +96,10 @@ class SubscriptionPlansWidget extends StatelessWidget {
                   color: Colors.green,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Text(
+                child: Text(
                   'CURRENT',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: context.onSurfaceColor,
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
                   ),
@@ -141,7 +142,9 @@ class SubscriptionPlansWidget extends StatelessWidget {
                               Text(
                                 '/${plan.interval}',
                                 style: Theme.of(context).textTheme.bodyMedium
-                                    ?.copyWith(color: Colors.grey[600]),
+                                    ?.copyWith(
+                                      color: context.onSurfaceVariantColor,
+                                    ),
                               ),
                             ],
                           ),
@@ -153,7 +156,9 @@ class SubscriptionPlansWidget extends StatelessWidget {
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.red[100],
+                                color: context.errorColor.withValues(
+                                  alpha: 0.1,
+                                ),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
@@ -161,7 +166,9 @@ class SubscriptionPlansWidget extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.red[700],
+                                  color: context.errorColor.withValues(
+                                    alpha: 0.7,
+                                  ),
                                 ),
                               ),
                             ),
@@ -171,7 +178,9 @@ class SubscriptionPlansWidget extends StatelessWidget {
                     Icon(
                       _getPlanIcon(plan.name),
                       size: 32,
-                      color: isPopular ? PulseColors.primary : Colors.grey[600],
+                      color: isPopular
+                          ? PulseColors.primary
+                          : context.onSurfaceVariantColor,
                     ),
                   ],
                 ),
@@ -183,7 +192,9 @@ class SubscriptionPlansWidget extends StatelessWidget {
                     plan.description,
                     style: Theme.of(
                       context,
-                    ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+                    ).textTheme.bodyMedium?.copyWith(
+                      color: context.onSurfaceVariantColor,
+                    ),
                   ),
                   const SizedBox(height: 16),
                 ],
@@ -224,11 +235,11 @@ class SubscriptionPlansWidget extends StatelessWidget {
                         : () => onPlanSelected(plan),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: isCurrentPlan
-                          ? Colors.grey[400]
+                          ? context.outlineColor.withValues(alpha: 0.2)
                           : isPopular
                           ? PulseColors.primary
                           : Colors.grey[800],
-                      foregroundColor: Colors.white,
+                      foregroundColor: context.onSurfaceColor,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -240,7 +251,7 @@ class SubscriptionPlansWidget extends StatelessWidget {
                           : plan.priceInCents == 0
                           ? 'Downgrade'
                           : 'Upgrade',
-                      style: const TextStyle(fontWeight: FontWeight.w600),
+                      style: TextStyle(fontWeight: FontWeight.w600),
                     ),
                   ),
                 ),
@@ -257,20 +268,28 @@ class SubscriptionPlansWidget extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.star_outline, size: 64, color: Colors.grey[400]),
+          Icon(
+            Icons.star_outline,
+            size: 64,
+            color: context.outlineColor.withValues(alpha: 0.2),
+          ),
           const SizedBox(height: 16),
           Text(
             'No plans available',
             style: Theme.of(
               context,
-            ).textTheme.titleLarge?.copyWith(color: Colors.grey[600]),
+            ).textTheme.titleLarge?.copyWith(
+              color: context.onSurfaceVariantColor,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             'Premium plans are currently unavailable',
             style: Theme.of(
               context,
-            ).textTheme.bodyMedium?.copyWith(color: Colors.grey[500]),
+            ).textTheme.bodyMedium?.copyWith(
+              color: context.onSurfaceVariantColor.withValues(alpha: 0.6),
+            ),
           ),
         ],
       ),

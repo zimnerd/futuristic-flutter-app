@@ -4,6 +4,7 @@ import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import '../../../core/theme/pulse_design_system.dart';
 import '../../../core/utils/haptic_feedback_utils.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Fullscreen Photo Preview with Zoom
 ///
@@ -115,7 +116,7 @@ class _PhotoPreviewScreenState extends State<PhotoPreviewScreen> {
                     ),
                   ),
                 ),
-                backgroundDecoration: const BoxDecoration(color: Colors.black),
+                backgroundDecoration: BoxDecoration(color: Colors.black),
                 pageController: _pageController,
                 onPageChanged: (index) {
                   setState(() => _currentIndex = index);
@@ -153,9 +154,9 @@ class _PhotoPreviewScreenState extends State<PhotoPreviewScreen> {
                           PulseHaptics.light();
                           Navigator.pop(context);
                         },
-                        icon: const Icon(
+                        icon: Icon(
                           Icons.close,
-                          color: Colors.white,
+                          color: context.onSurfaceColor,
                           size: 28,
                         ),
                       ),
@@ -173,8 +174,8 @@ class _PhotoPreviewScreenState extends State<PhotoPreviewScreen> {
                           ),
                           child: Text(
                             '${_currentIndex + 1}/${widget.images.length}',
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: context.onSurfaceColor,
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
                             ),
@@ -190,9 +191,9 @@ class _PhotoPreviewScreenState extends State<PhotoPreviewScreen> {
                                 PulseHaptics.medium();
                                 widget.onShare?.call();
                               },
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.share,
-                                color: Colors.white,
+                                color: context.onSurfaceColor,
                                 size: 24,
                               ),
                             ),
@@ -202,9 +203,9 @@ class _PhotoPreviewScreenState extends State<PhotoPreviewScreen> {
                                 PulseHaptics.medium();
                                 widget.onReport?.call();
                               },
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.flag,
-                                color: Colors.white,
+                                color: context.onSurfaceColor,
                                 size: 24,
                               ),
                             ),

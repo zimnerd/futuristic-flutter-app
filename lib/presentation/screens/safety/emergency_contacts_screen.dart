@@ -5,6 +5,7 @@ import '../../../core/network/api_client.dart';
 import '../../../data/services/safety_service.dart';
 import '../../../data/models/safety.dart' as safety_models;
 import '../../widgets/common/pulse_toast.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Emergency Contacts Screen
 ///
@@ -99,17 +100,17 @@ class _EmergencyContactsScreenState extends State<EmergencyContactsScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Remove Contact'),
+        title: Text('Remove Contact'),
         content: Text('Remove ${contact.name} from your emergency contacts?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             style: TextButton.styleFrom(foregroundColor: PulseColors.error),
-            child: const Text('Remove'),
+            child: Text('Remove'),
           ),
         ],
       ),
@@ -159,26 +160,26 @@ class _EmergencyContactsScreenState extends State<EmergencyContactsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Emergency Contacts'),
+        title: Text('Emergency Contacts'),
         backgroundColor: PulseColors.primary,
-        foregroundColor: Colors.white,
+        foregroundColor: context.onSurfaceColor,
         actions: [
           IconButton(
-            icon: const Icon(Icons.info_outline),
+            icon: Icon(Icons.info_outline),
             onPressed: _showSafetyTips,
             tooltip: 'Safety Tips',
           ),
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : _contacts.isEmpty
           ? _buildEmptyState()
           : _buildContactsList(),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _addContact,
-        icon: const Icon(Icons.add),
-        label: const Text('Add Contact'),
+        icon: Icon(Icons.add),
+        label: Text('Add Contact'),
         backgroundColor: PulseColors.primary,
       ),
     );
@@ -191,9 +192,13 @@ class _EmergencyContactsScreenState extends State<EmergencyContactsScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.contact_emergency, size: 80, color: Colors.grey[400]),
+            Icon(
+              Icons.contact_emergency,
+              size: 80,
+              color: context.outlineColor.withValues(alpha: 0.2),
+            ),
             const SizedBox(height: 24),
-            const Text(
+            Text(
               'No Emergency Contacts',
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
@@ -201,16 +206,19 @@ class _EmergencyContactsScreenState extends State<EmergencyContactsScreen> {
             Text(
               'Add trusted contacts who can be notified when you\'re on a date',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 15, color: Colors.grey[600]),
+              style: TextStyle(
+                fontSize: 15,
+                color: context.onSurfaceVariantColor,
+              ),
             ),
             const SizedBox(height: 32),
             ElevatedButton.icon(
               onPressed: _addContact,
-              icon: const Icon(Icons.add),
-              label: const Text('Add Your First Contact'),
+              icon: Icon(Icons.add),
+              label: Text('Add Your First Contact'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: PulseColors.primary,
-                foregroundColor: Colors.white,
+                foregroundColor: context.onSurfaceColor,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
                   vertical: 12,
@@ -242,7 +250,10 @@ class _EmergencyContactsScreenState extends State<EmergencyContactsScreen> {
               Expanded(
                 child: Text(
                   'Your contacts can be notified when you go on dates and receive your live location',
-                  style: TextStyle(fontSize: 13, color: Colors.grey[700]),
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: context.onSurfaceVariantColor,
+                  ),
                 ),
               ),
             ],
@@ -270,7 +281,7 @@ class _EmergencyContactsScreenState extends State<EmergencyContactsScreen> {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: Colors.grey[200]!),
+        side: BorderSide(color: context.outlineColor.withValues(alpha: 0.15)!),
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.all(16),
@@ -278,7 +289,7 @@ class _EmergencyContactsScreenState extends State<EmergencyContactsScreen> {
           backgroundColor: PulseColors.primary.withValues(alpha: 0.1),
           child: Text(
             contact.name[0].toUpperCase(),
-            style: const TextStyle(
+            style: TextStyle(
               color: PulseColors.primary,
               fontWeight: FontWeight.bold,
             ),
@@ -286,22 +297,28 @@ class _EmergencyContactsScreenState extends State<EmergencyContactsScreen> {
         ),
         title: Text(
           contact.name,
-          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 4),
-            Text(contact.phone, style: TextStyle(color: Colors.grey[600])),
+            Text(
+              contact.phone,
+              style: TextStyle(color: context.onSurfaceVariantColor),
+            ),
             const SizedBox(height: 4),
             Text(
               contact.relationship,
-              style: TextStyle(color: Colors.grey[500], fontSize: 12),
+              style: TextStyle(
+                color: context.onSurfaceVariantColor.withValues(alpha: 0.6),
+                fontSize: 12,
+              ),
             ),
           ],
         ),
         trailing: PopupMenuButton<String>(
-          icon: const Icon(Icons.more_vert),
+          icon: Icon(Icons.more_vert),
           onSelected: (value) {
             if (value == 'remove') {
               _removeContact(contact);
@@ -397,7 +414,7 @@ class _AddContactDialogState extends State<_AddContactDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Add Emergency Contact'),
+      title: Text('Add Emergency Contact'),
       content: Form(
         key: _formKey,
         child: Column(
@@ -467,7 +484,7 @@ class _AddContactDialogState extends State<_AddContactDialog> {
             ),
             const SizedBox(height: 16),
             CheckboxListTile(
-              title: const Text('Set as primary contact'),
+              title: Text('Set as primary contact'),
               value: _isPrimary,
               onChanged: (value) => setState(() => _isPrimary = value ?? false),
               contentPadding: EdgeInsets.zero,
@@ -479,7 +496,7 @@ class _AddContactDialogState extends State<_AddContactDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text('Cancel'),
         ),
         ElevatedButton(
           onPressed: () {
@@ -500,9 +517,9 @@ class _AddContactDialogState extends State<_AddContactDialog> {
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: PulseColors.primary,
-            foregroundColor: Colors.white,
+            foregroundColor: context.onSurfaceColor,
           ),
-          child: const Text('Add Contact'),
+          child: Text('Add Contact'),
         ),
       ],
     );
@@ -516,8 +533,8 @@ class _SafetyTipsSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
+      decoration: BoxDecoration(
+        color: context.onSurfaceColor,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       padding: const EdgeInsets.all(24),
@@ -527,41 +544,46 @@ class _SafetyTipsSheet extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.shield, color: PulseColors.primary, size: 28),
+              Icon(Icons.shield, color: PulseColors.primary, size: 28),
               const SizedBox(width: 12),
-              const Text(
+              Text(
                 'Dating Safety Tips',
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
               const Spacer(),
               IconButton(
-                icon: const Icon(Icons.close),
+                icon: Icon(Icons.close),
                 onPressed: () => Navigator.pop(context),
               ),
             ],
           ),
           const SizedBox(height: 24),
           _buildSafetyTip(
+            context,
             Icons.location_on_outlined,
             'Meet in Public',
             'Always meet in a public place for first dates',
           ),
           _buildSafetyTip(
+            context,
             Icons.people_outline,
             'Tell Someone',
             'Let friends or family know where you\'re going',
           ),
           _buildSafetyTip(
+            context,
             Icons.phone_outlined,
             'Keep Your Phone Charged',
             'Ensure your phone is charged for emergencies',
           ),
           _buildSafetyTip(
+            context,
             Icons.local_drink_outlined,
             'Watch Your Drink',
             'Never leave your drink unattended',
           ),
           _buildSafetyTip(
+            context,
             Icons.directions_car_outlined,
             'Arrange Your Own Transport',
             'Drive yourself or use a trusted ride service',
@@ -573,10 +595,10 @@ class _SafetyTipsSheet extends StatelessWidget {
               onPressed: () => Navigator.pop(context),
               style: ElevatedButton.styleFrom(
                 backgroundColor: PulseColors.primary,
-                foregroundColor: Colors.white,
+                foregroundColor: context.onSurfaceColor,
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
-              child: const Text('Got It'),
+              child: Text('Got It'),
             ),
           ),
         ],
@@ -584,7 +606,12 @@ class _SafetyTipsSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildSafetyTip(IconData icon, String title, String description) {
+  Widget _buildSafetyTip(
+    BuildContext context,
+    IconData icon,
+    String title,
+    String description,
+  ) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Row(
@@ -605,7 +632,7 @@ class _SafetyTipsSheet extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 15,
                   ),
@@ -613,7 +640,10 @@ class _SafetyTipsSheet extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   description,
-                  style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                  style: TextStyle(
+                    color: context.onSurfaceVariantColor,
+                    fontSize: 13,
+                  ),
                 ),
               ],
             ),

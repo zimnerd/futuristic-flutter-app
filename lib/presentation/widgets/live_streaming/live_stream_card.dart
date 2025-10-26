@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Widget to display a live stream card with animated LIVE badge
 class LiveStreamCard extends StatefulWidget {
@@ -88,23 +89,27 @@ class _LiveStreamCardState extends State<LiveStreamCard>
                             memCacheHeight: 300,
                             fadeInDuration: const Duration(milliseconds: 200),
                             placeholder: (context, url) => Shimmer.fromColors(
-                              baseColor: Colors.grey[300]!,
+                              baseColor: context.outlineColor.withValues(
+                                alpha: 0.3,
+                              ),
                               highlightColor: Colors.grey[100]!,
                               child: Container(
                                 height: 200,
                                 width: double.infinity,
-                                color: Colors.white,
+                                color: context.onSurfaceColor,
                               ),
                             ),
                             errorWidget: (context, url, error) => Container(
                               height: 200,
                               width: double.infinity,
-                              color: Colors.grey[300],
-                              child: const Center(
+                              color: context.outlineColor.withValues(
+                                alpha: 0.3,
+                              ),
+                              child: Center(
                                 child: Icon(
                                   Icons.error_outline,
                                   size: 50,
-                                  color: Colors.grey,
+                                  color: context.outlineColor,
                                 ),
                               ),
                             ),
@@ -112,12 +117,12 @@ class _LiveStreamCardState extends State<LiveStreamCard>
                         : Container(
                             height: 200,
                             width: double.infinity,
-                            color: Colors.grey[300],
-                            child: const Center(
+                            color: context.outlineColor.withValues(alpha: 0.3),
+                            child: Center(
                               child: Icon(
                                 Icons.videocam,
                                 size: 50,
-                                color: Colors.grey,
+                                color: context.outlineColor,
                               ),
                             ),
                           ),
@@ -141,11 +146,13 @@ class _LiveStreamCardState extends State<LiveStreamCard>
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.red,
+                            color: context.errorColor,
                             borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.red.withValues(alpha: 0.4),
+                                color: context.errorColor.withValues(
+                                  alpha: 0.4,
+                                ),
                                 blurRadius: 8,
                                 spreadRadius: 2,
                               ),
@@ -157,16 +164,16 @@ class _LiveStreamCardState extends State<LiveStreamCard>
                               Container(
                                 width: 8,
                                 height: 8,
-                                decoration: const BoxDecoration(
-                                  color: Colors.white,
+                                decoration: BoxDecoration(
+                                  color: context.onSurfaceColor,
                                   shape: BoxShape.circle,
                                 ),
                               ),
                               const SizedBox(width: 4),
-                              const Text(
+                              Text(
                                 'LIVE',
                                 style: TextStyle(
-                                  color: Colors.white,
+                                  color: context.onSurfaceColor,
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -192,16 +199,16 @@ class _LiveStreamCardState extends State<LiveStreamCard>
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.visibility,
-                            color: Colors.white,
+                            color: context.onSurfaceColor,
                             size: 16,
                           ),
                           const SizedBox(width: 4),
                           Text(
                             _formatViewerCount(viewerCount),
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: context.onSurfaceColor,
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
                             ),
@@ -239,11 +246,11 @@ class _LiveStreamCardState extends State<LiveStreamCard>
                               ),
                             ),
                           if (widget.onDelete != null)
-                            const PopupMenuItem(
+                            PopupMenuItem(
                               value: 'delete',
                               child: Row(
                                 children: [
-                                  Icon(Icons.delete, color: Colors.red),
+                                  Icon(Icons.delete, color: context.errorColor),
                                   SizedBox(width: 8),
                                   Text('Delete'),
                                 ],
@@ -256,9 +263,9 @@ class _LiveStreamCardState extends State<LiveStreamCard>
                             color: PulseColors.photoOverlay,
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.more_vert,
-                            color: Colors.white,
+                            color: context.onSurfaceColor,
                             size: 16,
                           ),
                         ),
@@ -278,7 +285,7 @@ class _LiveStreamCardState extends State<LiveStreamCard>
                         Expanded(
                           child: Text(
                             title,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
@@ -289,10 +296,10 @@ class _LiveStreamCardState extends State<LiveStreamCard>
                         if (!widget.isOwner && widget.onReport != null)
                           IconButton(
                             onPressed: widget.onReport,
-                            icon: const Icon(
+                            icon: Icon(
                               Icons.flag_outlined,
                               size: 20,
-                              color: Colors.grey,
+                              color: context.outlineColor,
                             ),
                             constraints: const BoxConstraints(),
                             padding: EdgeInsets.zero,
@@ -307,7 +314,7 @@ class _LiveStreamCardState extends State<LiveStreamCard>
                           backgroundColor: PulseColors.primary.withValues(
                             alpha: 0.2,
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.person,
                             size: 16,
                             color: PulseColors.primary,
@@ -319,7 +326,7 @@ class _LiveStreamCardState extends State<LiveStreamCard>
                             streamerName,
                             style: TextStyle(
                               fontSize: 14,
-                              color: Colors.grey[600],
+                              color: context.onSurfaceVariantColor,
                               fontWeight: FontWeight.w500,
                             ),
                           ),

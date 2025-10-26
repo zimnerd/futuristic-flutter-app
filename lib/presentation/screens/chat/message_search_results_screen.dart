@@ -11,6 +11,7 @@ import '../../../data/models/chat_model.dart';
 import '../../../blocs/chat_bloc.dart';
 import '../../widgets/common/empty_state_widget.dart';
 import '../../widgets/common/skeleton_loading.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Message Search Results Screen
 ///
@@ -162,13 +163,13 @@ class _MessageSearchResultsScreenState
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Advanced Search Syntax'),
+        title: Text('Advanced Search Syntax'),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Use these special commands to refine your search:',
                 style: TextStyle(fontWeight: FontWeight.w500),
               ),
@@ -197,12 +198,12 @@ class _MessageSearchResultsScreenState
                 'Example: before:2024-12-31',
               ),
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 'You can combine multiple commands:',
                 style: TextStyle(fontWeight: FontWeight.w500),
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 '"project update" sender:sarah after:2024-01-15',
                 style: TextStyle(
                   fontFamily: 'monospace',
@@ -216,7 +217,7 @@ class _MessageSearchResultsScreenState
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Got it'),
+            child: Text('Got it'),
           ),
         ],
       ),
@@ -233,7 +234,7 @@ class _MessageSearchResultsScreenState
       children: [
         Text(
           syntax,
-          style: const TextStyle(
+          style: TextStyle(
             fontFamily: 'monospace',
             fontWeight: FontWeight.bold,
             color: PulseColors.primary,
@@ -242,7 +243,7 @@ class _MessageSearchResultsScreenState
         const SizedBox(height: 4),
         Text(
           description,
-          style: TextStyle(fontSize: 13, color: Colors.grey[700]),
+          style: TextStyle(fontSize: 13, color: context.onSurfaceVariantColor),
         ),
         const SizedBox(height: 2),
         Text(
@@ -250,7 +251,7 @@ class _MessageSearchResultsScreenState
           style: TextStyle(
             fontSize: 12,
             fontStyle: FontStyle.italic,
-            color: Colors.grey[600],
+            color: context.onSurfaceVariantColor,
           ),
         ),
       ],
@@ -308,19 +309,19 @@ class _MessageSearchResultsScreenState
     return Scaffold(
       appBar: AppBar(
         backgroundColor: PulseColors.primary,
-        foregroundColor: Colors.white,
+        foregroundColor: context.onSurfaceColor,
         title: TextField(
           controller: _searchController,
           focusNode: _searchFocus,
           autofocus: widget.initialQuery == null,
-          style: const TextStyle(color: Colors.white),
+          style: TextStyle(color: Colors.white),
           decoration: InputDecoration(
             hintText: 'Search messages...',
             hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
             border: InputBorder.none,
             suffixIcon: _searchController.text.isNotEmpty
                 ? IconButton(
-                    icon: const Icon(Icons.clear, color: Colors.white),
+                    icon: Icon(Icons.clear, color: Colors.white),
                     onPressed: () {
                       _searchController.clear();
                     },
@@ -331,14 +332,14 @@ class _MessageSearchResultsScreenState
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.help_outline, color: Colors.white),
+            icon: Icon(Icons.help_outline, color: Colors.white),
             tooltip: 'Search syntax help',
             onPressed: _showSearchSyntaxHelp,
           ),
           IconButton(
             icon: Icon(
               _showFilters ? Icons.filter_list : Icons.filter_list_outlined,
-              color: Colors.white,
+              color: context.onSurfaceColor,
             ),
             onPressed: () {
               setState(() => _showFilters = !_showFilters);
@@ -426,12 +427,12 @@ class _MessageSearchResultsScreenState
         spacing: 8,
         runSpacing: 4,
         children: [
-          const Icon(Icons.filter_alt, size: 16, color: PulseColors.primary),
+          Icon(Icons.filter_alt, size: 16, color: PulseColors.primary),
           ...filters.map(
             (filter) => Chip(
-              label: Text(filter, style: const TextStyle(fontSize: 12)),
-              backgroundColor: Colors.white,
-              deleteIcon: const Icon(Icons.close, size: 16),
+              label: Text(filter, style: TextStyle(fontSize: 12)),
+              backgroundColor: context.surfaceColor,
+              deleteIcon: Icon(Icons.close, size: 16),
               onDeleted: () {
                 // Clear all advanced syntax and perform plain search
                 _searchController.text = _parsedQuery!.simplifiedQuery;
@@ -465,7 +466,7 @@ class _MessageSearchResultsScreenState
           // Date range filter
           Row(
             children: [
-              const Icon(Icons.calendar_today, size: 20),
+              Icon(Icons.calendar_today, size: 20),
               const SizedBox(width: 8),
               Expanded(
                 child: TextButton(
@@ -489,13 +490,13 @@ class _MessageSearchResultsScreenState
                     _selectedDateRange == null
                         ? 'Any date'
                         : '${DateFormat('MMM d').format(_selectedDateRange!.start)} - ${DateFormat('MMM d').format(_selectedDateRange!.end)}',
-                    style: const TextStyle(fontSize: 14),
+                    style: TextStyle(fontSize: 14),
                   ),
                 ),
               ),
               if (_selectedDateRange != null)
                 IconButton(
-                  icon: const Icon(Icons.close, size: 20),
+                  icon: Icon(Icons.close, size: 20),
                   onPressed: () {
                     setState(() => _selectedDateRange = null);
                     if (_searchController.text.isNotEmpty) {
@@ -545,13 +546,13 @@ class _MessageSearchResultsScreenState
 
               return Row(
                 children: [
-                  const Icon(Icons.chat_bubble_outline, size: 20),
+                  Icon(Icons.chat_bubble_outline, size: 20),
                   const SizedBox(width: 8),
                   Expanded(
                     child: DropdownButton<String?>(
                       value: _selectedConversation,
                       isExpanded: true,
-                      hint: const Text('All conversations'),
+                      hint: Text('All conversations'),
                       underline: const SizedBox(),
                       items: dropdownItems,
                       onChanged: (value) {
@@ -622,7 +623,7 @@ class _MessageSearchResultsScreenState
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Text(
                 conversationName,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                   color: PulseColors.primary,
@@ -648,7 +649,7 @@ class _MessageSearchResultsScreenState
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: Colors.grey[200]!),
+        side: BorderSide(color: context.outlineColor.withValues(alpha: 0.15)!),
       ),
       child: InkWell(
         onTap: () => _jumpToMessage(result.message),
@@ -666,7 +667,7 @@ class _MessageSearchResultsScreenState
                     backgroundColor: PulseColors.primary.withValues(alpha: 0.1),
                     child: Text(
                       result.senderName[0].toUpperCase(),
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: PulseColors.primary,
                         fontWeight: FontWeight.bold,
                       ),
@@ -679,7 +680,7 @@ class _MessageSearchResultsScreenState
                       children: [
                         Text(
                           result.senderName,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: 14,
                           ),
@@ -688,13 +689,13 @@ class _MessageSearchResultsScreenState
                           _formatTimestamp(result.message.createdAt),
                           style: TextStyle(
                             fontSize: 12,
-                            color: Colors.grey[600],
+                            color: context.onSurfaceVariantColor,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const Icon(Icons.chevron_right, color: Colors.grey),
+                  Icon(Icons.chevron_right, color: context.outlineColor),
                 ],
               ),
 
@@ -718,7 +719,7 @@ class _MessageSearchResultsScreenState
         text,
         maxLines: 3,
         overflow: TextOverflow.ellipsis,
-        style: const TextStyle(height: 1.4),
+        style: TextStyle(height: 1.4),
       );
     }
 
@@ -741,7 +742,7 @@ class _MessageSearchResultsScreenState
       spans.add(
         TextSpan(
           text: text.substring(index, index + searchTerm.length),
-          style: const TextStyle(
+          style: TextStyle(
             backgroundColor: Colors.yellow,
             fontWeight: FontWeight.bold,
             color: Colors.black,
@@ -756,7 +757,7 @@ class _MessageSearchResultsScreenState
       maxLines: 3,
       overflow: TextOverflow.ellipsis,
       text: TextSpan(
-        style: const TextStyle(
+        style: TextStyle(
           color: Colors.black87,
           fontSize: 14,
           height: 1.4,
@@ -779,17 +780,17 @@ class _MessageSearchResultsScreenState
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        const Text(
+        Text(
           'Recent Searches',
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 12),
         ..._recentSearches.map(
           (search) => ListTile(
-            leading: const Icon(Icons.history, color: Colors.grey),
+            leading: Icon(Icons.history, color: context.outlineColor),
             title: Text(search),
             trailing: IconButton(
-              icon: const Icon(Icons.close, size: 20),
+              icon: Icon(Icons.close, size: 20),
               onPressed: () {
                 setState(() => _recentSearches.remove(search));
               },

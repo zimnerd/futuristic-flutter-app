@@ -386,13 +386,13 @@ class _OutgoingCallScreenState extends State<OutgoingCallScreen>
                 ),
               ],
             ),
-            child: const Icon(Icons.call_end, color: Colors.white, size: 32),
+            child: Icon(Icons.call_end, color: Colors.white, size: 32),
           ),
 
           const SizedBox(height: 12),
 
           // Label
-          const Text(
+          Text(
             'Cancel',
             style: TextStyle(
               color: Colors.white,

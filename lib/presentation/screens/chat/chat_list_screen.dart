@@ -10,6 +10,7 @@ import '../../theme/pulse_colors.dart';
 import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 import '../../widgets/common/pulse_toast.dart';
 import 'chat_screen.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 class ChatListScreen extends StatefulWidget {
   const ChatListScreen({super.key});
@@ -78,7 +79,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
   @override
   Widget build(BuildContext context) {
     return KeyboardDismissibleScaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: context.surfaceColor,
       appBar: _isSearchActive ? _buildSearchAppBar() : _buildMainAppBar(),
       body: Column(
         children: [
@@ -99,7 +100,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
               },
               builder: (context, state) {
                 if (state is ChatLoading) {
-                  return const Center(
+                  return Center(
                     child: CircularProgressIndicator(
                       valueColor: AlwaysStoppedAnimation<Color>(
                         PulseColors.primary,
@@ -113,15 +114,15 @@ class _ChatListScreenState extends State<ChatListScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.error_outline,
-                          color: Colors.grey,
+                          color: context.outlineColor,
                           size: 64,
                         ),
                         const SizedBox(height: 16),
                         Text(
                           state.message,
-                          style: const TextStyle(color: Colors.grey),
+                          style: TextStyle(color: context.outlineColor),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 16),
@@ -131,7 +132,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
                               const LoadConversations(),
                             );
                           },
-                          child: const Text('Retry'),
+                          child: Text('Retry'),
                         ),
                       ],
                     ),
@@ -171,9 +172,9 @@ class _ChatListScreenState extends State<ChatListScreen> {
 
   AppBar _buildMainAppBar() {
     return AppBar(
-      backgroundColor: Colors.white,
+      backgroundColor: context.surfaceColor,
       elevation: 0,
-      title: const Text(
+      title: Text(
         'Messages',
         style: TextStyle(
           color: Colors.black87,
@@ -194,7 +195,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
           },
         ),
         IconButton(
-          icon: const Icon(Icons.search, color: Colors.black87),
+          icon: Icon(Icons.search, color: Colors.black87),
           onPressed: () {
             setState(() {
               _isSearchActive = true;
@@ -202,7 +203,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
           },
         ),
         IconButton(
-          icon: const Icon(Icons.add_comment, color: Colors.black87),
+          icon: Icon(Icons.add_comment, color: Colors.black87),
           onPressed: () {
             _showNewConversationDialog(context);
           },
@@ -213,10 +214,10 @@ class _ChatListScreenState extends State<ChatListScreen> {
 
   AppBar _buildSearchAppBar() {
     return AppBar(
-      backgroundColor: Colors.white,
+      backgroundColor: context.surfaceColor,
       elevation: 0,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: Colors.black87),
+        icon: Icon(Icons.arrow_back, color: Colors.black87),
         onPressed: () {
           setState(() {
             _isSearchActive = false;
@@ -228,12 +229,12 @@ class _ChatListScreenState extends State<ChatListScreen> {
       title: TextField(
         controller: _searchController,
         autofocus: true,
-        decoration: const InputDecoration(
+        decoration: InputDecoration(
           hintText: 'Search conversations...',
           border: InputBorder.none,
-          hintStyle: TextStyle(color: Colors.grey),
+          hintStyle: TextStyle(color: context.outlineColor),
         ),
-        style: const TextStyle(color: Colors.black87, fontSize: 18),
+        style: TextStyle(color: Colors.black87, fontSize: 18),
         onChanged: (value) {
           setState(() {
             _searchQuery = value;
@@ -243,7 +244,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
       actions: [
         if (_searchController.text.isNotEmpty)
           IconButton(
-            icon: const Icon(Icons.clear, color: Colors.black87),
+            icon: Icon(Icons.clear, color: Colors.black87),
             onPressed: () {
               setState(() {
                 _searchController.clear();
@@ -263,7 +264,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Filter chips
-          const Text(
+          Text(
             'Filter by:',
             style: TextStyle(
               fontWeight: FontWeight.w600,
@@ -290,7 +291,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
           const SizedBox(height: 12),
 
           // Sort options
-          const Text(
+          Text(
             'Sort by:',
             style: TextStyle(
               fontWeight: FontWeight.w600,
@@ -390,7 +391,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
         children: [
           Icon(
             _searchQuery.isEmpty ? Icons.chat_bubble_outline : Icons.search_off,
-            color: Colors.grey,
+            color: context.outlineColor,
             size: 64,
           ),
           const SizedBox(height: 16),
@@ -398,8 +399,8 @@ class _ChatListScreenState extends State<ChatListScreen> {
             _searchQuery.isEmpty
                 ? 'No conversations yet'
                 : 'No conversations found',
-            style: const TextStyle(
-              color: Colors.grey,
+            style: TextStyle(
+              color: context.outlineColor,
               fontSize: 18,
               fontWeight: FontWeight.w500,
             ),
@@ -409,7 +410,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
             _searchQuery.isEmpty
                 ? 'Start matching with people to begin chatting!'
                 : 'Try searching with a different name',
-            style: const TextStyle(color: Colors.grey, fontSize: 14),
+            style: TextStyle(color: context.outlineColor, fontSize: 14),
             textAlign: TextAlign.center,
           ),
         ],
@@ -467,7 +468,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
       key: ValueKey(conversation.id),
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.onSurfaceColor,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -491,7 +492,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
           child: otherUserPhoto == null
               ? Text(
                   otherUserName[0].toUpperCase(),
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: PulseColors.primary,
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
@@ -501,7 +502,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
         ),
         title: Text(
           otherUserName,
-          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -512,7 +513,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
               style: TextStyle(
                 color: conversation.unreadCount > 0
                     ? Colors.black87
-                    : Colors.grey[600],
+                    : context.onSurfaceVariantColor,
                 fontWeight: conversation.unreadCount > 0
                     ? FontWeight.w500
                     : FontWeight.normal,
@@ -523,22 +524,25 @@ class _ChatListScreenState extends State<ChatListScreen> {
             const SizedBox(height: 4),
             Text(
               _formatMessageTime(conversation.lastMessageTime),
-              style: TextStyle(color: Colors.grey[500], fontSize: 12),
+              style: TextStyle(
+                color: context.onSurfaceVariantColor.withValues(alpha: 0.6),
+                fontSize: 12,
+              ),
             ),
           ],
         ),
         trailing: conversation.unreadCount > 0
             ? Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   color: PulseColors.primary,
                   shape: BoxShape.circle,
                 ),
                 constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
                 child: Text(
                   '${conversation.unreadCount}',
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: context.onSurfaceColor,
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                   ),
@@ -575,21 +579,21 @@ class _ChatListScreenState extends State<ChatListScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Start New Conversation'),
-        content: const Text(
+        title: Text('Start New Conversation'),
+        content: Text(
           'This feature will allow you to start a new conversation with your matches.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
               // Navigate to user selection screen or matches screen
             },
-            child: const Text('Browse Matches'),
+            child: Text('Browse Matches'),
           ),
         ],
       ),

@@ -5,6 +5,7 @@ import 'package:logger/logger.dart';
 
 import '../../blocs/profile/profile_bloc.dart';
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 import '../../widgets/common/pulse_button.dart';
 import '../../widgets/common/pulse_toast.dart';
@@ -150,7 +151,7 @@ class _IntentSelectionScreenState extends State<IntentSelectionScreen> {
       future: _goalsFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return Center(child: CircularProgressIndicator());
         }
 
         if (snapshot.hasError) {
@@ -162,7 +163,7 @@ class _IntentSelectionScreenState extends State<IntentSelectionScreen> {
         final goals = snapshot.data ?? [];
 
         if (goals.isEmpty) {
-          return const Center(child: Text('No goals available'));
+          return Center(child: Text('No goals available'));
         }
 
         return Column(
@@ -195,10 +196,12 @@ class _IntentSelectionScreenState extends State<IntentSelectionScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: isSelected ? color.withValues(alpha: 0.15) : Colors.grey[100],
+                    color: isSelected
+                        ? color.withValues(alpha: 0.15)
+                        : context.surfaceVariantColor,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: isSelected ? color : Colors.grey[300]!,
+                      color: isSelected ? color : context.outlineColor,
                       width: isSelected ? 2 : 1,
                     ),
                   ),
@@ -211,7 +214,7 @@ class _IntentSelectionScreenState extends State<IntentSelectionScreen> {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: isSelected ? color : Colors.grey[400]!,
+                            color: isSelected ? color : context.outlineColor,
                             width: 2,
                           ),
                         ),
@@ -250,17 +253,20 @@ class _IntentSelectionScreenState extends State<IntentSelectionScreen> {
                           children: [
                             Text(
                               option['title'] as String? ?? 'Unknown',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.black87,
+                                color: context.onSurfaceColor,
                               ),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               option['description'] as String? ?? 'No description',
                               style:
-                                  TextStyle(fontSize: 13, color: Colors.grey[600]),
+                                  TextStyle(
+                                fontSize: 13,
+                                color: context.onSurfaceVariantColor,
+                              ),
                             ),
                           ],
                         ),
@@ -293,18 +299,18 @@ class _IntentSelectionScreenState extends State<IntentSelectionScreen> {
     logger.i('  Button enabled: ${_selectedIntents.length == 1}');
     
     return KeyboardDismissibleScaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: context.surfaceColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: context.surfaceColor,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.close, color: Colors.black87),
+          icon: Icon(Icons.close, color: context.onSurfaceColor),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text(
+        title: Text(
           'Your Primary Intent?',
           style: TextStyle(
-            color: Colors.black87,
+            color: context.onSurfaceColor,
             fontSize: 20,
             fontWeight: FontWeight.w600,
           ),
@@ -335,7 +341,7 @@ class _IntentSelectionScreenState extends State<IntentSelectionScreen> {
                     child: Text(
                       'Help us personalize your experience and show you relevant connections.',
                       style: TextStyle(
-                        color: Colors.grey[700],
+                        color: context.onSurfaceVariantColor,
                         fontSize: 14,
                         height: 1.4,
                       ),
@@ -360,7 +366,10 @@ class _IntentSelectionScreenState extends State<IntentSelectionScreen> {
             const SizedBox(height: 8),
             Text(
               'Choose your primary intent. You can explore other features anytime.',
-              style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+              style: TextStyle(
+                fontSize: 14,
+                color: context.onSurfaceVariantColor,
+              ),
             ),
             const SizedBox(height: 16),
             _buildIntentOptions(),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../domain/entities/user_profile.dart';
 import '../../theme/pulse_colors.dart';
-import '../../theme/theme_extensions.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 import '../common/robust_network_image.dart';
 import '../verification/verification_badge.dart';
 
@@ -50,14 +50,14 @@ class ProfileModal extends StatelessWidget {
               children: [
                 Text(
                   userProfile.name,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 IconButton(
                   onPressed: onClose ?? () => Navigator.pop(context),
-                  icon: const Icon(Icons.close),
+                  icon: Icon(Icons.close),
                   iconSize: 28,
                 ),
               ],
@@ -100,7 +100,7 @@ class ProfileModal extends StatelessWidget {
                     children: [
                       Text(
                         '${userProfile.name}, ${userProfile.age}',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
                         ),
@@ -138,7 +138,7 @@ class ProfileModal extends StatelessWidget {
 
                   // Bio
                   if (userProfile.bio.isNotEmpty) ...[
-                    const Text(
+                    Text(
                       'About',
                       style: TextStyle(
                         fontSize: 20,
@@ -148,14 +148,14 @@ class ProfileModal extends StatelessWidget {
                     const SizedBox(height: 8),
                     Text(
                       userProfile.bio,
-                      style: const TextStyle(fontSize: 16, height: 1.4),
+                      style: TextStyle(fontSize: 16, height: 1.4),
                     ),
                     const SizedBox(height: 24),
                   ],
 
                   // Interests
                   if (userProfile.interests.isNotEmpty) ...[
-                    const Text(
+                    Text(
                       'Interests',
                       style: TextStyle(
                         fontSize: 20,
@@ -195,7 +195,7 @@ class ProfileModal extends StatelessWidget {
                   // Additional info
                   if (userProfile.occupation?.isNotEmpty == true ||
                       userProfile.education?.isNotEmpty == true) ...[
-                    const Text(
+                    Text(
                       'Details',
                       style: TextStyle(
                         fontSize: 20,
@@ -216,7 +216,7 @@ class ProfileModal extends StatelessWidget {
                           Expanded(
                             child: Text(
                               userProfile.occupation!,
-                              style: const TextStyle(fontSize: 16),
+                              style: TextStyle(fontSize: 16),
                             ),
                           ),
                         ],
@@ -236,7 +236,7 @@ class ProfileModal extends StatelessWidget {
                           Expanded(
                             child: Text(
                               userProfile.education!,
-                              style: const TextStyle(fontSize: 16),
+                              style: TextStyle(fontSize: 16),
                             ),
                           ),
                         ],
@@ -265,7 +265,7 @@ class ProfileModal extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Start Conversation',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),

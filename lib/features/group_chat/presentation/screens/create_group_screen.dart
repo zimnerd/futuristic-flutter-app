@@ -40,7 +40,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Create Group',
           style: TextStyle(
             color: Color(0xFF202124), // PulseColors.onSurface
@@ -53,7 +53,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
         actions: [
           TextButton(
             onPressed: _createGroup,
-            child: const Text(
+            child: Text(
               'Create',
               style: TextStyle(
                 color: Color(0xFF6E3BFF), // PulseColors.primary
@@ -98,7 +98,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Basic Information',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
@@ -109,7 +109,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                 labelText: 'Group Name',
                 hintText: 'Enter group name',
                 border: const OutlineInputBorder(),
-                prefixIcon: const Icon(Icons.group),
+                prefixIcon:  Icon(Icons.group),
                 labelStyle: const TextStyle(
                   color: Color(0xFF202124), // PulseColors.onSurface
                 ),
@@ -132,7 +132,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                 labelText: 'Description (optional)',
                 hintText: 'What is this group about?',
                 border: const OutlineInputBorder(),
-                prefixIcon: const Icon(Icons.description),
+                prefixIcon:  Icon(Icons.description),
                 labelStyle: const TextStyle(
                   color: Color(0xFF202124), // PulseColors.onSurface
                 ),
@@ -153,7 +153,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Group Type',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
@@ -211,14 +211,14 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Settings',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             ListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('Max Participants'),
+              title: Text('Max Participants'),
               subtitle: Slider(
                 value: _maxParticipants.toDouble(),
                 min: 2,
@@ -251,11 +251,11 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
             ),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text(
+              title: Text(
                 'Require Approval',
                 style: TextStyle(color: Color(0xFF202124)),
               ),
-              subtitle: const Text(
+              subtitle: Text(
                 'Host must approve new members',
                 style: TextStyle(color: Color(0xFF5F6368)),
               ),
@@ -268,11 +268,11 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
             ),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text(
+              title: Text(
                 'Allow Participant Invites',
                 style: TextStyle(color: Color(0xFF202124)),
               ),
-              subtitle: const Text(
+              subtitle: Text(
                 'Members can invite others',
                 style: TextStyle(color: Color(0xFF5F6368)),
               ),
@@ -285,11 +285,11 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
             ),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text(
+              title: Text(
                 'Auto Accept Friends',
                 style: TextStyle(color: Color(0xFF202124)),
               ),
-              subtitle: const Text(
+              subtitle: Text(
                 'Automatically accept your friends',
                 style: TextStyle(color: Color(0xFF5F6368)),
               ),
@@ -302,11 +302,11 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
             ),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text(
+              title: Text(
                 'Enable Voice Chat',
                 style: TextStyle(color: Color(0xFF202124)),
               ),
-              subtitle: const Text(
+              subtitle: Text(
                 'Allow voice messages and calls',
                 style: TextStyle(color: Color(0xFF5F6368)),
               ),
@@ -319,11 +319,11 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
             ),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text(
+              title: Text(
                 'Enable Video Chat',
                 style: TextStyle(color: Color(0xFF202124)),
               ),
-              subtitle: const Text(
+              subtitle: Text(
                 'Allow video calls',
                 style: TextStyle(color: Color(0xFF5F6368)),
               ),
@@ -349,14 +349,14 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
           children: [
             Row(
               children: [
-                const Text(
+                Text(
                   'Add Participants',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const Spacer(),
                 TextButton.icon(
                   onPressed: _showParticipantPicker,
-                  icon: const Icon(Icons.person_add),
+                  icon:  Icon(Icons.person_add),
                   label: Text('Add (${_selectedParticipantNames.length})'),
                 ),
               ],
@@ -387,7 +387,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                         ), // PulseColors.onSurface - dark text
                       ),
                     ),
-                    deleteIcon: const Icon(Icons.close, size: 18),
+                    deleteIcon:  Icon(Icons.close, size: 18),
                     onDeleted: () {
                       setState(() {
                         _selectedParticipantIds.remove(id);

@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../theme/pulse_colors.dart';
-import '../../theme/theme_extensions.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 import '../../../data/models/chat_model.dart';
 import '../../../domain/entities/message.dart' as entities;
 import '../media/media_grid.dart';
@@ -312,8 +312,8 @@ class MessageBubble extends StatelessWidget {
                                           DateFormat(
                                             'h:mm a',
                                           ).format(message.createdAt),
-                                          style: const TextStyle(
-                                            color: Colors.white,
+                                          style: TextStyle(
+                                            color: context.onSurfaceColor,
                                             fontSize: 12,
                                             fontWeight: FontWeight.w500,
                                           ),
@@ -324,7 +324,7 @@ class MessageBubble extends StatelessWidget {
                                             status: message.status,
                                             onRetry: onRetry,
                                             size: 14,
-                                            color: Colors.white,
+                                            color: context.onSurfaceColor,
                                             readColor: Colors.blue.shade300,
                                           ),
                                         ],
@@ -505,7 +505,7 @@ class MessageBubble extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(emoji, style: const TextStyle(fontSize: 14)),
+                  Text(emoji, style: TextStyle(fontSize: 14)),
                   if (reactionList.length > 1) ...[
                     const SizedBox(width: 4),
                     Text(
@@ -634,9 +634,9 @@ class MessageBubble extends StatelessWidget {
                   color: Colors.black.withValues(alpha: 0.6),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Text(
+                child: Text(
                   'Tap to view',
-                  style: TextStyle(color: Colors.white, fontSize: 11),
+                  style: TextStyle(color: context.onSurfaceColor, fontSize: 11),
                 ),
               ),
             ),
@@ -700,25 +700,28 @@ class MessageBubble extends StatelessWidget {
               'Coordinates:',
               style: TextStyle(
                 fontWeight: FontWeight.w600,
-                color: Colors.grey[700],
+                color: context.onSurfaceVariantColor,
               ),
             ),
             const SizedBox(height: 4),
             SelectableText(
               'Latitude: $lat\nLongitude: $lng',
-              style: const TextStyle(fontFamily: 'monospace'),
+              style: TextStyle(fontFamily: 'monospace'),
             ),
             const SizedBox(height: 16),
             Text(
               'Tap the coordinates above to copy them, or use a map application to navigate to this location.',
-              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+              style: TextStyle(
+                fontSize: 12,
+                color: context.onSurfaceVariantColor,
+              ),
             ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Close'),
+            child: Text('Close'),
           ),
         ],
       ),
@@ -998,7 +1001,7 @@ class MessageBubble extends StatelessWidget {
                             ],
                           ),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.videocam_rounded,
                           size: 64,
                           color: Colors.white70,
@@ -1018,10 +1021,10 @@ class MessageBubble extends StatelessWidget {
                           color: Colors.black.withValues(alpha: 0.7),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.play_arrow_rounded,
                           size: 40,
-                          color: Colors.white,
+                          color: context.onSurfaceColor,
                         ),
                       ),
                     ),
@@ -1048,8 +1051,8 @@ class MessageBubble extends StatelessWidget {
                             seconds: message.metadata!['duration'] as int,
                           ),
                         ),
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: context.onSurfaceColor,
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
                         ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Reusable button widget with Pulse branding
 /// Supports multiple variants and loading states
@@ -71,7 +72,7 @@ class PulseButton extends StatelessWidget {
           onPressed: isDisabled || isLoading ? null : onPressed,
           style: ElevatedButton.styleFrom(
             backgroundColor: PulseColors.primary,
-            foregroundColor: Colors.white,
+            foregroundColor: context.onSurfaceColor,
             padding: _getPadding(),
             minimumSize: _getMinimumSize(),
             shape: RoundedRectangleBorder(
@@ -115,7 +116,7 @@ class PulseButton extends StatelessWidget {
           onPressed: isDisabled || isLoading ? null : onPressed,
           style: ElevatedButton.styleFrom(
             backgroundColor: PulseColors.error,
-            foregroundColor: Colors.white,
+            foregroundColor: context.onSurfaceColor,
             padding: _getPadding(),
             minimumSize: _getMinimumSize(),
             shape: RoundedRectangleBorder(

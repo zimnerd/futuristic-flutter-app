@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../animations/pulse_animations.dart';
 import '../theme/pulse_colors.dart';
-import '../theme/theme_extensions.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Enhanced animated button with smooth interactions
 class AnimatedPulseButton extends StatefulWidget {

@@ -88,7 +88,7 @@ Users can now:
 6. General widgets - 150+ files
 
 **Pattern for each file:**
-1. Add import: `import '../theme/theme_extensions.dart';`
+1. Add import: `import 'package:pulse_dating_app/core/theme/theme_extensions.dart';`
 2. Find/replace patterns from docs/theme-color-reference.md
 3. Test in both light and dark mode
 4. Move to next file

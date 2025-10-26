@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 import '../theme/pulse_colors.dart';
 
@@ -478,7 +479,11 @@ class _MatchCelebrationWidgetState extends State<MatchCelebrationWidget>
                 ),
               ],
             ),
-            child: const Icon(Icons.favorite, color: Colors.white, size: 60),
+            child: Icon(
+              Icons.favorite,
+              color: context.onSurfaceColor,
+              size: 60,
+            ),
           ),
         ),
       ),

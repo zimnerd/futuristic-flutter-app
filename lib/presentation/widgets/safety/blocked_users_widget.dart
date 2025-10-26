@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../data/models/safety.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Widget for displaying blocked users list
 class BlockedUsersWidget extends StatelessWidget {
@@ -20,20 +21,28 @@ class BlockedUsersWidget extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.block, size: 64, color: Colors.grey[400]),
+            Icon(
+              Icons.block,
+              size: 64,
+              color: context.outlineColor.withValues(alpha: 0.2),
+            ),
             const SizedBox(height: 16),
             Text(
               'No blocked users',
               style: Theme.of(
                 context,
-              ).textTheme.headlineSmall?.copyWith(color: Colors.grey[600]),
+              ).textTheme.headlineSmall?.copyWith(
+                color: context.onSurfaceVariantColor,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
               'Users you block will appear here',
               style: Theme.of(
                 context,
-              ).textTheme.bodyMedium?.copyWith(color: Colors.grey[500]),
+              ).textTheme.bodyMedium?.copyWith(
+                color: context.onSurfaceVariantColor.withValues(alpha: 0.6),
+              ),
               textAlign: TextAlign.center,
             ),
           ],
@@ -65,10 +74,10 @@ class BlockedUsersWidget extends StatelessWidget {
               width: 56,
               height: 56,
               decoration: BoxDecoration(
-                color: Colors.grey[300],
+                color: context.outlineColor.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(28),
               ),
-              child: const Icon(Icons.person, color: Colors.grey, size: 32),
+              child: Icon(Icons.person, color: context.outlineColor, size: 32),
             ),
             const SizedBox(width: 16),
 
@@ -95,11 +104,13 @@ class BlockedUsersWidget extends StatelessWidget {
                           ),
                           decoration: BoxDecoration(
                             color: _getReasonColor(
+                              context,
                               blockedUser.reason!,
                             ).withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
                               color: _getReasonColor(
+                                context,
                                 blockedUser.reason!,
                               ).withValues(alpha: 0.3),
                             ),
@@ -109,7 +120,10 @@ class BlockedUsersWidget extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w600,
-                              color: _getReasonColor(blockedUser.reason!),
+                              color: _getReasonColor(
+                                context,
+                                blockedUser.reason!,
+                              ),
                             ),
                           ),
                         ),
@@ -120,7 +134,9 @@ class BlockedUsersWidget extends StatelessWidget {
                     'Blocked ${_formatDate(blockedUser.blockedAt)}',
                     style: Theme.of(
                       context,
-                    ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+                    ).textTheme.bodySmall?.copyWith(
+                      color: context.onSurfaceVariantColor,
+                    ),
                   ),
                 ],
               ),
@@ -132,13 +148,13 @@ class BlockedUsersWidget extends StatelessWidget {
               children: [
                 IconButton(
                   onPressed: () => _showUnblockDialog(context, blockedUser),
-                  icon: const Icon(Icons.remove_circle_outline),
+                  icon: Icon(Icons.remove_circle_outline),
                   color: Colors.green,
                   tooltip: 'Unblock User',
                 ),
                 IconButton(
                   onPressed: () => _showDetailsDialog(context, blockedUser),
-                  icon: const Icon(Icons.info_outline),
+                  icon: Icon(Icons.info_outline),
                   color: Colors.blue,
                   tooltip: 'View Details',
                 ),
@@ -150,7 +166,7 @@ class BlockedUsersWidget extends StatelessWidget {
     );
   }
 
-  Color _getReasonColor(String reason) {
+  Color _getReasonColor(BuildContext context, String reason) {
     switch (reason.toLowerCase()) {
       case 'harassment':
         return Colors.red;
@@ -161,7 +177,7 @@ class BlockedUsersWidget extends StatelessWidget {
       case 'fake':
         return Colors.brown;
       default:
-        return Colors.grey;
+        return context.outlineColor;
     }
   }
 
@@ -174,14 +190,14 @@ class BlockedUsersWidget extends StatelessWidget {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Unblock User'),
+        title: Text('Unblock User'),
         content: Text(
           'Are you sure you want to unblock this user? They will be able to contact you again.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           TextButton(
             onPressed: () {
@@ -189,7 +205,7 @@ class BlockedUsersWidget extends StatelessWidget {
               onUnblockUser?.call(blockedUser.blockedUserId);
             },
             style: TextButton.styleFrom(foregroundColor: Colors.green),
-            child: const Text('Unblock'),
+            child: Text('Unblock'),
           ),
         ],
       ),
@@ -201,7 +217,7 @@ class BlockedUsersWidget extends StatelessWidget {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Block Details'),
+        title: Text('Block Details'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -216,7 +232,7 @@ class BlockedUsersWidget extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Close'),
+            child: Text('Close'),
           ),
         ],
       ),
@@ -229,7 +245,7 @@ class BlockedUsersWidget extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('$label: ', style: const TextStyle(fontWeight: FontWeight.w600)),
+          Text('$label: ', style: TextStyle(fontWeight: FontWeight.w600)),
           Expanded(child: Text(value)),
         ],
       ),

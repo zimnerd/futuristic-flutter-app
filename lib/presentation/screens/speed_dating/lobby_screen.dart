@@ -8,6 +8,7 @@ import '../../../data/services/speed_dating_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_state.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 import '../../widgets/common/pulse_toast.dart';
 
 /// Speed Dating Lobby Screen
@@ -206,29 +207,29 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
-        title: const Text(
+        backgroundColor: context.surfaceColor,
+        title: Text(
           'Leave Event',
           style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
         ),
-        content: const Text(
+        content: Text(
           'Are you sure you want to leave this event?',
           style: TextStyle(color: Colors.black87, fontSize: 16),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text(
+            child: Text(
               'Cancel',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text(
+            child: Text(
               'Leave',
               style: TextStyle(
-                color: Colors.red,
+                color: context.errorColor,
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
@@ -282,12 +283,12 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
-        title: const Text(
+        backgroundColor: context.surfaceColor,
+        title: Text(
           'Start Event',
           style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
         ),
-        content: const Text(
+        content: Text(
           'Are you sure you want to start the speed dating event? '
           'All participants will begin their first round.',
           style: TextStyle(color: Colors.black87),
@@ -295,14 +296,14 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF6E3BFF),
             ),
-            child: const Text('Start Event'),
+            child: Text('Start Event'),
           ),
         ],
       ),
@@ -340,14 +341,14 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Speed Dating Lobby'),
+          title: Text('Speed Dating Lobby'),
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
+            icon: Icon(Icons.arrow_back),
             onPressed: () => context.goNamed('speedDating'),
           ),
           actions: [
             IconButton(
-              icon: const Icon(Icons.refresh),
+              icon: Icon(Icons.refresh),
               onPressed: _isLoading ? null : _loadEventData,
             ),
           ],
@@ -359,7 +360,7 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
 
   Widget _buildBody() {
     if (_isLoading && _event == null) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(child: CircularProgressIndicator());
     }
 
     if (_error != null && _event == null) {
@@ -367,17 +368,17 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline, size: 64, color: Colors.red),
+            Icon(Icons.error_outline, size: 64, color: context.errorColor),
             const SizedBox(height: 16),
             Text(
               _error!,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 16),
+              style: TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: _loadEventData,
-              child: const Text('Retry'),
+              child: Text('Retry'),
             ),
           ],
         ),
@@ -385,7 +386,7 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
     }
 
     if (_event == null) {
-      return const Center(child: Text('Event not found'));
+      return Center(child: Text('Event not found'));
     }
 
     return RefreshIndicator(
@@ -413,22 +414,22 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.red.withValues(alpha: 0.1),
+        color: context.errorColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.red.withValues(alpha: 0.5)),
+        border: Border.all(color: context.errorColor.withValues(alpha: 0.5)),
       ),
       child: Row(
         children: [
-          const Icon(Icons.error_outline, color: Colors.red, size: 20),
+          Icon(Icons.error_outline, color: context.errorColor, size: 20),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               _error!,
-              style: const TextStyle(color: Colors.red, fontSize: 14),
+              style: TextStyle(color: context.errorColor, fontSize: 14),
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.close, color: Colors.red, size: 20),
+            icon: Icon(Icons.close, color: context.errorColor, size: 20),
             onPressed: () {
               setState(() {
                 _error = null;
@@ -461,7 +462,7 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
                 Expanded(
                   child: Text(
                     event['title'] as String,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
@@ -474,7 +475,10 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
             if (event['description'] != null)
               Text(
                 event['description'] as String,
-                style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                style: TextStyle(
+                  fontSize: 16,
+                  color: context.onSurfaceVariantColor,
+                ),
               ),
             const SizedBox(height: 16),
             _buildEventDetail(
@@ -551,9 +555,9 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
   Widget _buildEventDetail(IconData icon, String text) {
     return Row(
       children: [
-        Icon(icon, size: 20, color: Colors.grey[600]),
+        Icon(icon, size: 20, color: context.onSurfaceVariantColor),
         const SizedBox(width: 8),
-        Expanded(child: Text(text, style: const TextStyle(fontSize: 14))),
+        Expanded(child: Text(text, style: TextStyle(fontSize: 14))),
       ],
     );
   }
@@ -564,7 +568,7 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
       children: [
         Row(
           children: [
-            const Text(
+            Text(
               'Participants',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
@@ -577,7 +581,7 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
               ),
               child: Text(
                 '${_participants.length}',
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.primary,
                   fontWeight: FontWeight.bold,
                 ),
@@ -587,13 +591,13 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
         ),
         const SizedBox(height: 16),
         if (_participants.isEmpty)
-          const Center(
+          Center(
             child: Padding(
               padding: EdgeInsets.all(32),
               child: Text(
                 'No participants yet.\nBe the first to join!',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16, color: Colors.grey),
+                style: TextStyle(fontSize: 16, color: context.outlineColor),
               ),
             ),
           )
@@ -626,15 +630,15 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
         backgroundImage: photoUrl != null
             ? CachedNetworkImageProvider(photoUrl)
             : null,
-        backgroundColor: Colors.grey[300],
+        backgroundColor: context.outlineColor.withValues(alpha: 0.3),
         child: photoUrl == null
             ? Text(
                 name.isNotEmpty ? name[0].toUpperCase() : '?',
-                style: const TextStyle(fontWeight: FontWeight.bold),
+                style: TextStyle(fontWeight: FontWeight.bold),
               )
             : null,
       ),
-      title: Text(name, style: const TextStyle(fontWeight: FontWeight.w600)),
+      title: Text(name, style: TextStyle(fontWeight: FontWeight.w600)),
       subtitle: age != null ? Text('$age years old') : null,
       trailing: status == 'active'
           ? Container(
@@ -643,7 +647,7 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
                 color: Colors.green.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Text(
+              child: Text(
                 'Active',
                 style: TextStyle(
                   color: Colors.green,
@@ -691,12 +695,12 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
                         valueColor: AlwaysStoppedAnimation(Colors.white),
                       ),
                     )
-                  : const Text(
+                  : Text(
                       'Leave Event',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: context.onSurfaceColor,
                       ),
                     ),
             )
@@ -719,12 +723,12 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
                         valueColor: AlwaysStoppedAnimation(Colors.white),
                       ),
                     )
-                  : const Text(
+                  : Text(
                       'Join Event',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: context.onSurfaceColor,
                       ),
                     ),
             ),
@@ -733,8 +737,8 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
             const SizedBox(height: 12),
             OutlinedButton.icon(
               onPressed: _startEvent,
-              icon: const Icon(Icons.play_arrow),
-              label: const Text('Start Event'),
+              icon: Icon(Icons.play_arrow),
+              label: Text('Start Event'),
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(

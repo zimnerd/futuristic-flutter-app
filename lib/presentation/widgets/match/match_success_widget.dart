@@ -7,6 +7,7 @@ import '../../blocs/match/match_state.dart';
 import '../../blocs/messaging/messaging_bloc.dart';
 import '../../../data/models/match_model.dart';
 import '../../screens/matches/matches_screen.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Widget showing match success and conversation options
 class MatchSuccessWidget extends StatefulWidget {
@@ -59,16 +60,16 @@ class _MatchSuccessWidgetState extends State<MatchSuccessWidget> {
               color: Colors.white.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.favorite, size: 60, color: Colors.white),
+            child: Icon(Icons.favorite, size: 60, color: Colors.white),
           ),
 
           const SizedBox(height: 24),
 
           // Match announcement
-          const Text(
+          Text(
             "It's a Match! 🎉",
             style: TextStyle(
-              color: Colors.white,
+              color: context.onSurfaceColor,
               fontSize: 32,
               fontWeight: FontWeight.bold,
             ),
@@ -96,8 +97,8 @@ class _MatchSuccessWidgetState extends State<MatchSuccessWidget> {
               ),
               child: Text(
                 '${(widget.match.compatibilityScore * 100).round()}% Compatible',
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: context.onSurfaceColor,
                   fontWeight: FontWeight.w600,
                   fontSize: 14,
                 ),
@@ -119,9 +120,9 @@ class _MatchSuccessWidgetState extends State<MatchSuccessWidget> {
                   color: Colors.white.withValues(alpha: 0.3),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.favorite,
-                  color: Colors.white,
+                  color: context.onSurfaceColor,
                   size: 20,
                 ),
               ),
@@ -142,10 +143,10 @@ class _MatchSuccessWidgetState extends State<MatchSuccessWidget> {
                   width: double.infinity,
                   child: ElevatedButton.icon(
                     onPressed: widget.onStartChat ?? () => _startChat(context),
-                    icon: const Icon(Icons.chat_bubble),
-                    label: const Text('Start Chatting'),
+                    icon: Icon(Icons.chat_bubble),
+                    label: Text('Start Chatting'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
+                      backgroundColor: context.surfaceColor,
                       foregroundColor: Theme.of(context).primaryColor,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
@@ -165,10 +166,10 @@ class _MatchSuccessWidgetState extends State<MatchSuccessWidget> {
                     onPressed:
                         widget.onKeepSwiping ??
                         () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.explore),
-                    label: const Text('Keep Swiping'),
+                    icon: Icon(Icons.explore),
+                    label: Text('Keep Swiping'),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.white,
+                      foregroundColor: context.onSurfaceColor,
                       side: const BorderSide(color: Colors.white),
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
@@ -186,7 +187,7 @@ class _MatchSuccessWidgetState extends State<MatchSuccessWidget> {
           // Close button
           IconButton(
             onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.close, color: Colors.white, size: 24),
+            icon: Icon(Icons.close, color: context.onSurfaceColor, size: 24),
           ),
         ],
       ),
@@ -225,7 +226,7 @@ class _ProfileCard extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 25,
-            backgroundColor: Colors.white.withValues(alpha: 0.3),
+            backgroundColor: context.surfaceColor.withValues(alpha: 0.3),
             child: Icon(
               Icons.person,
               size: 25,

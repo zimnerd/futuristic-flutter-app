@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 import '../../../core/utils/logger.dart';
 import '../../../core/network/api_client.dart';
 import '../../../data/models/user_model.dart';
@@ -99,7 +100,7 @@ class _AiMatchingScreenState extends State<AiMatchingScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('AI Matching'),
+        title: Text('AI Matching'),
         backgroundColor: Colors.transparent,
         elevation: 0,
         flexibleSpace: Container(
@@ -112,8 +113,8 @@ class _AiMatchingScreenState extends State<AiMatchingScreen>
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: Colors.white,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
+          labelStyle: const TextStyle(color: Colors.white),
+          unselectedLabelStyle: const TextStyle(color: Colors.white70),
           tabs: const [
             Tab(text: 'Discover', icon: Icon(Icons.explore, size: 20)),
             Tab(text: 'Analytics', icon: Icon(Icons.analytics, size: 20)),
@@ -249,7 +250,9 @@ class _AiMatchingScreenState extends State<AiMatchingScreen>
                 Expanded(
                   child: LinearProgressIndicator(
                     value: (_aiInsights['profile_completion'] ?? 0) / 100,
-                    backgroundColor: Colors.grey[300],
+                    backgroundColor: context.outlineColor.withValues(
+                      alpha: 0.3,
+                    ),
                     valueColor: AlwaysStoppedAnimation<Color>(
                       (_aiInsights['profile_completion'] ?? 0) >= 80
                           ? Colors.green
@@ -295,7 +298,7 @@ class _AiMatchingScreenState extends State<AiMatchingScreen>
                             ? NetworkImage(match.userProfile!.photos.first.url)
                             : null,
                         child: match.userProfile?.photos.isEmpty != false
-                            ? const Icon(Icons.person)
+                            ? Icon(Icons.person)
                             : null,
                       ),
                       const SizedBox(width: 12),
@@ -458,13 +461,13 @@ class _AiMatchingScreenState extends State<AiMatchingScreen>
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: PulseColors.primary,
-                foregroundColor: Colors.white,
+                foregroundColor: context.onSurfaceColor,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text(
+              child: Text(
                 'Save Preferences',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),

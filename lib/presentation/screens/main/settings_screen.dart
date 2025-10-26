@@ -443,14 +443,14 @@ class SettingsScreen extends StatelessWidget {
               showDialog(
                 context: context,
                 builder: (context) => AlertDialog(
-                  title: const Text('Final Confirmation'),
-                  content: const Text(
+                  title: Text('Final Confirmation'),
+                  content: Text(
                     'This action cannot be undone. All your data will be permanently deleted.\n\nType "DELETE" to confirm:',
                   ),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('Cancel'),
+                      child: Text('Cancel'),
                     ),
                     TextButton(
                       onPressed: () {
@@ -464,7 +464,7 @@ class SettingsScreen extends StatelessWidget {
                       style: TextButton.styleFrom(
                         foregroundColor: PulseColors.error,
                       ),
-                      child: const Text('DELETE ACCOUNT'),
+                      child: Text('DELETE ACCOUNT'),
                     ),
                   ],
                 ),

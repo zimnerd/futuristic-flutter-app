@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 final _logger = Logger();
 
@@ -72,7 +73,7 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.onSurfaceColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -102,11 +103,11 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
                   ),
                 ),
                 const SizedBox(width: 12),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      const Text(
                         'Privacy Settings',
                         style: TextStyle(
                           fontSize: 18,
@@ -116,7 +117,10 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
                       ),
                       Text(
                         'Control who can see your information',
-                        style: TextStyle(fontSize: 14, color: Colors.grey),
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: context.outlineColor,
+                        ),
                       ),
                     ],
                   ),
@@ -125,7 +129,10 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
             ),
           ),
 
-          Divider(color: Colors.grey[200], height: 1),
+          Divider(
+            color: context.outlineColor.withValues(alpha: 0.15),
+            height: 1,
+          ),
 
           _buildPrivacyOption(
             'Show Distance',
@@ -176,7 +183,10 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
             subtitle: 'Others can see if you\'ve read their messages',
           ),
 
-          Divider(color: Colors.grey[200], height: 1),
+          Divider(
+            color: context.outlineColor.withValues(alpha: 0.15),
+            height: 1,
+          ),
 
           Padding(
             padding: const EdgeInsets.all(20),
@@ -233,12 +243,12 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
             decoration: BoxDecoration(
               color: isWarning
                   ? Colors.orange.withValues(alpha: 0.1)
-                  : Colors.grey.withValues(alpha: 0.1),
+                  : context.outlineColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
               icon,
-              color: isWarning ? Colors.orange : Colors.grey[600],
+              color: isWarning ? Colors.orange : context.onSurfaceVariantColor,
               size: 20,
             ),
           ),
@@ -249,7 +259,7 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
                     color: Colors.black87,
@@ -259,7 +269,10 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
-                    style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: context.onSurfaceVariantColor,
+                    ),
                   ),
                 ],
               ],
@@ -298,10 +311,14 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.grey.withValues(alpha: 0.1),
+                  color: context.outlineColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(icon, color: Colors.grey[600], size: 20),
+                child: Icon(
+                  icon,
+                  color: context.onSurfaceVariantColor,
+                  size: 20,
+                ),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -310,7 +327,7 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
                         color: Colors.black87,
@@ -320,7 +337,10 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
                       const SizedBox(height: 2),
                       Text(
                         subtitle,
-                        style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: context.onSurfaceVariantColor,
+                        ),
                       ),
                     ],
                   ],
@@ -331,9 +351,11 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
           const SizedBox(height: 12),
           Container(
             decoration: BoxDecoration(
-              color: Colors.grey.withValues(alpha: 0.05),
+              color: context.outlineColor.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey[300]!),
+              border: Border.all(
+                color: context.outlineColor.withValues(alpha: 0.3),
+              ),
             ),
             child: DropdownButtonFormField<String>(
               initialValue: currentValue,
@@ -351,7 +373,7 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
                   value: option,
                   child: Text(
                     _formatOptionText(option),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w500,
                       color: Colors.black87,

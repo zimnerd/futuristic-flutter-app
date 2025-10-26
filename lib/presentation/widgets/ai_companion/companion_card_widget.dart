@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../data/models/ai_companion.dart';
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Widget to display an AI companion card
 class CompanionCardWidget extends StatelessWidget {
@@ -53,7 +54,7 @@ class CompanionCardWidget extends StatelessWidget {
                     child: companion.avatarUrl.isEmpty
                         ? Text(
                             companion.personality.emoji,
-                            style: const TextStyle(fontSize: 24),
+                            style: TextStyle(fontSize: 24),
                           )
                         : null,
                   ),
@@ -65,7 +66,7 @@ class CompanionCardWidget extends StatelessWidget {
                       children: [
                         Text(
                           companion.name,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
@@ -75,7 +76,7 @@ class CompanionCardWidget extends StatelessWidget {
                           companion.personality.displayName,
                           style: TextStyle(
                             fontSize: 14,
-                            color: Colors.grey[600],
+                            color: context.onSurfaceVariantColor,
                           ),
                         ),
                       ],
@@ -107,11 +108,11 @@ class CompanionCardWidget extends StatelessWidget {
                             ),
                           ),
                         if (onDelete != null)
-                          const PopupMenuItem(
+                          PopupMenuItem(
                             value: 'delete',
                             child: Row(
                               children: [
-                                Icon(Icons.delete, color: Colors.red),
+                                Icon(Icons.delete, color: context.errorColor),
                                 SizedBox(width: 8),
                                 Text('Delete'),
                               ],
@@ -125,7 +126,10 @@ class CompanionCardWidget extends StatelessWidget {
               // Description
               Text(
                 companion.description,
-                style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                style: TextStyle(
+                  fontSize: 14,
+                  color: context.onSurfaceVariantColor,
+                ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -154,7 +158,7 @@ class CompanionCardWidget extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: companion.isActive
                           ? Colors.green.withValues(alpha: 0.2)
-                          : Colors.grey.withValues(alpha: 0.2),
+                          : context.outlineColor.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
@@ -165,7 +169,7 @@ class CompanionCardWidget extends StatelessWidget {
                           size: 8,
                           color: companion.isActive
                               ? Colors.green
-                              : Colors.grey,
+                              : context.outlineColor,
                         ),
                         const SizedBox(width: 4),
                         Text(
@@ -174,7 +178,7 @@ class CompanionCardWidget extends StatelessWidget {
                             fontSize: 12,
                             color: companion.isActive
                                 ? Colors.green
-                                : Colors.grey,
+                                : context.outlineColor,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -187,7 +191,10 @@ class CompanionCardWidget extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 'Last interaction: ${_formatDate(companion.lastInteractionAt)}',
-                style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: context.onSurfaceVariantColor.withValues(alpha: 0.6),
+                ),
               ),
             ],
           ),
@@ -201,16 +208,24 @@ class CompanionCardWidget extends StatelessWidget {
     required String label,
     required String value,
   }) {
-    return Column(
-      children: [
-        Icon(icon, size: 20, color: PulseColors.primary),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-        ),
-        Text(label, style: TextStyle(fontSize: 10, color: Colors.grey[600])),
-      ],
+    return Builder(
+      builder: (context) => Column(
+        children: [
+          Icon(icon, size: 20, color: PulseColors.primary),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+          ),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10,
+              color: context.onSurfaceVariantColor,
+            ),
+          ),
+        ],
+      ),
     );
   }
 

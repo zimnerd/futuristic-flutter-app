@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../domain/entities/event.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../theme/pulse_colors.dart';
-import '../../theme/theme_extensions.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 import '../common/robust_network_image.dart';
 import 'event_analytics_indicators.dart';
 
@@ -316,8 +316,8 @@ class EventCard extends StatelessWidget {
 
     return ElevatedButton.icon(
       onPressed: onAttend,
-      icon: const Icon(Icons.add, size: 16),
-      label: const Text('Join'),
+      icon: Icon(Icons.add, size: 16),
+      label: Text('Join'),
       style: ElevatedButton.styleFrom(
         backgroundColor: PulseColors.primary,
         foregroundColor: Theme.of(context).colorScheme.onPrimary,

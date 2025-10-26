@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Physical attributes and beliefs section for user profile
 /// Maps to Profile.height, Profile.religion, Profile.politics fields
@@ -135,10 +136,10 @@ class ProfilePhysicalAttributesSection extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final containerColor = isDark
         ? Colors.white.withValues(alpha: 0.05)
-        : Colors.grey.shade50;
+        : context.outlineColor.shade50;
     final borderColor = isDark
         ? Colors.white.withValues(alpha: 0.1)
-        : Colors.grey.withValues(alpha: 0.3);
+        : context.outlineColor.withValues(alpha: 0.3);
     final textColor =
         Theme.of(context).textTheme.bodyLarge?.color ??
         (isDark ? Colors.white : Colors.black87);
@@ -162,7 +163,7 @@ class ProfilePhysicalAttributesSection extends StatelessWidget {
                   color: PulseColors.success.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.person_outline,
                   color: PulseColors.success,
                   size: 20,

@@ -271,7 +271,9 @@ class PulseTheme {
         borderSide: const BorderSide(color: PulseColors.error),
       ),
       contentPadding: const EdgeInsets.all(PulseSpacing.md),
-      labelStyle: PulseTextStyles.bodyMedium,
+      labelStyle: PulseTextStyles.bodyMedium.copyWith(
+        color: PulseColors.onSurface, // Will adapt to theme
+      ),
       hintStyle: PulseTextStyles.bodyMedium.copyWith(
         color: PulseColors.onSurfaceVariant,
       ),
@@ -506,6 +508,35 @@ class PulseTheme {
         ),
         textStyle: PulseTextStyles.labelLarge,
         minimumSize: const Size(120, 48),
+      ),
+    ),
+
+    // Input decoration theme for dark mode
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: PulseColors.surfaceVariantDark, // Dark fill color
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(PulseRadii.input),
+        borderSide: const BorderSide(color: PulseColors.outline),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(PulseRadii.input),
+        borderSide: const BorderSide(color: PulseColors.outline),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(PulseRadii.input),
+        borderSide: const BorderSide(color: PulseColors.primary, width: 2),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(PulseRadii.input),
+        borderSide: const BorderSide(color: PulseColors.error),
+      ),
+      contentPadding: const EdgeInsets.all(PulseSpacing.md),
+      labelStyle: PulseTextStyles.bodyMedium.copyWith(
+        color: PulseColors.onSurfaceDark, // Light text on dark background
+      ),
+      hintStyle: PulseTextStyles.bodyMedium.copyWith(
+        color: PulseColors.onSurfaceVariantDark, // Muted light text
       ),
     ),
 

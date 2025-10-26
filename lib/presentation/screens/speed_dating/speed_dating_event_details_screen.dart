@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 import '../../widgets/common/pulse_toast.dart';
 import '../../widgets/speed_dating/event_countdown_timer.dart';
 import '../../blocs/speed_dating/speed_dating_bloc.dart';
@@ -79,12 +80,12 @@ class _SpeedDatingEventDetailsScreenState
         appBar: AppBar(
           title: Text(
             widget.event['title'] ?? 'Speed Dating Event',
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.black87,
               fontWeight: FontWeight.w600,
             ),
           ),
-          backgroundColor: Colors.white,
+          backgroundColor: context.surfaceColor,
           iconTheme: const IconThemeData(color: Colors.black87),
           elevation: 1,
         ),
@@ -105,12 +106,12 @@ class _SpeedDatingEventDetailsScreenState
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
                         height: 200,
-                        color: Colors.grey.shade200,
-                        child: const Center(
+                        color: context.outlineColor.shade200,
+                        child: Center(
                           child: Icon(
                             Icons.event,
                             size: 64,
-                            color: Colors.grey,
+                            color: context.outlineColor,
                           ),
                         ),
                       );
@@ -176,7 +177,8 @@ class _SpeedDatingEventDetailsScreenState
                               .map(
                                 (tag) => Chip(
                                   label: Text(tag),
-                                  backgroundColor: Colors.grey.shade200,
+                                  backgroundColor:
+                                      context.outlineColor.shade200,
                                   labelStyle: Theme.of(
                                     context,
                                   ).textTheme.labelSmall,
@@ -242,7 +244,7 @@ class _SpeedDatingEventDetailsScreenState
               if (startTime != null)
               Card(
                 child: ListTile(
-                    leading: const Icon(
+                    leading:  Icon(
                       Icons.schedule,
                       color: PulseColors.primary,
                     ),
@@ -298,7 +300,7 @@ class _SpeedDatingEventDetailsScreenState
               if (minAge != null || maxAge != null)
               Card(
                 child: ListTile(
-                    leading: const Icon(Icons.cake, color: PulseColors.primary),
+                    leading: Icon(Icons.cake, color: PulseColors.primary),
                     title: Text(
                       'Age Range',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -324,8 +326,8 @@ class _SpeedDatingEventDetailsScreenState
               if (widget.event['fee'] != null && widget.event['fee'] > 0)
               Card(
                 child: ListTile(
-                  leading: const Icon(Icons.attach_money),
-                  title: const Text('Registration Fee'),
+                    leading: Icon(Icons.attach_money),
+                    title: Text('Registration Fee'),
                     subtitle: Text(
                       '\$${widget.event['fee'].toStringAsFixed(2)}',
                     ),
@@ -339,20 +341,20 @@ class _SpeedDatingEventDetailsScreenState
               child: isRegistered
                   ? ElevatedButton.icon(
                         onPressed: () => _leaveEvent(context),
-                      icon: const Icon(Icons.exit_to_app),
-                      label: const Text('Leave Event'),
+                        icon: Icon(Icons.exit_to_app),
+                        label: Text('Leave Event'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
-                        foregroundColor: Colors.white,
+                          foregroundColor: context.onSurfaceColor,
                       ),
                     )
                   : ElevatedButton.icon(
                         onPressed: canJoin ? () => _joinEvent(context) : null,
-                      icon: const Icon(Icons.join_full),
+                        icon: Icon(Icons.join_full),
                       label: Text(canJoin ? 'Join Event' : 'Event Full'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: PulseColors.primary,
-                        foregroundColor: Colors.white,
+                          foregroundColor: context.onSurfaceColor,
                       ),
                     ),
             ),
@@ -403,19 +405,19 @@ class _SpeedDatingEventDetailsScreenState
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        backgroundColor: Colors.white,
-        title: const Text(
+        backgroundColor: context.surfaceColor,
+        title: Text(
           'Leave Event',
           style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
         ),
-        content: const Text(
+        content: Text(
           'Are you sure you want to leave this speed dating event?',
           style: TextStyle(color: Colors.black87, fontSize: 16),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text(
+            child: Text(
               'Cancel',
               style: TextStyle(
                 color: PulseColors.primary,
@@ -434,10 +436,10 @@ class _SpeedDatingEventDetailsScreenState
               }
               Navigator.pop(dialogContext); // Close dialog
             },
-            child: const Text(
+            child: Text(
               'Leave',
               style: TextStyle(
-                color: Colors.red,
+                color: context.errorColor,
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),

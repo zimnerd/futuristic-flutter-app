@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../data/services/video_effects_service.dart';
 import '../../theme/pulse_colors.dart';
 import '../common/robust_network_image.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Video Effects Panel for managing filters and virtual backgrounds during calls
 class VideoEffectsPanel extends StatefulWidget {
@@ -189,14 +190,14 @@ class _VideoEffectsPanelState extends State<VideoEffectsPanel>
                       : PulseColors.primary,
                 ),
                 const SizedBox(width: 12),
-                const Text(
+                Text(
                   'Video Effects',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const Spacer(),
                 IconButton(
                   onPressed: widget.onClose,
-                  icon: const Icon(Icons.close),
+                  icon: Icon(Icons.close),
                 ),
               ],
             ),
@@ -214,10 +215,10 @@ class _VideoEffectsPanelState extends State<VideoEffectsPanel>
             child: TabBar(
               controller: _tabController,
               indicatorColor: PulseColors.primary,
-              labelColor: PulseColors.primary,
-              unselectedLabelColor: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.color,
+              labelStyle: TextStyle(color: PulseColors.primary),
+              unselectedLabelStyle: TextStyle(
+                color: Theme.of(context).textTheme.bodyMedium?.color,
+              ),
               tabs: const [
                 Tab(icon: Icon(Icons.wallpaper), text: 'Backgrounds'),
                 Tab(icon: Icon(Icons.filter), text: 'Filters'),
@@ -228,7 +229,7 @@ class _VideoEffectsPanelState extends State<VideoEffectsPanel>
           // Tab Views
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? Center(child: CircularProgressIndicator())
                 : TabBarView(
                     controller: _tabController,
                     children: [_buildBackgroundsTab(), _buildFiltersTab()],
@@ -258,12 +259,12 @@ class _VideoEffectsPanelState extends State<VideoEffectsPanel>
                 border: Border.all(color: Theme.of(context).dividerColor),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(Icons.no_photography, size: 30),
+              child: Icon(Icons.no_photography, size: 30),
             ),
           ),
 
           const SizedBox(height: 16),
-          const Text(
+          Text(
             'Virtual Backgrounds',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
@@ -306,7 +307,7 @@ class _VideoEffectsPanelState extends State<VideoEffectsPanel>
           ),
 
           const SizedBox(height: 16),
-          const Text(
+          Text(
             'Camera Filters',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
@@ -365,7 +366,7 @@ class _VideoEffectsPanelState extends State<VideoEffectsPanel>
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(fontWeight: FontWeight.w600),
+                    style: TextStyle(fontWeight: FontWeight.w600),
                   ),
                   Text(
                     subtitle,
@@ -378,7 +379,7 @@ class _VideoEffectsPanelState extends State<VideoEffectsPanel>
               ),
             ),
             if (isSelected)
-              const Icon(
+              Icon(
                 Icons.check_circle,
                 color: PulseColors.primary,
                 size: 20,
@@ -419,7 +420,7 @@ class _VideoEffectsPanelState extends State<VideoEffectsPanel>
                     )
                   : Container(
                       color: Theme.of(context).cardColor,
-                      child: const Icon(Icons.blur_on, size: 30),
+                      child: Icon(Icons.blur_on, size: 30),
                     ),
             ),
 
@@ -431,7 +432,7 @@ class _VideoEffectsPanelState extends State<VideoEffectsPanel>
                     color: PulseColors.primary.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(6),
                   ),
-                  child: const Center(
+                  child: Center(
                     child: Icon(
                       Icons.check_circle,
                       color: PulseColors.primary,
@@ -455,12 +456,12 @@ class _VideoEffectsPanelState extends State<VideoEffectsPanel>
                     color: Colors.amber,
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Text(
+                  child: Text(
                     'PRO',
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: context.onSurfaceColor,
                     ),
                   ),
                 ),
@@ -479,9 +480,9 @@ class _VideoEffectsPanelState extends State<VideoEffectsPanel>
                 ),
                 child: Text(
                   background.name,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 10,
-                    color: Colors.white,
+                    color: context.onSurfaceColor,
                     fontWeight: FontWeight.w500,
                   ),
                   textAlign: TextAlign.center,
@@ -531,7 +532,7 @@ class _VideoEffectsPanelState extends State<VideoEffectsPanel>
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Center(
-                  child: Text(icon, style: const TextStyle(fontSize: 24)),
+                  child: Text(icon, style: TextStyle(fontSize: 24)),
                 ),
               ),
 
@@ -546,7 +547,7 @@ class _VideoEffectsPanelState extends State<VideoEffectsPanel>
                       children: [
                         Text(
                           title,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: 16,
                           ),
@@ -562,12 +563,12 @@ class _VideoEffectsPanelState extends State<VideoEffectsPanel>
                               color: Colors.amber,
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: const Text(
+                            child: Text(
                               'PRO',
                               style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                                color: context.onSurfaceColor,
                               ),
                             ),
                           ),
@@ -588,7 +589,7 @@ class _VideoEffectsPanelState extends State<VideoEffectsPanel>
 
               // Selection Indicator
               if (isSelected)
-                const Icon(
+                Icon(
                   Icons.check_circle,
                   color: PulseColors.primary,
                   size: 24,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../theme/pulse_colors.dart';
 import '../../../domain/entities/user_profile.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Widget that displays profile completion progress and highlights missing sections
 class ProfileCompletionWidget extends StatelessWidget {
@@ -43,7 +44,7 @@ class ProfileCompletionWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildHeader(completion),
+          _buildHeader(context, completion),
           const SizedBox(height: PulseSpacing.md),
           _buildProgressBar(completion),
           if (!completion.isComplete) ...[
@@ -59,7 +60,7 @@ class ProfileCompletionWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(ProfileCompletion completion) {
+  Widget _buildHeader(BuildContext context, ProfileCompletion completion) {
     return Row(
       children: [
         Container(
@@ -72,7 +73,7 @@ class ProfileCompletionWidget extends StatelessWidget {
           ),
           child: Icon(
             completion.isComplete ? Icons.check_circle : Icons.trending_up,
-            color: Colors.white,
+            color: context.onSurfaceColor,
             size: 24,
           ),
         ),
@@ -240,7 +241,7 @@ class ProfileCompletionWidget extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(Icons.celebration, color: PulseColors.success, size: 24),
+          Icon(Icons.celebration, color: PulseColors.success, size: 24),
           const SizedBox(width: PulseSpacing.md),
           Expanded(
             child: Text(

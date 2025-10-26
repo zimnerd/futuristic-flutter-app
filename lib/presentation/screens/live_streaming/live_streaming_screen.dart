@@ -19,6 +19,7 @@ import '../../theme/pulse_colors.dart';
 import '../../../core/network/api_client.dart';
 import '../../../data/services/live_streaming_service.dart';
 import '../../../data/services/websocket_service_impl.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Main screen for live streaming functionality
 class LiveStreamingScreen extends StatefulWidget {
@@ -210,7 +211,7 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
             ? TextField(
                 controller: _searchController,
                 autofocus: true,
-                style: const TextStyle(color: Colors.white),
+                style: TextStyle(color: Colors.white),
                 decoration: const InputDecoration(
                   hintText: 'Search streams...',
                   hintStyle: TextStyle(color: Colors.white70),
@@ -237,11 +238,11 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Text('Live Streaming'),
+                      Text('Live Streaming'),
                       if (subtitle.isNotEmpty)
                         Text(
                           subtitle,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.normal,
                             color: Colors.white70,
@@ -258,7 +259,7 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
             onPressed: _toggleSearch,
           ),
           IconButton(
-            icon: const Icon(Icons.schedule),
+            icon: Icon(Icons.schedule),
             tooltip: 'Scheduled Streams',
             onPressed: () => context.push(AppRoutes.scheduledStreams),
           ),
@@ -278,9 +279,9 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _startNewStream,
         backgroundColor: PulseColors.primary,
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.videocam),
-        label: const Text('Go Live'),
+        foregroundColor: context.onSurfaceColor,
+        icon: Icon(Icons.videocam),
+        label: Text('Go Live'),
       ),
     );
   }
@@ -405,7 +406,7 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
           return _buildUserStreamsList(state.history);
         }
 
-        return const Center(child: Text('No streams found'));
+        return Center(child: Text('No streams found'));
       },
     );
   }
@@ -422,7 +423,7 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
         );
       },
       color: PulseColors.primary,
-      backgroundColor: Colors.white,
+      backgroundColor: context.surfaceColor,
       strokeWidth: 3.0,
       child: ListView.builder(
         controller: _scrollController,
@@ -430,7 +431,7 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
         itemCount: state.streams.length + (state.hasMoreStreams ? 1 : 0),
         itemBuilder: (context, index) {
           if (index == state.streams.length) {
-            return const Center(
+            return Center(
               child: Padding(
                 padding: EdgeInsets.all(16),
                 child: PulseLoadingWidget(),
@@ -485,9 +486,13 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.live_tv_outlined, size: 80, color: Colors.grey[400]),
+            Icon(
+              Icons.live_tv_outlined,
+              size: 80,
+              color: context.outlineColor.withValues(alpha: 0.2),
+            ),
             const SizedBox(height: 24),
-            const Text(
+            Text(
               'No Live Streams',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
@@ -497,16 +502,19 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
                   ? 'No streams in $_selectedCategory category right now'
                   : 'No one is live streaming at the moment',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+              style: TextStyle(
+                fontSize: 16,
+                color: context.onSurfaceVariantColor,
+              ),
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: _startNewStream,
-              icon: const Icon(Icons.videocam),
-              label: const Text('Be the First to Go Live!'),
+              icon: Icon(Icons.videocam),
+              label: Text('Be the First to Go Live!'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: PulseColors.primary,
-                foregroundColor: Colors.white,
+                foregroundColor: context.onSurfaceColor,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
                   vertical: 12,
@@ -526,9 +534,13 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.videocam_outlined, size: 80, color: Colors.grey[400]),
+            Icon(
+              Icons.videocam_outlined,
+              size: 80,
+              color: context.outlineColor.withValues(alpha: 0.2),
+            ),
             const SizedBox(height: 24),
-            const Text(
+            Text(
               'No Streams Yet',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
@@ -536,16 +548,19 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
             Text(
               'Start your first live stream to connect with your matches!',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+              style: TextStyle(
+                fontSize: 16,
+                color: context.onSurfaceVariantColor,
+              ),
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: _startNewStream,
-              icon: const Icon(Icons.add),
-              label: const Text('Start Your First Stream'),
+              icon: Icon(Icons.add),
+              label: Text('Start Your First Stream'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: PulseColors.primary,
-                foregroundColor: Colors.white,
+                foregroundColor: context.onSurfaceColor,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
                   vertical: 12,
@@ -585,12 +600,12 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Stream'),
-        content: const Text('Are you sure you want to delete this stream?'),
+        title: Text('Delete Stream'),
+        content: Text('Are you sure you want to delete this stream?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           TextButton(
             onPressed: () async {
@@ -629,8 +644,8 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
                 PulseToast.error(context, message: 'Error: ${e.toString()}');
               }
             },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
+            style: TextButton.styleFrom(foregroundColor: context.errorColor),
+            child: Text('Delete'),
           ),
         ],
       ),
@@ -644,11 +659,11 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: const Text('Report Stream'),
+          title: Text('Report Stream'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('Why are you reporting this stream?'),
+              Text('Why are you reporting this stream?'),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
                 initialValue: selectedReason,
@@ -685,7 +700,7 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
+              child: Text('Cancel'),
             ),
             TextButton(
               onPressed: () async {
@@ -722,8 +737,8 @@ class _LiveStreamingScreenState extends State<LiveStreamingScreen>
                   PulseToast.error(context, message: 'Error: ${e.toString()}');
                 }
               },
-              style: TextButton.styleFrom(foregroundColor: Colors.red),
-              child: const Text('Report'),
+              style: TextButton.styleFrom(foregroundColor: context.errorColor),
+              child: Text('Report'),
             ),
           ],
         ),

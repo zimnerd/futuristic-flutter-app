@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 import '../../domain/entities/user_profile.dart';
 import '../theme/pulse_colors.dart';
@@ -81,7 +82,7 @@ class _PhotoReorderSheetState extends State<PhotoReorderSheet> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.grey[300],
+              color: context.outlineColor.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -95,7 +96,7 @@ class _PhotoReorderSheetState extends State<PhotoReorderSheet> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Reorder Photos',
                         style: TextStyle(
                           fontSize: 24,
@@ -105,13 +106,16 @@ class _PhotoReorderSheetState extends State<PhotoReorderSheet> {
                       const SizedBox(height: 4),
                       Text(
                         'Long press and drag to reorder',
-                        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: context.onSurfaceVariantColor,
+                        ),
                       ),
                     ],
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close),
+                  icon: Icon(Icons.close),
                   onPressed: _handleCancel,
                 ),
               ],
@@ -184,7 +188,7 @@ class _PhotoReorderSheetState extends State<PhotoReorderSheet> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text('Cancel'),
+                      child: Text('Cancel'),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -194,14 +198,15 @@ class _PhotoReorderSheetState extends State<PhotoReorderSheet> {
                       onPressed: _hasChanges ? _handleSave : null,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: PulseColors.primary,
-                        foregroundColor: Colors.white,
+                        foregroundColor: context.onSurfaceColor,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        disabledBackgroundColor: Colors.grey[300],
+                        disabledBackgroundColor: context.outlineColor
+                            .withValues(alpha: 0.3),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Save Order',
                         style: TextStyle(
                           fontSize: 16,
@@ -240,15 +245,15 @@ class _PhotoReorderSheetState extends State<PhotoReorderSheet> {
               imageUrl: photo.url,
               fit: BoxFit.cover,
               placeholder: (context, url) => Container(
-                color: Colors.grey[200],
-                child: const Center(child: CircularProgressIndicator()),
+                color: context.outlineColor.withValues(alpha: 0.15),
+                child: Center(child: CircularProgressIndicator()),
               ),
               errorWidget: (context, url, error) => Container(
-                color: Colors.grey[300],
+                color: context.outlineColor.withValues(alpha: 0.3),
                 child: Icon(
                   Icons.broken_image,
                   size: 40,
-                  color: Colors.grey[600],
+                  color: context.onSurfaceVariantColor,
                 ),
               ),
             ),
@@ -267,13 +272,13 @@ class _PhotoReorderSheetState extends State<PhotoReorderSheet> {
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Icon(Icons.star, color: Colors.white, size: 14),
+                  children: [
+                    Icon(Icons.star, color: context.onSurfaceColor, size: 14),
                     SizedBox(width: 4),
                     Text(
                       'Primary',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: context.onSurfaceColor,
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
                       ),
@@ -298,8 +303,8 @@ class _PhotoReorderSheetState extends State<PhotoReorderSheet> {
                 child: Center(
                   child: Text(
                     '${index + 1}',
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: context.onSurfaceColor,
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
                     ),
@@ -318,9 +323,9 @@ class _PhotoReorderSheetState extends State<PhotoReorderSheet> {
                 color: Colors.black.withValues(alpha: 0.6),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.drag_indicator,
-                color: Colors.white,
+                color: context.onSurfaceColor,
                 size: 20,
               ),
             ),

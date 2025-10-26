@@ -5,7 +5,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../theme/pulse_colors.dart';
-import '../../theme/theme_extensions.dart';
 import '../../../domain/entities/user_profile.dart';
 import '../../widgets/profile/profile_completion_widget.dart';
 import '../../widgets/profile/verification_cta_banner.dart';
@@ -56,7 +55,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     onPressed: () => context.read<ProfileBloc>().add(
                       const LoadProfile(forceRefresh: true),
                     ),
-                    child: const Text('Retry'),
+                    child: Text('Retry'),
                   ),
                 ],
               ),
@@ -71,7 +70,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             title: Text(
               'My Profile',
               style: PulseTextStyles.titleLarge.copyWith(
-                color: PulseColors.onSurface,
+                color: Theme.of(context).colorScheme.onSurface,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -81,7 +80,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             actions: [
               // Settings icon - access to settings, filters, premium, etc.
               IconButton(
-                icon: const Icon(Icons.settings, color: PulseColors.onSurface),
+                icon: Icon(Icons.settings, color: Theme.of(context).colorScheme.onSurface),
                 onPressed: () => context.push('/settings'),
                 tooltip: 'Settings',
               ),
@@ -180,7 +179,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Text(
             '${userProfile.name}, ${userProfile.age}',
             style: PulseTextStyles.headlineMedium.copyWith(
-              color: PulseColors.onSurface,
+              color: Theme.of(context).colorScheme.onSurface,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -193,13 +192,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Icon(
                 Icons.location_on,
                 size: 16,
-                color: PulseColors.onSurfaceVariant,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
               const SizedBox(width: PulseSpacing.xs),
               Text(
                 userProfile.location.city ?? 'Unknown location',
                 style: PulseTextStyles.bodyMedium.copyWith(
-                  color: PulseColors.onSurfaceVariant,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
             ],
@@ -230,8 +229,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onPressed: () {
                 context.push('/profile-edit');
               },
-              icon: const Icon(Icons.edit, size: 20),
-              label: const Text('Edit Profile'),
+              icon: Icon(Icons.edit, size: 20),
+              label: Text('Edit Profile'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: PulseColors.primary,
                 foregroundColor: Theme.of(context).colorScheme.onPrimary,
@@ -329,13 +328,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Icon(
                     Icons.info_outline,
                     size: 14,
-                    color: PulseColors.onSurfaceVariant,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                   const SizedBox(width: 4),
                   Text(
                     'Tap to view full statistics',
                     style: PulseTextStyles.labelSmall.copyWith(
-                      color: PulseColors.onSurfaceVariant,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],
@@ -419,7 +418,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Text(
                 label,
                 style: PulseTextStyles.labelSmall.copyWith(
-                  color: PulseColors.onSurfaceVariant,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
               if (showTapHint) ...[
@@ -427,7 +426,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Icon(
                   Icons.arrow_forward_ios,
                   size: 10,
-                  color: PulseColors.onSurfaceVariant,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ],
             ],
@@ -553,9 +552,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Container(
       padding: const EdgeInsets.all(PulseSpacing.lg),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(PulseRadii.lg),
-        border: Border.all(color: PulseColors.outline.withValues(alpha: 0.5)),
+        border: Border.all(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.5)),
         boxShadow: [
           BoxShadow(
             color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.05),
@@ -582,7 +581,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: Text(
                   title,
                   style: PulseTextStyles.titleLarge.copyWith(
-                    color: PulseColors.onSurface,
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -607,7 +606,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Text(
               label,
               style: PulseTextStyles.bodyMedium.copyWith(
-                color: PulseColors.onSurfaceVariant,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -617,7 +616,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Text(
               value,
               style: PulseTextStyles.bodyMedium.copyWith(
-                color: PulseColors.onSurface,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
           ),
@@ -668,10 +667,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
                   return Container(
-                    color: PulseColors.surfaceVariant,
-                    child: const Icon(
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    child: Icon(
                       Icons.image,
-                      color: PulseColors.onSurfaceVariant,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   );
                 },
@@ -689,7 +688,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return Text(
         'No interests added',
         style: PulseTextStyles.bodyMedium.copyWith(
-          color: PulseColors.onSurfaceVariant,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
       );
     }

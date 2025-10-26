@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 import '../../core/config/test_credentials.dart';
 import '../blocs/auth/auth_bloc.dart';
@@ -91,7 +92,7 @@ class _DeveloperAutoLoginFABState extends State<DeveloperAutoLoginFAB>
             duration: const Duration(milliseconds: 300),
             child: Icon(
               _isExpanded ? Icons.close : Icons.developer_mode,
-              color: Colors.white,
+              color: context.onSurfaceColor,
             ),
           ),
         ),
@@ -104,7 +105,7 @@ class _DeveloperAutoLoginFABState extends State<DeveloperAutoLoginFAB>
       constraints: const BoxConstraints(maxWidth: 280),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.onSurfaceColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -173,7 +174,7 @@ class _DeveloperAutoLoginFABState extends State<DeveloperAutoLoginFAB>
                 ),
                 child: Row(
                   children: [
-                    Text(account.avatar, style: const TextStyle(fontSize: 16)),
+                    Text(account.avatar, style: TextStyle(fontSize: 16)),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(

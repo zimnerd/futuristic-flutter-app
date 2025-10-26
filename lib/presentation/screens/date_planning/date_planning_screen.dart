@@ -11,6 +11,7 @@ import '../../widgets/common/pulse_error_widget.dart';
 import '../../widgets/date_planning/date_plan_card.dart';
 import '../../widgets/date_planning/date_suggestion_card.dart';
 import '../../widgets/common/pulse_toast.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Main screen for date planning functionality
 class DatePlanningScreen extends StatefulWidget {
@@ -44,7 +45,7 @@ class _DatePlanningScreenState extends State<DatePlanningScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Date Planning'),
+        title: Text('Date Planning'),
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
@@ -55,7 +56,7 @@ class _DatePlanningScreenState extends State<DatePlanningScreen>
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.add),
+            icon: Icon(Icons.add),
             onPressed: () => context.push(AppRoutes.createDatePlan),
           ),
         ],
@@ -107,8 +108,8 @@ class _DatePlanningScreenState extends State<DatePlanningScreen>
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: _showFilterDialog,
-                  icon: const Icon(Icons.filter_list),
-                  label: const Text('Filters'),
+                  icon: Icon(Icons.filter_list),
+                  label: Text('Filters'),
                 ),
               ),
               const SizedBox(width: 12),
@@ -118,8 +119,8 @@ class _DatePlanningScreenState extends State<DatePlanningScreen>
                     const LoadDateSuggestions(),
                   );
                 },
-                icon: const Icon(Icons.refresh),
-                label: const Text('Refresh'),
+                icon: Icon(Icons.refresh),
+                label: Text('Refresh'),
               ),
             ],
           ),
@@ -183,20 +184,20 @@ class _DatePlanningScreenState extends State<DatePlanningScreen>
 
   Widget _buildDatePlansList(List<Map<String, dynamic>> plans) {
     if (plans.isEmpty) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.calendar_today, size: 80, color: Colors.grey),
-            SizedBox(height: 16),
+            Icon(Icons.calendar_today, size: 80, color: context.outlineColor),
+            const SizedBox(height: 16),
             Text(
               'No date plans yet',
-              style: TextStyle(fontSize: 18, color: Colors.grey),
+              style: TextStyle(fontSize: 18, color: context.outlineColor),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
               'Create your first date plan!',
-              style: TextStyle(fontSize: 14, color: Colors.grey),
+              style: TextStyle(fontSize: 14, color: context.outlineColor),
             ),
           ],
         ),
@@ -282,12 +283,12 @@ class _DatePlanningScreenState extends State<DatePlanningScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Date Plan'),
-        content: const Text('Are you sure you want to delete this date plan?'),
+        title: Text('Delete Date Plan'),
+        content: Text('Are you sure you want to delete this date plan?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           TextButton(
             onPressed: () {
@@ -298,8 +299,8 @@ class _DatePlanningScreenState extends State<DatePlanningScreen>
                 message: 'Date plan deleted successfully',
               );
             },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
+            style: TextButton.styleFrom(foregroundColor: context.errorColor),
+            child: Text('Delete'),
           ),
         ],
       ),
@@ -346,7 +347,7 @@ class _FilterDialogState extends State<_FilterDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Filter Suggestions'),
+      title: Text('Filter Suggestions'),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -394,7 +395,7 @@ class _FilterDialogState extends State<_FilterDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text('Cancel'),
         ),
         TextButton(
           onPressed: () {
@@ -406,7 +407,7 @@ class _FilterDialogState extends State<_FilterDialog> {
                   'Filters applied: $selectedPrice, $selectedTime, $selectedType',
             );
           },
-          child: const Text('Apply'),
+          child: Text('Apply'),
         ),
       ],
     );

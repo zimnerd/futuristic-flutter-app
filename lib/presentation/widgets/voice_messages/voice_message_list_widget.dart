@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../data/models/voice_message.dart';
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Widget for displaying a list of voice messages
 class VoiceMessageListWidget extends StatelessWidget {
@@ -140,7 +141,9 @@ class VoiceMessageListWidget extends StatelessWidget {
                     _formatDate(message.createdAt),
                     style: Theme.of(
                       context,
-                    ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+                    ).textTheme.bodySmall?.copyWith(
+                      color: context.onSurfaceVariantColor,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   _buildActionButtons(context, message),
@@ -202,7 +205,7 @@ class VoiceMessageListWidget extends StatelessWidget {
         if (onMessageReply != null)
           IconButton(
             onPressed: () => onMessageReply!(message),
-            icon: const Icon(Icons.reply),
+            icon: Icon(Icons.reply),
             iconSize: 20,
             color: Theme.of(context).colorScheme.primary,
             tooltip: 'Reply',
@@ -210,7 +213,7 @@ class VoiceMessageListWidget extends StatelessWidget {
         if (onMessageDelete != null)
           IconButton(
             onPressed: () => _showDeleteDialog(context, message),
-            icon: const Icon(Icons.delete_outline),
+            icon: Icon(Icons.delete_outline),
             iconSize: 20,
             color: Theme.of(context).colorScheme.error,
             tooltip: 'Delete',
@@ -224,14 +227,14 @@ class VoiceMessageListWidget extends StatelessWidget {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Delete Voice Message'),
-        content: const Text(
+        title: Text('Delete Voice Message'),
+        content: Text(
           'Are you sure you want to delete this voice message? This action cannot be undone.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           TextButton(
             onPressed: () {
@@ -239,7 +242,7 @@ class VoiceMessageListWidget extends StatelessWidget {
               onMessageDelete!(message);
             },
             style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.error),
-            child: const Text('Delete'),
+            child: Text('Delete'),
           ),
         ],
       ),

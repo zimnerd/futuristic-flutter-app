@@ -6,6 +6,7 @@ import '../../../domain/entities/privacy_preset.dart';
 import '../../blocs/profile/profile_bloc.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/pulse_toast.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 final _logger = Logger();
 
@@ -115,7 +116,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
       child: Scaffold(
         backgroundColor: Colors.grey[50],
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: context.surfaceColor,
           elevation: 0,
           leading: IconButton(
             icon: Icon(Icons.arrow_back, color: Colors.black87),
@@ -155,7 +156,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
           bottom: TabBar(
             controller: _tabController,
             labelColor: PulseColors.primary,
-            unselectedLabelColor: Colors.grey,
+            unselectedLabelColor: context.outlineColor,
             indicatorColor: PulseColors.primary,
             tabs: [
               Tab(icon: Icon(Icons.auto_fix_high_rounded), text: 'Presets'),
@@ -194,7 +195,10 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
                 SizedBox(height: 8),
                 Text(
                   'Choose a preset that matches your privacy preference',
-                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: context.onSurfaceVariantColor,
+                  ),
                 ),
               ],
             ),
@@ -220,10 +224,12 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
     return Container(
       margin: EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.onSurfaceColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isSelected ? preset.color : Colors.grey[300]!,
+          color: isSelected
+              ? preset.color
+              : context.outlineColor.withValues(alpha: 0.3),
           width: isSelected ? 2 : 1,
         ),
         boxShadow: [
@@ -284,7 +290,10 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
                       SizedBox(height: 4),
                       Text(
                         preset.description,
-                        style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: context.onSurfaceVariantColor,
+                        ),
                       ),
                     ],
                   ),
@@ -293,7 +302,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
                 // Arrow
                 Icon(
                   Icons.arrow_forward_ios_rounded,
-                  color: Colors.grey[400],
+                  color: context.outlineColor.withValues(alpha: 0.2),
                   size: 16,
                 ),
               ],
@@ -310,7 +319,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.onSurfaceColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -350,7 +359,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 12,
-                      color: Colors.grey[700],
+                      color: context.onSurfaceVariantColor,
                     ),
                   ),
                 ),
@@ -375,7 +384,10 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
               padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(
                 border: Border(
-                  bottom: BorderSide(color: Colors.grey[200]!, width: 0.5),
+                  bottom: BorderSide(
+                    color: context.outlineColor.withValues(alpha: 0.15)!,
+                    width: 0.5,
+                  ),
                 ),
               ),
               child: Row(
@@ -415,7 +427,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
         style: TextStyle(
           fontSize: 11,
           fontWeight: FontWeight.w600,
-          color: Colors.grey[700],
+          color: context.onSurfaceVariantColor,
         ),
         textAlign: TextAlign.center,
       );
@@ -549,7 +561,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
                 onPressed: _saveSettings,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: PulseColors.primary,
-                  foregroundColor: Colors.white,
+                  foregroundColor: context.onSurfaceColor,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -569,7 +581,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
   Widget _buildSection(String title, IconData icon, List<Widget> children) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.onSurfaceColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -625,7 +637,10 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(color: Colors.grey[200]!, width: 0.5),
+          bottom: BorderSide(
+            color: context.outlineColor.withValues(alpha: 0.15)!,
+            width: 0.5,
+          ),
         ),
       ),
       child: Row(
@@ -663,7 +678,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
                         child: Text(
                           'PREMIUM',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: context.onSurfaceColor,
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
                           ),
@@ -675,7 +690,10 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
                 SizedBox(height: 4),
                 Text(
                   description,
-                  style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: context.onSurfaceVariantColor,
+                  ),
                 ),
               ],
             ),
@@ -704,7 +722,10 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(color: Colors.grey[200]!, width: 0.5),
+          bottom: BorderSide(
+            color: context.outlineColor.withValues(alpha: 0.15)!,
+            width: 0.5,
+          ),
         ),
       ),
       child: Column(
@@ -721,7 +742,10 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
           SizedBox(height: 4),
           Text(
             description,
-            style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+            style: TextStyle(
+              fontSize: 13,
+              color: context.onSurfaceVariantColor,
+            ),
           ),
           SizedBox(height: 12),
           Container(
@@ -729,7 +753,9 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
             decoration: BoxDecoration(
               color: Colors.grey[100],
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.grey[300]!),
+              border: Border.all(
+                color: context.outlineColor.withValues(alpha: 0.3),
+              ),
             ),
             child: DropdownButton<String>(
               value: value,
@@ -774,7 +800,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen>
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: TextButton.styleFrom(foregroundColor: context.errorColor),
             child: Text('Discard'),
           ),
         ],

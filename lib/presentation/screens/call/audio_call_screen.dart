@@ -6,6 +6,7 @@ import '../../../data/services/audio_call_service.dart';
 import '../../../data/models/user_model.dart';
 import '../../theme/pulse_colors.dart';
 import '../../widgets/common/pulse_toast.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Audio Call Screen with elegant UI for voice-only communication
 /// Features: Pulsing avatar animation, call duration, mute, speaker controls
@@ -186,7 +187,7 @@ class _AudioCallScreenState extends State<AudioCallScreen>
       case QualityType.qualityVbad:
         return Colors.red;
       default:
-        return Colors.grey;
+        return context.outlineColor;
     }
   }
 
@@ -273,8 +274,8 @@ class _AudioCallScreenState extends State<AudioCallScreen>
                   const SizedBox(width: 8),
                   Text(
                     _getQualityLabel(),
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: context.onSurfaceColor,
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
@@ -303,16 +304,16 @@ class _AudioCallScreenState extends State<AudioCallScreen>
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.access_time,
-                      color: Colors.white,
+                      color: context.onSurfaceColor,
                       size: 16,
                     ),
                     const SizedBox(width: 6),
                     Text(
                       _formatDuration(_callDuration),
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: context.onSurfaceColor,
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         fontFeatures: [FontFeature.tabularFigures()],
@@ -379,8 +380,8 @@ class _AudioCallScreenState extends State<AudioCallScreen>
                   widget.remoteUser.lastName != null
               ? '${widget.remoteUser.firstName} ${widget.remoteUser.lastName}'
               : widget.remoteUser.firstName ?? widget.remoteUser.username,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: context.onSurfaceColor,
             fontSize: 28,
             fontWeight: FontWeight.bold,
           ),
@@ -422,8 +423,8 @@ class _AudioCallScreenState extends State<AudioCallScreen>
       child: Center(
         child: Text(
           displayName.isNotEmpty ? displayName[0].toUpperCase() : '?',
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: context.onSurfaceColor,
             fontSize: 64,
             fontWeight: FontWeight.bold,
           ),
@@ -460,7 +461,7 @@ class _AudioCallScreenState extends State<AudioCallScreen>
             label: 'End',
             onTap: _endCall,
             isActive: true,
-            color: Colors.red,
+            color: context.errorColor,
             size: 72,
           ),
         ],
@@ -499,14 +500,14 @@ class _AudioCallScreenState extends State<AudioCallScreen>
                 ),
               ],
             ),
-            child: Icon(icon, color: Colors.white, size: size * 0.4),
+            child: Icon(icon, color: context.onSurfaceColor, size: size * 0.4),
           ),
         ),
         const SizedBox(height: 8),
         Text(
           label,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: context.onSurfaceColor,
             fontSize: 12,
             fontWeight: FontWeight.w500,
           ),

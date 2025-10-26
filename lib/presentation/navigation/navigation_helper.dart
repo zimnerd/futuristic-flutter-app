@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 import 'app_router.dart';
 
@@ -66,8 +67,8 @@ extension AppNavigationExtension on BuildContext {
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
         height: MediaQuery.of(context).size.height * 0.9,
-        decoration: const BoxDecoration(
-          color: Colors.white,
+        decoration: BoxDecoration(
+          color: context.onSurfaceColor,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: Column(
@@ -77,7 +78,7 @@ extension AppNavigationExtension on BuildContext {
               height: 5,
               margin: const EdgeInsets.symmetric(vertical: 10),
               decoration: BoxDecoration(
-                color: Colors.grey[300],
+                color: context.outlineColor.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(2.5),
               ),
             ),
@@ -109,7 +110,7 @@ extension AppNavigationExtension on BuildContext {
                           recipientName: recipientName,
                         );
                       },
-                      child: const Text('Open Virtual Gifts'),
+                      child: Text('Open Virtual Gifts'),
                     ),
                   ],
                 ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/pulse_design_system.dart';
 import '../../../core/utils/haptic_feedback_utils.dart';
 import '../../../core/utils/logger.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Modern Toast Notification System for PulseLink
 ///
@@ -173,13 +174,13 @@ class _ToastContent extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, color: Colors.white, size: 24),
+        Icon(icon, color: context.onSurfaceColor, size: 24),
         const SizedBox(width: PulseSpacing.sm),
         Expanded(
           child: Text(
             message,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: context.onSurfaceColor,
               fontSize: 14,
               fontWeight: FontWeight.w500,
             ),

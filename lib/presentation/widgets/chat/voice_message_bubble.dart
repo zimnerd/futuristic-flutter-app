@@ -4,7 +4,7 @@ import 'package:just_audio/just_audio.dart';
 import 'dart:async';
 
 import '../../theme/pulse_colors.dart';
-import '../../theme/theme_extensions.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Compact voice message bubble for chat with enhanced playback controls
 class VoiceMessageBubble extends StatefulWidget {

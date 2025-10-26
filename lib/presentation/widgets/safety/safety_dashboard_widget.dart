@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../data/models/safety.dart';
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Safety dashboard widget showing overview of safety features
 class SafetyDashboardWidget extends StatelessWidget {
@@ -23,7 +24,7 @@ class SafetyDashboardWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.onSurfaceColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -51,7 +52,7 @@ class SafetyDashboardWidget extends StatelessWidget {
                   icon: Icons.block,
                   title: 'Blocked Users',
                   count: blockedUsers.length,
-                  color: Colors.red,
+                  color: context.errorColor,
                 ),
               ),
               const SizedBox(width: 12),
@@ -162,11 +163,13 @@ class SafetyDashboardWidget extends StatelessWidget {
           Row(
             children: [
               _buildSettingIndicator(
+                context,
                 'Location Sharing',
                 settings!.locationSharingEnabled,
               ),
               const SizedBox(width: 16),
               _buildSettingIndicator(
+                context,
                 'Emergency Contacts',
                 settings!.emergencyContactsEnabled,
               ),
@@ -176,11 +179,13 @@ class SafetyDashboardWidget extends StatelessWidget {
           Row(
             children: [
               _buildSettingIndicator(
+                context,
                 'Check-in Reminders',
                 settings!.checkInRemindersEnabled,
               ),
               const SizedBox(width: 16),
               _buildSettingIndicator(
+                context,
                 'Panic Button',
                 settings!.panicButtonEnabled,
               ),
@@ -191,13 +196,17 @@ class SafetyDashboardWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildSettingIndicator(String label, bool isActive) {
+  Widget _buildSettingIndicator(
+    BuildContext context,
+    String label,
+    bool isActive,
+  ) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         Icon(
           isActive ? Icons.check_circle : Icons.radio_button_unchecked,
-          color: isActive ? Colors.green : Colors.grey,
+          color: isActive ? Colors.green : context.outlineColor,
           size: 16,
         ),
         const SizedBox(width: 4),
@@ -205,7 +214,7 @@ class SafetyDashboardWidget extends StatelessWidget {
           label,
           style: TextStyle(
             fontSize: 12,
-            color: isActive ? Colors.green : Colors.grey,
+            color: isActive ? Colors.green : context.outlineColor,
           ),
         ),
       ],

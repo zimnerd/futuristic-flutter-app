@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'ai_feedback_widget.dart';
 import '../common/pulse_toast.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// AI Suggestion Widget - displays AI-generated suggestions with feedback collection
 /// Used for conversation suggestions, profile improvements, and compatibility insights
@@ -148,7 +149,7 @@ class _AiSuggestionWidgetState extends State<AiSuggestionWidget>
                   ),
                   child: Icon(
                     widget.icon ?? Icons.psychology_rounded,
-                    color: Colors.white,
+                    color: context.onSurfaceColor,
                     size: 20,
                   ),
                 ),
@@ -165,8 +166,8 @@ class _AiSuggestionWidgetState extends State<AiSuggestionWidget>
                     Expanded(
                       child: Text(
                         widget.title,
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: context.onSurfaceColor,
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
@@ -187,7 +188,7 @@ class _AiSuggestionWidgetState extends State<AiSuggestionWidget>
                         borderRadius: BorderRadius.circular(8),
                         color: const Color(0xFF6E3BFF).withValues(alpha: 0.2),
                       ),
-                      child: const Text(
+                      child: Text(
                         'AI Generated',
                         style: TextStyle(
                           color: Color(0xFF6E3BFF),
@@ -206,7 +207,7 @@ class _AiSuggestionWidgetState extends State<AiSuggestionWidget>
             icon: AnimatedRotation(
               turns: _isExpanded ? 0.5 : 0,
               duration: const Duration(milliseconds: 200),
-              child: const Icon(
+              child: Icon(
                 Icons.expand_more_rounded,
                 color: Colors.white70,
               ),
@@ -249,8 +250,8 @@ class _AiSuggestionWidgetState extends State<AiSuggestionWidget>
         ),
         child: Text(
           widget.suggestion,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: context.onSurfaceColor,
             fontSize: 14,
             height: 1.4,
           ),
@@ -275,7 +276,7 @@ class _AiSuggestionWidgetState extends State<AiSuggestionWidget>
                   size: 16,
                 ),
                 const SizedBox(width: 6),
-                const Text(
+                Text(
                   'AI Reasoning',
                   style: TextStyle(
                     color: Colors.white70,
@@ -295,7 +296,7 @@ class _AiSuggestionWidgetState extends State<AiSuggestionWidget>
               ),
               child: Text(
                 widget.reasoning!,
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.white70,
                   fontSize: 12,
                   height: 1.3,
@@ -323,35 +324,35 @@ class _AiSuggestionWidgetState extends State<AiSuggestionWidget>
           Expanded(
             child: ElevatedButton.icon(
               onPressed: _onUseSuggestion,
-              icon: const Icon(Icons.check_rounded, size: 16),
-              label: const Text('Use'),
+              icon: Icon(Icons.check_rounded, size: 16),
+              label: Text('Use'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF6E3BFF),
-                foregroundColor: Colors.white,
+                foregroundColor: context.onSurfaceColor,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
             ),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8),
           IconButton(
             onPressed: _onCopySuggestion,
-            icon: const Icon(Icons.copy_rounded, size: 18),
+            icon: Icon(Icons.copy_rounded, size: 18),
             tooltip: 'Copy',
             style: IconButton.styleFrom(
-              backgroundColor: Colors.white.withValues(alpha: 0.1),
-              foregroundColor: Colors.white70,
+              backgroundColor: context.surfaceColor.withValues(alpha: 0.1),
+              foregroundColor: context.onSurfaceColor,
             ),
           ),
           const SizedBox(width: 8),
           IconButton(
             onPressed: _onDismissSuggestion,
-            icon: const Icon(Icons.close_rounded, size: 18),
+            icon: Icon(Icons.close_rounded, size: 18),
             tooltip: 'Dismiss',
             style: IconButton.styleFrom(
-              backgroundColor: Colors.white.withValues(alpha: 0.1),
-              foregroundColor: Colors.white70,
+              backgroundColor: context.surfaceColor.withValues(alpha: 0.1),
+              foregroundColor: context.onSurfaceColor,
             ),
           ),
           const SizedBox(width: 8),
@@ -374,7 +375,7 @@ class _AiSuggestionWidgetState extends State<AiSuggestionWidget>
           ] else
             TextButton(
               onPressed: _showDetailedFeedback,
-              child: const Text(
+              child: Text(
                 'Feedback',
                 style: TextStyle(color: Color(0xFF00C2FF), fontSize: 12),
               ),
@@ -466,15 +467,15 @@ class CompactAiSuggestion extends StatelessWidget {
           children: [
             Container(
               padding: const EdgeInsets.all(4),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: LinearGradient(
                   colors: [Color(0xFF6E3BFF), Color(0xFF00C2FF)],
                 ),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.auto_awesome_rounded,
-                color: Colors.white,
+                color: context.onSurfaceColor,
                 size: 12,
               ),
             ),
@@ -482,12 +483,12 @@ class CompactAiSuggestion extends StatelessWidget {
             Expanded(
               child: Text(
                 suggestion,
-                style: const TextStyle(color: Colors.white, fontSize: 12),
+                style: TextStyle(color: context.onSurfaceColor, fontSize: 12),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            const Icon(
+            Icon(
               Icons.chevron_right_rounded,
               color: Colors.white60,
               size: 16,

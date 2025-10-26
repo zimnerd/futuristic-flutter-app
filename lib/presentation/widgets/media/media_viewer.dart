@@ -9,6 +9,7 @@ import '../../../domain/entities/message.dart';
 import '../../../core/network/api_client.dart';
 import '../common/robust_network_image.dart';
 import '../common/pulse_toast.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Full-screen media viewer with modern UX - simplified version using InteractiveViewer
 class MediaViewer extends StatefulWidget {
@@ -159,9 +160,9 @@ class _MediaViewerState extends State<MediaViewer>
                             onTap: () => Navigator.of(context).pop(),
                             child: Container(
                               padding: const EdgeInsets.all(12),
-                              child: const Icon(
+                              child:  Icon(
                                 Icons.arrow_back_ios_rounded,
-                                color: Colors.white,
+                                color: context.onSurfaceColor,
                                 size: 24,
                               ),
                             ),
@@ -179,9 +180,9 @@ class _MediaViewerState extends State<MediaViewer>
                                 onTap: () => _shareMedia(),
                                 child: Container(
                                   padding: const EdgeInsets.all(12),
-                                  child: const Icon(
+                                  child: Icon(
                                     Icons.share_rounded,
-                                    color: Colors.white,
+                                    color: context.onSurfaceColor,
                                     size: 24,
                                   ),
                                 ),
@@ -196,9 +197,9 @@ class _MediaViewerState extends State<MediaViewer>
                                 onTap: () => _showOptions(),
                                 child: Container(
                                   padding: const EdgeInsets.all(12),
-                                  child: const Icon(
+                                  child:  Icon(
                                     Icons.more_vert_rounded,
-                                    color: Colors.white,
+                                    color: context.onSurfaceColor,
                                     size: 24,
                                   ),
                                 ),
@@ -244,8 +245,8 @@ class _MediaViewerState extends State<MediaViewer>
                           padding: const EdgeInsets.all(16),
                           child: Text(
                             '${_currentIndex + 1} of ${widget.mediaUrls.length}',
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: context.onSurfaceColor,
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
                             ),
@@ -373,8 +374,8 @@ class _MediaViewerState extends State<MediaViewer>
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
+        decoration: BoxDecoration(
+          color: context.onSurfaceColor,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: SafeArea(
@@ -387,7 +388,7 @@ class _MediaViewerState extends State<MediaViewer>
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.grey[300],
+                  color: context.outlineColor.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -396,8 +397,8 @@ class _MediaViewerState extends State<MediaViewer>
 
               // Options
               ListTile(
-                leading: const Icon(Icons.download_rounded),
-                title: const Text('Save to Gallery'),
+                leading: Icon(Icons.download_rounded),
+                title: Text('Save to Gallery'),
                 onTap: () async {
                   Navigator.pop(context);
                   await _saveMediaToGallery(context);
@@ -405,8 +406,8 @@ class _MediaViewerState extends State<MediaViewer>
               ),
 
               ListTile(
-                leading: const Icon(Icons.copy_rounded),
-                title: const Text('Copy Link'),
+                leading: Icon(Icons.copy_rounded),
+                title: Text('Copy Link'),
                 onTap: () {
                   Navigator.pop(context);
                   Clipboard.setData(
@@ -519,7 +520,7 @@ class _VideoPlayerWidgetState extends State<_VideoPlayerWidget> {
     }
 
     if (!_isInitialized) {
-      return const Center(
+      return Center(
         child: CircularProgressIndicator(
           valueColor: AlwaysStoppedAnimation<Color>(PulseColors.primary),
         ),
@@ -554,7 +555,7 @@ class _VideoPlayerWidgetState extends State<_VideoPlayerWidget> {
                               ? Icons.pause_rounded
                               : Icons.play_arrow_rounded,
                           size: 48,
-                          color: Colors.white,
+                          color: context.onSurfaceColor,
                         ),
                       ),
                     ),
@@ -573,7 +574,9 @@ class _VideoPlayerWidgetState extends State<_VideoPlayerWidget> {
                     colors: VideoProgressColors(
                       playedColor: PulseColors.primary,
                       bufferedColor: Colors.white.withValues(alpha: 0.3),
-                      backgroundColor: Colors.white.withValues(alpha: 0.1),
+                      backgroundColor: context.surfaceColor.withValues(
+                        alpha: 0.1,
+                      ),
                     ),
                   ),
                 ),

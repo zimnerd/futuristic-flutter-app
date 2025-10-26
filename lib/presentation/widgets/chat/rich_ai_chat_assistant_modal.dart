@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import '../../../data/services/ai_chat_assistant_service.dart';
 import '../../../core/utils/logger.dart';
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Rich AI Chat Assistant Modal for user-to-user messaging assistance
 /// Provides comprehensive context selection and modern UX
@@ -126,8 +127,8 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
               maxChildSize: 0.95,
               builder: (context, scrollController) {
                 return Container(
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
+                  decoration: BoxDecoration(
+                    color: context.onSurfaceColor,
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(24),
                       topRight: Radius.circular(24),
@@ -181,17 +182,17 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
         bottom: false,
         child: Row(
           children: [
-            const Icon(
+            Icon(
               Icons.psychology_outlined,
-              color: Colors.white,
+              color: context.onSurfaceColor,
               size: 28,
             ),
             const SizedBox(width: 12),
-            const Expanded(
+            Expanded(
               child: Text(
                 'AI Chat Assistant',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: context.onSurfaceColor,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
@@ -199,7 +200,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
             ),
             IconButton(
               onPressed: _closeModal,
-              icon: const Icon(Icons.close, color: Colors.white, size: 24),
+              icon: Icon(Icons.close, color: context.onSurfaceColor, size: 24),
             ),
           ],
         ),
@@ -265,7 +266,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'What do you need help with?',
           style: TextStyle(
             fontSize: 16,
@@ -297,7 +298,9 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
                   color: isSelected ? null : Colors.grey[100],
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: isSelected ? Colors.transparent : Colors.grey[300]!,
+                    color: isSelected
+                        ? Colors.transparent
+                        : context.outlineColor.withValues(alpha: 0.3),
                   ),
                 ),
                 child: Text(
@@ -319,7 +322,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Describe what you need',
           style: TextStyle(
             fontSize: 16,
@@ -330,13 +333,15 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
         const SizedBox(height: 8),
         Text(
           'Be specific about what kind of help you want with this conversation',
-          style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+          style: TextStyle(fontSize: 14, color: context.onSurfaceVariantColor),
         ),
         const SizedBox(height: 12),
         Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey[300]!),
+            border: Border.all(
+              color: context.outlineColor.withValues(alpha: 0.3),
+            ),
             color: Colors.grey[50],
           ),
           child: TextField(
@@ -358,7 +363,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Context to include',
           style: TextStyle(
             fontSize: 16,
@@ -369,7 +374,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
         const SizedBox(height: 8),
         Text(
           'Select what information the AI should use to help you',
-          style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+          style: TextStyle(fontSize: 14, color: context.onSurfaceVariantColor),
         ),
         const SizedBox(height: 16),
         _buildContextOption(
@@ -430,7 +435,9 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
         border: Border.all(
           color: value
               ? PulseColors.primary
-              : (isDark ? Colors.grey[600]! : Colors.grey[300]!),
+              : (isDark
+                    ? context.onSurfaceVariantColor!
+                    : context.outlineColor.withValues(alpha: 0.3)),
           width: value ? 2.5 : 1.5,
         ),
         color: value
@@ -454,7 +461,9 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
             decoration: BoxDecoration(
               color: value
                   ? PulseColors.primary
-                  : (isDark ? Colors.grey[700] : Colors.grey[400]),
+                  : (isDark
+                        ? context.onSurfaceVariantColor
+                        : context.outlineColor.withValues(alpha: 0.2)),
               borderRadius: BorderRadius.circular(12),
               boxShadow: value
                   ? [
@@ -466,7 +475,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
                     ]
                   : [],
             ),
-            child: Icon(icon, color: Colors.white, size: 22),
+            child: Icon(icon, color: context.onSurfaceColor, size: 22),
           ),
           const SizedBox(width: 18),
           Expanded(
@@ -480,7 +489,9 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
                     fontWeight: FontWeight.w600,
                     color: value
                         ? PulseColors.primary
-                        : (isDark ? Colors.grey[200] : Colors.grey[800]),
+                        : (isDark
+                              ? context.outlineColor.withValues(alpha: 0.15)
+                              : Colors.grey[800]),
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -488,7 +499,9 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
                   description,
                   style: TextStyle(
                     fontSize: 13,
-                    color: isDark ? Colors.grey[400] : Colors.grey[600],
+                    color: isDark
+                        ? context.outlineColor.withValues(alpha: 0.2)
+                        : context.onSurfaceVariantColor,
                     height: 1.2,
                   ),
                 ),
@@ -499,8 +512,12 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
             value: value,
             onChanged: onChanged,
             activeTrackColor: PulseColors.primary.withValues(alpha: 0.3),
-            inactiveThumbColor: isDark ? Colors.grey[600] : Colors.grey[400],
-            inactiveTrackColor: isDark ? Colors.grey[700] : Colors.grey[300],
+            inactiveThumbColor: isDark
+                ? context.onSurfaceVariantColor
+                : context.outlineColor.withValues(alpha: 0.2),
+            inactiveTrackColor: isDark
+                ? context.onSurfaceVariantColor
+                : context.outlineColor.withValues(alpha: 0.3),
           ),
         ],
       ),
@@ -529,7 +546,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Message limit',
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
               ),
@@ -563,7 +580,10 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
           ),
           Text(
             'Fewer messages = lower cost, more messages = better context',
-            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+            style: TextStyle(
+              fontSize: 12,
+              color: context.onSurfaceVariantColor,
+            ),
           ),
         ],
       ),
@@ -574,7 +594,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Response tone',
           style: TextStyle(
             fontSize: 16,
@@ -603,7 +623,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
                   border: Border.all(
                     color: isSelected
                         ? PulseColors.secondary
-                        : Colors.grey[300]!,
+                        : context.outlineColor.withValues(alpha: 0.3),
                   ),
                 ),
                 child: Text(
@@ -629,7 +649,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
         onPressed: _isLoading ? null : _generateAssistance,
         style: ElevatedButton.styleFrom(
           backgroundColor: PulseColors.primary,
-          foregroundColor: Colors.white,
+          foregroundColor: context.onSurfaceColor,
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -645,7 +665,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
                   valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                 ),
               )
-            : const Text(
+            : Text(
                 'Generate AI Assistance',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
@@ -657,7 +677,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'AI Suggestion',
           style: TextStyle(
             fontSize: 16,
@@ -699,7 +719,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
         children: [
           Text(
             _currentResponse!.suggestion,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w500,
               color: Colors.black87,
@@ -741,7 +761,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Alternative suggestions',
           style: TextStyle(
             fontSize: 14,
@@ -757,7 +777,9 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
             decoration: BoxDecoration(
               color: Colors.grey[100],
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.grey[300]!),
+              border: Border.all(
+                color: context.outlineColor.withValues(alpha: 0.3),
+              ),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -765,7 +787,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
                 Expanded(
                   child: Text(
                     alternative,
-                    style: const TextStyle(fontSize: 14, color: Colors.black87),
+                    style: TextStyle(fontSize: 14, color: Colors.black87),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -774,13 +796,13 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
                   child: Container(
                     padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
-                      color: Colors.grey[200],
+                      color: context.outlineColor.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Icon(
                       Icons.copy_rounded,
                       size: 16,
-                      color: Colors.grey[600],
+                      color: context.onSurfaceVariantColor,
                     ),
                   ),
                 ),
@@ -805,7 +827,9 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
         ),
         boxShadow: [
           BoxShadow(
-            color: (isDark ? Colors.black : Colors.grey).withValues(alpha: 0.2),
+            color: (isDark ? Colors.black : context.outlineColor).withValues(
+              alpha: 0.2,
+            ),
             blurRadius: 15,
             offset: const Offset(0, -5),
           ),
@@ -822,14 +846,18 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
               icon: Icon(
                 Icons.copy_rounded,
                 size: 22,
-                color: isDark ? Colors.grey[300] : Colors.grey[700],
+                color: isDark
+                    ? context.outlineColor.withValues(alpha: 0.3)
+                    : context.onSurfaceVariantColor,
               ),
               label: Text(
                 'Copy Response',
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
                   fontSize: 16,
-                  color: isDark ? Colors.grey[300] : Colors.grey[700],
+                  color: isDark
+                      ? context.outlineColor.withValues(alpha: 0.3)
+                      : context.onSurfaceVariantColor,
                 ),
               ),
               style: ElevatedButton.styleFrom(
@@ -838,7 +866,9 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                   side: BorderSide(
-                    color: isDark ? Colors.grey[600]! : Colors.grey[300]!,
+                    color: isDark
+                        ? context.onSurfaceVariantColor!
+                        : context.outlineColor.withValues(alpha: 0.3),
                     width: 1.5,
                   ),
                 ),
@@ -852,17 +882,17 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
             height: 52,
             child: ElevatedButton.icon(
               onPressed: _startRefinement,
-              icon: const Icon(
+              icon: Icon(
                 Icons.tune_rounded,
                 size: 22,
-                color: Colors.white,
+                color: context.onSurfaceColor,
               ),
-              label: const Text(
+              label: Text(
                 'Refine Response',
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
                   fontSize: 16,
-                  color: Colors.white,
+                  color: context.onSurfaceColor,
                 ),
               ),
               style: ElevatedButton.styleFrom(
@@ -900,17 +930,17 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
             ),
             child: ElevatedButton.icon(
               onPressed: _applyToChat,
-              icon: const Icon(
+              icon: Icon(
                 Icons.send_rounded,
                 size: 22,
-                color: Colors.white,
+                color: context.onSurfaceColor,
               ),
-              label: const Text(
+              label: Text(
                 'Apply to Chat',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
-                  color: Colors.white,
+                  color: context.onSurfaceColor,
                 ),
               ),
               style: ElevatedButton.styleFrom(
@@ -939,7 +969,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Refine this response',
             style: TextStyle(
               fontSize: 14,
@@ -963,7 +993,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
               Expanded(
                 child: OutlinedButton(
                   onPressed: _cancelRefinement,
-                  child: const Text('Cancel'),
+                  child: Text('Cancel'),
                 ),
               ),
               const SizedBox(width: 12),
@@ -973,7 +1003,7 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.orange,
                   ),
-                  child: const Text('Refine'),
+                  child: Text('Refine'),
                 ),
               ),
             ],
@@ -1192,13 +1222,13 @@ class _RichAiChatAssistantModalState extends State<RichAiChatAssistantModal>
             ),
             child: Row(
               children: [
-                Icon(icon, color: Colors.white, size: 20),
+                Icon(icon, color: context.onSurfaceColor, size: 20),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
                     message,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: context.onSurfaceColor,
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                     ),

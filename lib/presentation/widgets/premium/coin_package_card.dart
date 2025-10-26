@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../data/models/coin_package.dart';
 import '../../../core/theme/app_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Card widget for displaying a coin package option
 class CoinPackageCard extends StatelessWidget {
@@ -20,7 +21,7 @@ class CoinPackageCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Determine border color based on selection and special badges
-    Color borderColor = AppColors.border;
+    Color borderColor = context.outlineColor;
     double borderWidth = 1;
 
     if (isSelected) {
@@ -45,7 +46,7 @@ class CoinPackageCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: isSelected
                 ? AppColors.primary.withValues(alpha: 0.05)
-                : AppColors.surfaceVariant,
+                : context.surfaceVariantColor,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: borderColor, width: borderWidth),
             boxShadow: isSelected
@@ -90,7 +91,7 @@ class CoinPackageCard extends StatelessWidget {
                     child: Center(
                       child: Icon(
                         Icons.monetization_on,
-                        color: Colors.white,
+                        color: context.onSurfaceColor,
                         size: 32,
                       ),
                     ),
@@ -106,13 +107,13 @@ class CoinPackageCard extends StatelessWidget {
                           color: AppColors.primary,
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: AppColors.surface,
+                            color: context.surfaceColor,
                             width: 2,
                           ),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.check,
-                          color: Colors.white,
+                          color: context.onSurfaceColor,
                           size: 12,
                         ),
                       ),
@@ -130,10 +131,10 @@ class CoinPackageCard extends StatelessWidget {
                       children: [
                         Text(
                           '${package.coins} Coins',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary,
+                            color: context.onSurfaceColor,
                           ),
                         ),
                         if (package.bonusCoins > 0) ...[
@@ -149,10 +150,10 @@ class CoinPackageCard extends StatelessWidget {
                             ),
                             child: Text(
                               '+${package.bonusCoins} bonus',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                                color: context.onSurfaceColor,
                               ),
                             ),
                           ),
@@ -223,9 +224,9 @@ class CoinPackageCard extends StatelessWidget {
                     else
                       Text(
                         '${package.totalCoins} total coins',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
-                          color: AppColors.textSecondary,
+                          color: context.onSurfaceVariantColor,
                         ),
                       ),
                   ],
@@ -238,7 +239,7 @@ class CoinPackageCard extends StatelessWidget {
                 children: [
                   Text(
                     package.priceDisplay,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
                       color: AppColors.primary,
@@ -247,7 +248,7 @@ class CoinPackageCard extends StatelessWidget {
                   if (package.bonusCoins > 0)
                     Text(
                       '${package.discountPercent}% bonus',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 10,
                         color: AppColors.success,
                         fontWeight: FontWeight.w600,
@@ -256,7 +257,7 @@ class CoinPackageCard extends StatelessWidget {
                   else
                     Text(
                       '\$${(package.price / package.coins).toStringAsFixed(2)}/coin',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 10,
                         color: AppColors.textTertiary,
                       ),
@@ -267,7 +268,7 @@ class CoinPackageCard extends StatelessWidget {
               Icon(
                 isSelected ? Icons.check_circle : Icons.circle_outlined,
                 size: 24,
-                color: isSelected ? AppColors.primary : AppColors.border,
+                color: isSelected ? AppColors.primary : context.outlineColor,
               ),
             ],
           ),

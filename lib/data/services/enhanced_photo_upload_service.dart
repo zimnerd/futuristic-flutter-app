@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:path/path.dart' as path;
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 import '../../../core/network/api_client.dart';
 import '../../../core/constants/api_constants.dart';
@@ -217,7 +218,7 @@ class PhotoUploadService {
                   height: 4,
                   margin: const EdgeInsets.only(top: 12),
                   decoration: BoxDecoration(
-                    color: Colors.grey[300],
+                    color: context.outlineColor.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -233,23 +234,23 @@ class PhotoUploadService {
                       ),
                       const SizedBox(height: 20),
                       ListTile(
-                        leading: const Icon(Icons.camera_alt),
-                        title: const Text('Camera'),
-                        subtitle: const Text('Take a new photo'),
+                        leading: Icon(Icons.camera_alt),
+                        title: Text('Camera'),
+                        subtitle: Text('Take a new photo'),
                         onTap: () =>
                             Navigator.of(context).pop(ImageSource.camera),
                       ),
                       ListTile(
-                        leading: const Icon(Icons.photo_library),
-                        title: const Text('Gallery'),
-                        subtitle: const Text('Choose from existing photos'),
+                        leading: Icon(Icons.photo_library),
+                        title: Text('Gallery'),
+                        subtitle: Text('Choose from existing photos'),
                         onTap: () =>
                             Navigator.of(context).pop(ImageSource.gallery),
                       ),
                       const SizedBox(height: 10),
                       TextButton(
                         onPressed: () => Navigator.of(context).pop(),
-                        child: const Text('Cancel'),
+                        child: Text('Cancel'),
                       ),
                     ],
                   ),

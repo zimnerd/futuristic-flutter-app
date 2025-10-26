@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import '../../theme/theme_extensions.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 import '../common/pulse_toast.dart';
 
 class MessageInput extends StatefulWidget {
@@ -65,7 +64,7 @@ class _MessageInputState extends State<MessageInput> {
       decoration: BoxDecoration(
         color: context.surfaceColor,
         border: Border(
-          top: BorderSide(color: ThemeColors.getBorderColor(context)),
+          top: BorderSide(color: context.outlineColor, width: 1),
         ),
       ),
       child: Column(
@@ -128,13 +127,13 @@ class _MessageInputState extends State<MessageInput> {
       decoration: BoxDecoration(
         color: _isComposing
             ? context.primaryColor
-            : ThemeColors.getDisabledColor(context),
+            : context.surfaceVariantColor,
         shape: BoxShape.circle,
       ),
       child: IconButton(
         icon: Icon(
           _isComposing ? Icons.send : Icons.mic,
-          color: _isComposing ? context.onPrimaryColor : context.surfaceColor,
+          color: _isComposing ? context.primaryColor : context.surfaceColor,
           size: 20,
         ),
         onPressed: _isComposing ? _onSendPressed : widget.onVoice,
@@ -168,7 +167,7 @@ class _MessageInputState extends State<MessageInput> {
             _buildAttachmentOption(
               icon: Icons.location_on,
               label: 'Location',
-              color: context.secondaryColor,
+              color: context.accentColor,
               onTap: () {
                 // Implement location sharing
                 Navigator.pop(context);

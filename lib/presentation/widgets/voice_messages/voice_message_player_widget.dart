@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import '../../theme/theme_extensions.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 import 'package:just_audio/just_audio.dart';
 import 'dart:async';
 
@@ -170,7 +169,7 @@ class _VoiceMessagePlayerWidgetState extends State<VoiceMessagePlayerWidget>
                 ? NetworkImage(widget.message.senderAvatarUrl!)
                 : null,
             child: widget.message.senderAvatarUrl == null
-                ? const Icon(Icons.person)
+                ? Icon(Icons.person)
                 : null,
           ),
           const SizedBox(width: 12),
@@ -195,7 +194,7 @@ class _VoiceMessagePlayerWidgetState extends State<VoiceMessagePlayerWidget>
           ),
           IconButton(
             onPressed: widget.onClose,
-            icon: const Icon(Icons.close),
+            icon: Icon(Icons.close),
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ],
@@ -307,7 +306,7 @@ class _VoiceMessagePlayerWidgetState extends State<VoiceMessagePlayerWidget>
                   _currentPosition - const Duration(seconds: 10);
               _seek(newPosition < Duration.zero ? Duration.zero : newPosition);
             },
-            icon: const Icon(Icons.replay_10),
+            icon: Icon(Icons.replay_10),
             iconSize: 32,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
@@ -334,13 +333,13 @@ class _VoiceMessagePlayerWidgetState extends State<VoiceMessagePlayerWidget>
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
                         valueColor: AlwaysStoppedAnimation<Color>(
-                          context.onPrimaryColor,
+                          context.primaryColor,
                         ),
                       ),
                     )
                   : Icon(_isPlaying ? Icons.pause : Icons.play_arrow),
               iconSize: 32,
-              color: context.onPrimaryColor,
+              color: context.primaryColor,
             ),
           ),
 
@@ -353,7 +352,7 @@ class _VoiceMessagePlayerWidgetState extends State<VoiceMessagePlayerWidget>
                 newPosition > _totalDuration ? _totalDuration : newPosition,
               );
             },
-            icon: const Icon(Icons.forward_10),
+            icon: Icon(Icons.forward_10),
             iconSize: 32,
             color: context.onSurfaceVariantColor,
           ),
@@ -361,7 +360,7 @@ class _VoiceMessagePlayerWidgetState extends State<VoiceMessagePlayerWidget>
           // Stop
           IconButton(
             onPressed: _stop,
-            icon: const Icon(Icons.stop),
+            icon: Icon(Icons.stop),
             iconSize: 32,
             color: context.onSurfaceVariantColor,
           ),

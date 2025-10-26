@@ -11,6 +11,7 @@ import '../../../data/models/payment_transaction.dart';
 import '../../../data/services/payment_history_service.dart';
 import '../../../data/services/token_service.dart';
 import '../../widgets/common/pulse_toast.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Transaction History Screen
 ///
@@ -185,16 +186,16 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: context.backgroundColor,
       appBar: AppBar(
-        title: const Text('Transaction History'),
+        title: Text('Transaction History'),
         elevation: 0,
         backgroundColor: PulseColors.primary,
-        foregroundColor: Colors.white,
+        foregroundColor: context.textOnPrimary,
         actions: [
           if (_transactions.isNotEmpty)
             IconButton(
-              icon: const Icon(Icons.download_rounded),
+              icon: Icon(Icons.download_rounded),
               onPressed: _showExportOptions,
               tooltip: 'Export Transactions',
             ),
@@ -206,7 +207,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
 
   Widget _buildBody() {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(child: CircularProgressIndicator());
     }
 
     if (_error != null) {
@@ -266,7 +267,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
               const SizedBox(height: 8),
               Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.monetization_on,
                     color: Colors.amber,
                     size: 32,
@@ -274,8 +275,8 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                   const SizedBox(width: 8),
                   Text(
                     '$_currentBalance',
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: context.onSurfaceColor,
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
                     ),
@@ -298,9 +299,9 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
               color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.account_balance_wallet,
-              color: Colors.white,
+              color: context.onSurfaceColor,
               size: 32,
             ),
           ),
@@ -332,7 +333,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.onSurfaceColor,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -352,7 +353,11 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
               Colors.red,
             ),
           ),
-          Container(width: 1, height: 40, color: Colors.grey[300]),
+          Container(
+            width: 1,
+            height: 40,
+            color: context.outlineColor.withValues(alpha: 0.3),
+          ),
           Expanded(
             child: _buildSummaryItem(
               'Purchased',
@@ -361,7 +366,11 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
               Colors.green,
             ),
           ),
-          Container(width: 1, height: 40, color: Colors.grey[300]),
+          Container(
+            width: 1,
+            height: 40,
+            color: context.outlineColor.withValues(alpha: 0.3),
+          ),
           Expanded(
             child: _buildSummaryItem(
               'Net',
@@ -392,7 +401,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
               label,
               style: TextStyle(
                 fontSize: 12,
-                color: Colors.grey[600],
+                color: context.onSurfaceVariantColor,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -446,12 +455,12 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Transaction Type Filters
-          const Text(
+          Text(
             'Transaction Type',
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: Colors.black87,
+              color: context.textPrimary,
             ),
           ),
           const SizedBox(height: 8),
@@ -476,12 +485,12 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
           ),
           const SizedBox(height: 16),
           // Status Filters
-          const Text(
+          Text(
             'Status',
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: Colors.black87,
+              color: context.textPrimary,
             ),
           ),
           const SizedBox(height: 8),
@@ -506,12 +515,12 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
           ),
           const SizedBox(height: 16),
           // Date Range Filters
-          const Text(
+          Text(
             'Date Range',
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: Colors.black87,
+              color: context.textPrimary,
             ),
           ),
           const SizedBox(height: 8),
@@ -543,11 +552,11 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
           _applyFilters();
         });
       },
-      backgroundColor: Colors.grey[100],
+      backgroundColor: context.surfaceColor,
       selectedColor: PulseColors.primary.withValues(alpha: 0.2),
       checkmarkColor: PulseColors.primary,
       labelStyle: TextStyle(
-        color: isSelected ? PulseColors.primary : Colors.black87,
+        color: isSelected ? PulseColors.primary : context.textPrimary,
         fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
       ),
     );
@@ -564,11 +573,11 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
           _applyFilters();
         });
       },
-      backgroundColor: Colors.grey[100],
+      backgroundColor: context.surfaceColor,
       selectedColor: PulseColors.primary.withValues(alpha: 0.2),
       checkmarkColor: PulseColors.primary,
       labelStyle: TextStyle(
-        color: isSelected ? PulseColors.primary : Colors.black87,
+        color: isSelected ? PulseColors.primary : context.textPrimary,
         fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
       ),
     );
@@ -593,11 +602,11 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
           });
         }
       },
-      backgroundColor: Colors.grey[100],
+      backgroundColor: context.surfaceColor,
       selectedColor: PulseColors.primary.withValues(alpha: 0.2),
       checkmarkColor: PulseColors.primary,
       labelStyle: TextStyle(
-        color: isSelected ? PulseColors.primary : Colors.black87,
+        color: isSelected ? PulseColors.primary : context.textPrimary,
         fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
       ),
     );
@@ -648,28 +657,31 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Export Transactions',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
               'Choose format to export ${_filteredTransactions.isEmpty ? _transactions.length : _filteredTransactions.length} transaction(s)',
-              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+              style: TextStyle(
+                fontSize: 14,
+                color: context.onSurfaceVariantColor,
+              ),
             ),
             const SizedBox(height: 20),
             ListTile(
               leading: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.red.withValues(alpha: 0.1),
+                  color: context.errorColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.picture_as_pdf, color: Colors.red),
+                child: Icon(Icons.picture_as_pdf, color: context.errorColor),
               ),
-              title: const Text('Export as PDF'),
-              subtitle: const Text('Professional format for printing'),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+              title: Text('Export as PDF'),
+              subtitle: Text('Professional format for printing'),
+              trailing: Icon(Icons.arrow_forward_ios, size: 16),
               onTap: () {
                 Navigator.pop(context);
                 _exportToPDF();
@@ -683,11 +695,11 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                   color: Colors.green.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.table_chart, color: Colors.green),
+                child: Icon(Icons.table_chart, color: Colors.green),
               ),
-              title: const Text('Export as CSV'),
-              subtitle: const Text('Open in Excel or spreadsheet apps'),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+              title: Text('Export as CSV'),
+              subtitle: Text('Open in Excel or spreadsheet apps'),
+              trailing: Icon(Icons.arrow_forward_ios, size: 16),
               onTap: () {
                 Navigator.pop(context);
                 _exportToCSV();
@@ -1013,10 +1025,10 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
               child: Text(
                 groupKey,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+                  color: context.textPrimary,
                 ),
               ),
             ),
@@ -1049,7 +1061,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.onSurfaceColor,
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
@@ -1074,7 +1086,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                   children: [
                     Text(
                       transaction.description,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                       ),
@@ -1084,7 +1096,10 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                       DateFormat(
                         'MMM dd, yyyy • hh:mm a',
                       ).format(transaction.processedAt),
-                      style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: context.onSurfaceVariantColor,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     _buildStatusBadge(transaction.status),
@@ -1125,7 +1140,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                         Icon(
                           Icons.account_balance_wallet_outlined,
                           size: 12,
-                          color: Colors.grey[600],
+                          color: context.onSurfaceVariantColor,
                         ),
                         const SizedBox(width: 4),
                         Text(
@@ -1133,7 +1148,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
-                            color: Colors.grey[700],
+                            color: context.onSurfaceVariantColor,
                           ),
                         ),
                       ],
@@ -1142,7 +1157,11 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                 ],
               ),
               const SizedBox(width: 8),
-              Icon(Icons.chevron_right, color: Colors.grey[400], size: 20),
+              Icon(
+                Icons.chevron_right,
+                color: context.outlineColor.withValues(alpha: 0.2),
+                size: 20,
+              ),
             ],
           ),
         ),
@@ -1205,7 +1224,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
         text = 'Failed';
         break;
       case PaymentTransactionStatus.cancelled:
-        color = Colors.grey;
+        color = context.outlineColor;
         text = 'Cancelled';
         break;
       case PaymentTransactionStatus.refunded:
@@ -1240,20 +1259,27 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.receipt_long_outlined, size: 80, color: Colors.grey[300]),
+          Icon(
+            Icons.receipt_long_outlined,
+            size: 80,
+            color: context.outlineColor.withValues(alpha: 0.3),
+          ),
           const SizedBox(height: 16),
           Text(
             'No Transactions Yet',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Colors.grey[700],
+              color: context.onSurfaceVariantColor,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             'Your transaction history will appear here',
-            style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+            style: TextStyle(
+              fontSize: 14,
+              color: context.onSurfaceVariantColor.withValues(alpha: 0.6),
+            ),
           ),
         ],
       ),
@@ -1265,30 +1291,33 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.error_outline, size: 80, color: Colors.red[300]),
+          Icon(Icons.error_outline, size: 80, color: context.errorColor),
           const SizedBox(height: 16),
           Text(
             'Error Loading Transactions',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Colors.grey[700],
+              color: context.onSurfaceVariantColor,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             _error ?? 'Unknown error occurred',
-            style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+            style: TextStyle(
+              fontSize: 14,
+              color: context.onSurfaceVariantColor.withValues(alpha: 0.6),
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
           ElevatedButton.icon(
             onPressed: _loadTransactions,
-            icon: const Icon(Icons.refresh),
-            label: const Text('Retry'),
+            icon: Icon(Icons.refresh),
+            label: Text('Retry'),
             style: ElevatedButton.styleFrom(
               backgroundColor: PulseColors.primary,
-              foregroundColor: Colors.white,
+              foregroundColor: context.onSurfaceColor,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
           ),
@@ -1334,7 +1363,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                     height: 4,
                     margin: const EdgeInsets.only(bottom: 20),
                     decoration: BoxDecoration(
-                      color: Colors.grey[300],
+                      color: context.outlineColor.withValues(alpha: 0.3),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -1364,8 +1393,8 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                     ),
                     IconButton(
                       onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.close),
-                      color: Colors.grey[600],
+                      icon: Icon(Icons.close),
+                      color: context.onSurfaceVariantColor,
                     ),
                   ],
                 ),
@@ -1391,7 +1420,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                         transaction.currency.toUpperCase(),
                         style: TextStyle(
                           fontSize: 16,
-                          color: Colors.grey[600],
+                          color: context.onSurfaceVariantColor,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -1445,8 +1474,8 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                     Expanded(
                       child: OutlinedButton.icon(
                         onPressed: () => _downloadReceipt(transaction),
-                        icon: const Icon(Icons.receipt_long),
-                        label: const Text('Download Receipt'),
+                        icon: Icon(Icons.receipt_long),
+                        label: Text('Download Receipt'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: PulseColors.primary,
                           side: BorderSide(color: PulseColors.primary),
@@ -1461,8 +1490,8 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                     Expanded(
                       child: OutlinedButton.icon(
                         onPressed: () => _shareReceipt(transaction),
-                        icon: const Icon(Icons.share),
-                        label: const Text('Share'),
+                        icon: Icon(Icons.share),
+                        label: Text('Share'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: PulseColors.primary,
                           side: BorderSide(color: PulseColors.primary),
@@ -1482,11 +1511,11 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                     width: double.infinity,
                     child: ElevatedButton.icon(
                       onPressed: () => _requestRefund(transaction),
-                      icon: const Icon(Icons.undo),
-                      label: const Text('Request Refund'),
+                      icon: Icon(Icons.undo),
+                      label: Text('Request Refund'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.orange,
-                        foregroundColor: Colors.white,
+                        foregroundColor: context.onSurfaceColor,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -1517,7 +1546,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
               label,
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.grey[600],
+                color: context.onSurfaceVariantColor,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -1527,7 +1556,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
               value,
               style: TextStyle(
                 fontSize: 14,
-                color: valueColor ?? Colors.black87,
+                color: valueColor ?? context.textPrimary,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -1623,7 +1652,7 @@ Thank you for using Pulse Dating!
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Request Refund'),
+        title: Text('Request Refund'),
         content: Text(
           'Are you sure you want to request a refund for this transaction?\n\n'
           'Amount: ${transaction.amount.toStringAsFixed(0)} ${transaction.currency}\n'
@@ -1633,15 +1662,15 @@ Thank you for using Pulse Dating!
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.orange,
-              foregroundColor: Colors.white,
+              foregroundColor: context.onSurfaceColor,
             ),
-            child: const Text('Request Refund'),
+            child: Text('Request Refund'),
           ),
         ],
       ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 class UploadProgressIndicator extends StatelessWidget {
   final double progress; // 0.0 to 100.0
@@ -76,7 +77,7 @@ class UploadProgressIndicator extends StatelessWidget {
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: hasError
                               ? Colors.red.shade500
-                              : Colors.grey.shade600,
+                              : context.outlineColor.shade600,
                         ),
                       ),
                   ],
@@ -84,14 +85,14 @@ class UploadProgressIndicator extends StatelessWidget {
               ),
               if (onCancel != null && isUploading)
                 IconButton(
-                  icon: const Icon(Icons.close, size: 20),
+                  icon: Icon(Icons.close, size: 20),
                   onPressed: onCancel,
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(
                     minWidth: 32,
                     minHeight: 32,
                   ),
-                  color: Colors.grey.shade600,
+                  color: context.outlineColor.shade600,
                 ),
             ],
           ),
@@ -104,7 +105,7 @@ class UploadProgressIndicator extends StatelessWidget {
               errorMessage!,
               style: Theme.of(
                 context,
-              ).textTheme.bodySmall?.copyWith(color: Colors.red.shade600),
+              ).textTheme.bodySmall?.copyWith(color: context.errorColor.shade600),
             ),
           ] else ...[
             // Progress bar
@@ -117,7 +118,7 @@ class UploadProgressIndicator extends StatelessWidget {
                         borderRadius: BorderRadius.circular(4),
                         child: LinearProgressIndicator(
                           value: progress / 100,
-                          backgroundColor: Colors.grey.shade200,
+                          backgroundColor: context.outlineColor.shade200,
                           valueColor: AlwaysStoppedAnimation<Color>(
                             PulseColors.primary,
                           ),
@@ -143,7 +144,7 @@ class UploadProgressIndicator extends StatelessWidget {
                       isUploading ? 'Uploading...' : 'Upload complete',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: isUploading
-                            ? Colors.grey.shade600
+                            ? context.outlineColor.shade600
                             : Colors.green.shade600,
                       ),
                     ),
@@ -199,15 +200,15 @@ class CompactUploadProgress extends StatelessWidget {
             child: CircularProgressIndicator(
               value: progress / 100,
               strokeWidth: 2,
-              backgroundColor: Colors.white.withValues(alpha: 0.3),
+              backgroundColor: context.surfaceColor.withValues(alpha: 0.3),
               valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
             ),
           ),
           const SizedBox(width: 8),
           Text(
             '${progress.toStringAsFixed(0)}%',
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: context.onSurfaceColor,
               fontSize: 12,
               fontWeight: FontWeight.w500,
             ),
@@ -216,7 +217,7 @@ class CompactUploadProgress extends StatelessWidget {
             const SizedBox(width: 8),
             GestureDetector(
               onTap: onCancel,
-              child: const Icon(Icons.close, color: Colors.white, size: 16),
+              child: Icon(Icons.close, color: context.onSurfaceColor, size: 16),
             ),
           ],
         ],

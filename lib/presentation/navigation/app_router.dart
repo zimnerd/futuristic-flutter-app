@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../blocs/auth/auth_bloc.dart';
@@ -542,8 +543,8 @@ class AppRouter {
             if (profile == null) {
               // Navigate back if no profile provided
               return Scaffold(
-                appBar: AppBar(title: const Text('Profile Not Found')),
-                body: const Center(child: Text('Profile not found')),
+                appBar: AppBar(title: Text('Profile Not Found')),
+                body: Center(child: Text('Profile not found')),
               );
             }
 
@@ -889,8 +890,8 @@ class AppRouter {
             if (groupChatBloc == null) {
               // Return error screen if bloc not provided
               return Scaffold(
-                appBar: AppBar(title: const Text('Error')),
-                body: const Center(
+                appBar: AppBar(title: Text('Error')),
+                body: Center(
                   child: Text(
                     'Failed to initialize video call. Please try again.',
                   ),
@@ -1101,7 +1102,7 @@ class AppRouter {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline, size: 64, color: Colors.red),
+              Icon(Icons.error_outline, size: 64, color: context.errorColor),
               const SizedBox(height: 16),
               Text(
                 'Page not found',
@@ -1115,7 +1116,7 @@ class AppRouter {
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => context.go(AppRoutes.welcome),
-                child: const Text('Go Home'),
+                child: Text('Go Home'),
               ),
             ],
           ),

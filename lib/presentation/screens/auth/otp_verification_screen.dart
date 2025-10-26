@@ -114,7 +114,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
     return KeyboardDismissibleScaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
         backgroundColor: Colors.transparent,
@@ -158,7 +158,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                 const SizedBox(height: 40),
 
                 // Icon
-                const Icon(Icons.message, size: 80, color: PulseColors.primary),
+                Icon(Icons.message, size: 80, color: PulseColors.primary),
                 const SizedBox(height: 24),
 
                 // Title
@@ -166,7 +166,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                   'Verify Your Email / Number',
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: PulseColors.onSurface,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -176,7 +176,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                 Text(
                   'We sent a verification code to',
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: PulseColors.onSurfaceVariant,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -196,7 +196,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                   Text(
                     'via ${widget.deliveryMethods!.join(", ").toUpperCase()}',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: PulseColors.onSurfaceVariant,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                       fontStyle: FontStyle.italic,
                     ),
                     textAlign: TextAlign.center,
@@ -215,17 +215,18 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                         controller: _otpController,
                         keyboardType: TextInputType.number,
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 32,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 8,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                         maxLength: 4,
                         validator: _validateOTP,
                         decoration: InputDecoration(
                           hintText: '• • • •',
                           hintStyle: TextStyle(
-                            color: PulseColors.onSurfaceVariant.withValues(
+                            color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(
                               alpha: 0.3,
                             ),
                             letterSpacing: 16,
@@ -243,24 +244,24 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                         onPressed: _isLoading ? null : _handleVerify,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: PulseColors.primary,
-                          foregroundColor: Colors.white,
+                          foregroundColor: Theme.of(context).colorScheme.onPrimary,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
                         child: _isLoading
-                            ? const SizedBox(
+                            ? SizedBox(
                                 height: 20,
                                 width: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
                                   valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.white,
+                                    Theme.of(context).colorScheme.onPrimary,
                                   ),
                                 ),
                               )
-                            : const Text(
+                            : Text(
                                 'Verify',
                                 style: TextStyle(
                                   fontSize: 16,
@@ -278,7 +279,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                           Text(
                             "Didn't receive the code? ",
                             style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(color: PulseColors.onSurfaceVariant),
+                                ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
                           ),
                           TextButton(
                             onPressed: _canResend ? _handleResend : null,
@@ -289,7 +290,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                               style: TextStyle(
                                 color: _canResend
                                     ? PulseColors.primary
-                                    : PulseColors.onSurfaceVariant,
+                                    : Theme.of(context).colorScheme.onSurfaceVariant,
                               ),
                             ),
                           ),

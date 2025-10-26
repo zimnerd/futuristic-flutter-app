@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pulse_dating_app/data/services/ai_feedback_service.dart';
 import '../common/pulse_toast.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// AI Feedback Widget - collects user feedback and ratings for AI features
 /// Supports quick ratings, detailed feedback, and improvement suggestions
@@ -126,9 +127,9 @@ class _AiFeedbackWidgetState extends State<AiFeedbackWidget>
               colors: [Color(0xFF6E3BFF), Color(0xFF00C2FF)],
             ),
           ),
-          child: const Icon(
+          child: Icon(
             Icons.feedback_rounded,
-            color: Colors.white,
+            color: context.onSurfaceColor,
             size: 20,
           ),
         ),
@@ -139,8 +140,8 @@ class _AiFeedbackWidgetState extends State<AiFeedbackWidget>
             children: [
               Text(
                 widget.title ?? 'How was this AI feature?',
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: context.onSurfaceColor,
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
@@ -148,14 +149,14 @@ class _AiFeedbackWidgetState extends State<AiFeedbackWidget>
               if (widget.description != null)
                 Text(
                   widget.description!,
-                  style: const TextStyle(color: Colors.white70, fontSize: 12),
+                  style: TextStyle(color: Colors.white70, fontSize: 12),
                 ),
             ],
           ),
         ),
         IconButton(
           onPressed: () => Navigator.of(context).pop(),
-          icon: const Icon(Icons.close_rounded, color: Colors.white70),
+          icon: Icon(Icons.close_rounded, color: Colors.white70),
         ),
       ],
     );
@@ -165,10 +166,10 @@ class _AiFeedbackWidgetState extends State<AiFeedbackWidget>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Quick Rating',
           style: TextStyle(
-            color: Colors.white,
+            color: context.onSurfaceColor,
             fontSize: 14,
             fontWeight: FontWeight.w500,
           ),
@@ -208,7 +209,7 @@ class _AiFeedbackWidgetState extends State<AiFeedbackWidget>
             onPressed: _overallRating > 0 ? _submitQuickFeedback : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF6E3BFF),
-              foregroundColor: Colors.white,
+              foregroundColor: context.onSurfaceColor,
               disabledBackgroundColor: Colors.white24,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -223,13 +224,13 @@ class _AiFeedbackWidgetState extends State<AiFeedbackWidget>
                       valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                     ),
                   )
-                : const Text('Submit'),
+                : Text('Submit'),
           ),
         ),
         const SizedBox(width: 12),
         TextButton(
           onPressed: () => setState(() => _showDetailedFeedback = true),
-          child: const Text(
+          child: Text(
             'More Details',
             style: TextStyle(color: Color(0xFF00C2FF)),
           ),
@@ -277,8 +278,8 @@ class _AiFeedbackWidgetState extends State<AiFeedbackWidget>
       children: [
         Text(
           title,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: context.onSurfaceColor,
             fontSize: 14,
             fontWeight: FontWeight.w500,
           ),
@@ -313,10 +314,10 @@ class _AiFeedbackWidgetState extends State<AiFeedbackWidget>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Additional Comments',
           style: TextStyle(
-            color: Colors.white,
+            color: context.onSurfaceColor,
             fontSize: 14,
             fontWeight: FontWeight.w500,
           ),
@@ -331,7 +332,7 @@ class _AiFeedbackWidgetState extends State<AiFeedbackWidget>
           child: TextField(
             controller: _commentController,
             maxLines: 3,
-            style: const TextStyle(color: Colors.white),
+            style: TextStyle(color: Colors.white),
             decoration: const InputDecoration(
               hintText: 'Tell us how we can improve...',
               hintStyle: TextStyle(color: Colors.white60),
@@ -358,7 +359,7 @@ class _AiFeedbackWidgetState extends State<AiFeedbackWidget>
             onPressed: canSubmit ? _submitDetailedFeedback : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF6E3BFF),
-              foregroundColor: Colors.white,
+              foregroundColor: context.onSurfaceColor,
               disabledBackgroundColor: Colors.white24,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -373,13 +374,13 @@ class _AiFeedbackWidgetState extends State<AiFeedbackWidget>
                       valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                     ),
                   )
-                : const Text('Submit Feedback'),
+                : Text('Submit Feedback'),
           ),
         ),
         const SizedBox(width: 12),
         TextButton(
           onPressed: () => setState(() => _showDetailedFeedback = false),
-          child: const Text('Back', style: TextStyle(color: Colors.white60)),
+          child: Text('Back', style: TextStyle(color: Colors.white60)),
         ),
       ],
     );
@@ -500,7 +501,7 @@ class AiQuickFeedbackButton extends StatelessWidget {
             const SizedBox(width: 4),
             Text(
               isPositive ? 'Helpful' : 'Not helpful',
-              style: const TextStyle(color: Colors.white70, fontSize: 12),
+              style: TextStyle(color: Colors.white70, fontSize: 12),
             ),
           ],
         ),

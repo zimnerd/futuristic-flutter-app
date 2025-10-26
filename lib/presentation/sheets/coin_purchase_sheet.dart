@@ -11,7 +11,7 @@ import '../blocs/premium/premium_event.dart';
 import '../blocs/premium/premium_state.dart';
 import '../widgets/premium/coin_package_card.dart';
 import '../widgets/common/pulse_toast.dart';
-import '../theme/theme_extensions.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Bottom sheet for purchasing coin packages
 ///
@@ -99,8 +99,8 @@ class _CoinPurchaseSheetState extends State<CoinPurchaseSheet>
       },
       child: Container(
         height: MediaQuery.of(context).size.height * 0.8,
-        decoration: const BoxDecoration(
-          color: AppColors.surface,
+        decoration: BoxDecoration(
+          color: context.surfaceColor,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: Column(
@@ -111,7 +111,7 @@ class _CoinPurchaseSheetState extends State<CoinPurchaseSheet>
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: AppColors.border,
+                color: context.outlineColor,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -164,12 +164,12 @@ class _CoinPurchaseSheetState extends State<CoinPurchaseSheet>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'Buy Coins',
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary,
+                            color: context.onSurfaceColor,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -184,14 +184,14 @@ class _CoinPurchaseSheetState extends State<CoinPurchaseSheet>
                                 Icon(
                                   Icons.account_balance_wallet,
                                   size: 14,
-                                  color: AppColors.textSecondary,
+                                  color: context.onSurfaceVariantColor,
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
                                   'Current Balance: $balance coins',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 14,
-                                    color: AppColors.textSecondary,
+                                    color: context.onSurfaceVariantColor,
                                   ),
                                 ),
                               ],
@@ -203,7 +203,7 @@ class _CoinPurchaseSheetState extends State<CoinPurchaseSheet>
                   ),
                   IconButton(
                     onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close, color: AppColors.textPrimary),
+                    icon: Icon(Icons.close, color: context.onSurfaceColor),
                   ),
                 ],
               ),
@@ -252,27 +252,27 @@ class _CoinPurchaseSheetState extends State<CoinPurchaseSheet>
               margin: const EdgeInsets.symmetric(horizontal: 24),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.surfaceVariant,
+                color: context.surfaceColor,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.border),
+                border: Border.all(color: context.outlineColor),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.tips_and_updates,
                         color: AppColors.primary,
                         size: 18,
                       ),
                       const SizedBox(width: 8),
-                      const Text(
+                      Text(
                         'What can you do with coins?',
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 14,
-                          color: AppColors.textPrimary,
+                          color: context.onSurfaceColor,
                         ),
                       ),
                     ],
@@ -341,9 +341,9 @@ class _CoinPurchaseSheetState extends State<CoinPurchaseSheet>
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: AppColors.surface,
+                color: context.surfaceColor,
                 border: Border(
-                  top: BorderSide(color: AppColors.border, width: 1),
+                  top: BorderSide(color: context.outlineColor, width: 1),
                 ),
               ),
               child: BlocBuilder<CoinPurchaseBloc, CoinPurchaseState>(
@@ -358,23 +358,23 @@ class _CoinPurchaseSheetState extends State<CoinPurchaseSheet>
                           margin: const EdgeInsets.only(bottom: 16),
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: AppColors.error.withValues(alpha: 0.1),
+                            color: context.errorColor.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: AppColors.error),
+                            border: Border.all(color: context.errorColor),
                           ),
                           child: Row(
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.error_outline,
-                                color: AppColors.error,
+                                color: context.errorColor,
                                 size: 20,
                               ),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
                                   state.message,
-                                  style: const TextStyle(
-                                    color: AppColors.error,
+                                  style: TextStyle(
+                                    color: context.errorColor,
                                     fontSize: 12,
                                   ),
                                 ),
@@ -489,9 +489,9 @@ class _CoinPurchaseSheetState extends State<CoinPurchaseSheet>
           Expanded(
             child: Text(
               text,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
-                color: AppColors.textPrimary,
+                color: context.onSurfaceColor,
               ),
             ),
           ),

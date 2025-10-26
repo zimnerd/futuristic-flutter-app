@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Verification CTA Banner
 ///
@@ -44,9 +45,9 @@ class VerificationCTABanner extends StatelessWidget {
                     color: Colors.white.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.verified_user,
-                    color: Colors.white,
+                    color: context.onSurfaceColor,
                     size: 28,
                   ),
                 ),
@@ -60,7 +61,7 @@ class VerificationCTABanner extends StatelessWidget {
                       Text(
                         'Get Verified',
                         style: PulseTextStyles.titleMedium.copyWith(
-                          color: Colors.white,
+                          color: context.onSurfaceColor,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -112,12 +113,12 @@ class VerifiedBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.verified, color: Colors.white, size: 16),
+          Icon(Icons.verified, color: context.onSurfaceColor, size: 16),
           const SizedBox(width: 6),
           Text(
             'Verified',
             style: PulseTextStyles.labelMedium.copyWith(
-              color: Colors.white,
+              color: context.onSurfaceColor,
               fontWeight: FontWeight.w600,
             ),
           ),

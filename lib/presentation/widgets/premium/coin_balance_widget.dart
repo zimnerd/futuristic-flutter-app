@@ -5,6 +5,7 @@ import '../../blocs/premium/premium_bloc.dart';
 import '../../blocs/premium/premium_event.dart';
 import '../../theme/pulse_colors.dart';
 import '../common/pulse_toast.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 class CoinBalanceWidget extends StatelessWidget {
   final CoinBalance? coinBalance;
@@ -50,7 +51,7 @@ class CoinBalanceWidget extends StatelessWidget {
                       Text(
                         'Use coins for boosts and premium features',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.grey[600],
+                          color: context.onSurfaceVariantColor,
                         ),
                       ),
                     ],
@@ -112,7 +113,7 @@ class CoinBalanceWidget extends StatelessWidget {
                   onPressed: onBuyCoins,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: PulseColors.primary,
-                    foregroundColor: Colors.white,
+                    foregroundColor: context.onSurfaceColor,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 20,
                       vertical: 16,
@@ -124,7 +125,7 @@ class CoinBalanceWidget extends StatelessWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.add, size: 20),
+                      Icon(Icons.add, size: 20),
                       const SizedBox(height: 2),
                       Text(
                         'Buy',
@@ -199,7 +200,9 @@ class CoinBalanceWidget extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey[300]!),
+          border: Border.all(
+            color: context.outlineColor.withValues(alpha: 0.3),
+          ),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Column(
@@ -271,7 +274,7 @@ class CoinBalanceWidget extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () {
@@ -287,7 +290,7 @@ class CoinBalanceWidget extends StatelessWidget {
                 ),
               );
             },
-            child: const Text('Use Coins'),
+            child: Text('Use Coins'),
           ),
         ],
       ),

@@ -7,7 +7,7 @@ import '../../blocs/match/match_bloc.dart';
 import '../../blocs/match/match_event.dart';
 import '../../blocs/match/match_state.dart';
 import '../../../data/models/match_model.dart';
-import '../../theme/theme_extensions.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 import '../../widgets/common/loading_indicator.dart';
 import '../../widgets/common/error_message.dart';
 import '../../widgets/common/pulse_toast.dart';
@@ -184,7 +184,7 @@ class _MatchesScreenState extends State<MatchesScreen>
 
   AppBar _buildMainAppBar() {
     return AppBar(
-      title: const Text(
+      title: Text(
         'My Matches',
         style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
       ),
@@ -206,7 +206,7 @@ class _MatchesScreenState extends State<MatchesScreen>
       actions: [
         // Search button
         IconButton(
-          icon: const Icon(Icons.search),
+          icon: Icon(Icons.search),
           onPressed: () {
             setState(() {
               _isSearchActive = true;
@@ -258,7 +258,7 @@ class _MatchesScreenState extends State<MatchesScreen>
         ),
         // Sort options
         PopupMenuButton<MatchSortBy>(
-          icon: const Icon(Icons.sort),
+          icon: Icon(Icons.sort),
           onSelected: (MatchSortBy sortBy) {
             if (mounted) {
               setState(() {
@@ -339,7 +339,7 @@ class _MatchesScreenState extends State<MatchesScreen>
         ),
       ),
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back),
+        icon: Icon(Icons.arrow_back),
         onPressed: () {
           setState(() {
             _isSearchActive = false;
@@ -352,7 +352,7 @@ class _MatchesScreenState extends State<MatchesScreen>
       title: TextField(
         controller: _searchController,
         autofocus: true,
-        style: const TextStyle(color: Colors.white),
+        style: TextStyle(color: Colors.white),
         decoration: const InputDecoration(
           hintText: 'Search by match ID, status, compatibility...',
           hintStyle: TextStyle(color: Colors.white70),
@@ -368,7 +368,7 @@ class _MatchesScreenState extends State<MatchesScreen>
       actions: [
         if (_searchController.text.isNotEmpty)
           IconButton(
-            icon: const Icon(Icons.clear),
+            icon: Icon(Icons.clear),
             onPressed: () {
               setState(() {
                 _searchController.clear();
@@ -484,7 +484,7 @@ class _MatchesScreenState extends State<MatchesScreen>
     return BlocBuilder<MatchBloc, MatchState>(
       builder: (context, state) {
         if (state is MatchLoading) {
-          return const Center(
+          return Center(
             child: LoadingIndicator(message: 'Loading matches...'),
           );
         }
@@ -664,7 +664,7 @@ class _MatchesScreenState extends State<MatchesScreen>
                   children: [
                     Text(
                       'User ${match.id.substring(0, 8)}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 14,
                       ),
@@ -719,7 +719,7 @@ class _MatchesScreenState extends State<MatchesScreen>
                   children: [
                     Text(
                       'User ${match.id.substring(0, 8)}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
                       ),
@@ -785,8 +785,8 @@ class _MatchesScreenState extends State<MatchesScreen>
                 backgroundColor: Colors.green,
                 minimumSize: const Size(0, 40),
               ),
-              icon: const Icon(Icons.check, color: Colors.white),
-              label: const Text(
+              icon: Icon(Icons.check, color: Colors.white),
+              label: Text(
                 'Accept',
                 style: TextStyle(color: Colors.white),
               ),
@@ -800,8 +800,8 @@ class _MatchesScreenState extends State<MatchesScreen>
                 backgroundColor: Colors.red,
                 minimumSize: const Size(0, 40),
               ),
-              icon: const Icon(Icons.close, color: Colors.white),
-              label: const Text(
+              icon: Icon(Icons.close, color: Colors.white),
+              label: Text(
                 'Reject',
                 style: TextStyle(color: Colors.white),
               ),
@@ -816,8 +816,8 @@ class _MatchesScreenState extends State<MatchesScreen>
           backgroundColor: Theme.of(context).primaryColor,
           minimumSize: const Size(double.infinity, 40),
         ),
-        icon: const Icon(Icons.message, color: Colors.white),
-        label: const Text('Message', style: TextStyle(color: Colors.white)),
+        icon: Icon(Icons.message, color: Colors.white),
+        label: Text('Message', style: TextStyle(color: Colors.white)),
       );
     }
     return const SizedBox.shrink();
@@ -849,12 +849,16 @@ class _MatchesScreenState extends State<MatchesScreen>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: 64, color: Colors.grey[400]),
+          Icon(
+            icon,
+            size: 64,
+            color: context.outlineColor.withValues(alpha: 0.2),
+          ),
           const SizedBox(height: 16),
           Text(
             title,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: Colors.grey[600],
+              color: context.onSurfaceVariantColor,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -866,14 +870,16 @@ class _MatchesScreenState extends State<MatchesScreen>
               textAlign: TextAlign.center,
               style: Theme.of(
                 context,
-              ).textTheme.bodyMedium?.copyWith(color: Colors.grey[500]),
+              ).textTheme.bodyMedium?.copyWith(
+                color: context.onSurfaceVariantColor.withValues(alpha: 0.6),
+              ),
             ),
           ),
           const SizedBox(height: 24),
           ElevatedButton.icon(
             onPressed: () => Navigator.of(context).pushNamed('/discovery'),
-            icon: const Icon(Icons.explore),
-            label: const Text('Start Exploring'),
+            icon: Icon(Icons.explore),
+            label: Text('Start Exploring'),
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               shape: RoundedRectangleBorder(
@@ -928,22 +934,22 @@ class _MatchesScreenState extends State<MatchesScreen>
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Reject Match?'),
-          content: const Text(
+          title: Text('Reject Match?'),
+          content: Text(
             'Are you sure you want to reject this match? This action cannot be undone.',
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
+              child: Text('Cancel'),
             ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
                 _matchBloc.add(RejectMatch(matchId: matchId));
               },
-              style: TextButton.styleFrom(foregroundColor: Colors.red),
-              child: const Text('Reject'),
+              style: TextButton.styleFrom(foregroundColor: context.errorColor),
+              child: Text('Reject'),
             ),
           ],
         ),
@@ -956,22 +962,22 @@ class _MatchesScreenState extends State<MatchesScreen>
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Unmatch User?'),
-          content: const Text(
+          title: Text('Unmatch User?'),
+          content: Text(
             'Are you sure you want to unmatch this user? This will remove the match and end your conversation.',
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
+              child: Text('Cancel'),
             ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
                 _matchBloc.add(UnmatchUser(matchId: matchId));
               },
-              style: TextButton.styleFrom(foregroundColor: Colors.red),
-              child: const Text('Unmatch'),
+              style: TextButton.styleFrom(foregroundColor: context.errorColor),
+              child: Text('Unmatch'),
             ),
           ],
         ),
@@ -1002,8 +1008,8 @@ class _MatchesScreenState extends State<MatchesScreen>
         backgroundColor: Colors.transparent,
         builder: (context) => Container(
           height: MediaQuery.of(context).size.height * 0.7,
-          decoration: const BoxDecoration(
-            color: Colors.white,
+          decoration: BoxDecoration(
+            color: context.onSurfaceColor,
             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
           child: Column(
@@ -1014,7 +1020,7 @@ class _MatchesScreenState extends State<MatchesScreen>
                 height: 4,
                 margin: const EdgeInsets.symmetric(vertical: 8),
                 decoration: BoxDecoration(
-                  color: Colors.grey[300],
+                  color: context.outlineColor.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -1062,12 +1068,12 @@ class _MatchesScreenState extends State<MatchesScreen>
         children: [
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontWeight: FontWeight.w500,
-              color: Colors.grey,
+              color: context.outlineColor,
             ),
           ),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
+          Text(value, style: TextStyle(fontWeight: FontWeight.w600)),
         ],
       ),
     );

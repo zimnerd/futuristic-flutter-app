@@ -5,6 +5,7 @@ import '../../../services/media_upload_service.dart';
 import '../../../core/network/api_client.dart';
 import '../../theme/pulse_colors.dart';
 import '../common/pulse_toast.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Widget for selecting and uploading profile photos
 class PhotoPickerGrid extends StatefulWidget {
@@ -154,7 +155,7 @@ class _PhotoPickerGridState extends State<PhotoPickerGrid> {
               ),
             ],
           ),
-          child: const Icon(Icons.close, color: Colors.white, size: 16),
+          child: Icon(Icons.close, color: context.onSurfaceColor, size: 16),
         ),
       ),
     );
@@ -176,7 +177,7 @@ class _PhotoPickerGridState extends State<PhotoPickerGrid> {
         child: Text(
           'PRIMARY',
           style: PulseTextStyles.labelSmall.copyWith(
-            color: Colors.white,
+            color: context.onSurfaceColor,
             fontWeight: FontWeight.bold,
             fontSize: 10,
           ),
@@ -212,7 +213,7 @@ class _PhotoPickerGridState extends State<PhotoPickerGrid> {
   Widget _buildUploadOverlay() {
     return Container(
       color: Colors.black.withValues(alpha: 0.6),
-      child: const Center(
+      child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -223,7 +224,7 @@ class _PhotoPickerGridState extends State<PhotoPickerGrid> {
             Text(
               'Uploading...',
               style: TextStyle(
-                color: Colors.white,
+                color: context.onSurfaceColor,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -239,16 +240,16 @@ class _PhotoPickerGridState extends State<PhotoPickerGrid> {
         Expanded(
           child: OutlinedButton.icon(
             onPressed: () => _addMultiplePhotos(),
-            icon: const Icon(Icons.add_photo_alternate),
-            label: const Text('Add Multiple'),
+            icon: Icon(Icons.add_photo_alternate),
+            label: Text('Add Multiple'),
           ),
         ),
         const SizedBox(width: PulseSpacing.md),
         Expanded(
           child: OutlinedButton.icon(
             onPressed: () => _reorderPhotos(),
-            icon: const Icon(Icons.swap_vert),
-            label: const Text('Reorder'),
+            icon: Icon(Icons.swap_vert),
+            label: Text('Reorder'),
           ),
         ),
       ],
@@ -299,10 +300,10 @@ class _PhotoPickerGridState extends State<PhotoPickerGrid> {
                   color: PulseColors.primaryContainer,
                   borderRadius: BorderRadius.circular(PulseRadii.md),
                 ),
-                child: const Icon(Icons.camera_alt, color: PulseColors.primary),
+                child: Icon(Icons.camera_alt, color: PulseColors.primary),
               ),
-              title: const Text('Take Photo'),
-              subtitle: const Text('Use camera to capture a new photo'),
+              title: Text('Take Photo'),
+              subtitle: Text('Use camera to capture a new photo'),
               onTap: () {
                 Navigator.pop(context);
                 _pickFromCamera(index);
@@ -315,13 +316,13 @@ class _PhotoPickerGridState extends State<PhotoPickerGrid> {
                   color: PulseColors.secondaryContainer,
                   borderRadius: BorderRadius.circular(PulseRadii.md),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.photo_library,
                   color: PulseColors.secondary,
                 ),
               ),
-              title: const Text('Choose from Gallery'),
-              subtitle: const Text('Select from your photo library'),
+              title: Text('Choose from Gallery'),
+              subtitle: Text('Select from your photo library'),
               onTap: () {
                 Navigator.pop(context);
                 _pickFromGallery(index);
@@ -365,18 +366,18 @@ class _PhotoPickerGridState extends State<PhotoPickerGrid> {
             const SizedBox(height: PulseSpacing.lg),
             if (index != 0)
               ListTile(
-                leading: const Icon(Icons.star),
-                title: const Text('Make Primary'),
-                subtitle: const Text('Set as your main profile photo'),
+                leading: Icon(Icons.star),
+                title: Text('Make Primary'),
+                subtitle: Text('Set as your main profile photo'),
                 onTap: () {
                   Navigator.pop(context);
                   _makePrimary(index);
                 },
               ),
             ListTile(
-              leading: const Icon(Icons.edit),
-              title: const Text('Replace Photo'),
-              subtitle: const Text('Choose a different photo'),
+              leading: Icon(Icons.edit),
+              title: Text('Replace Photo'),
+              subtitle: Text('Choose a different photo'),
               onTap: () {
                 Navigator.pop(context);
                 _showAddPhotoOptions(index);
@@ -388,7 +389,7 @@ class _PhotoPickerGridState extends State<PhotoPickerGrid> {
                 'Remove Photo',
                 style: TextStyle(color: PulseColors.error),
               ),
-              subtitle: const Text('Delete this photo'),
+              subtitle: Text('Delete this photo'),
               onTap: () {
                 Navigator.pop(context);
                 _removePhoto(index);

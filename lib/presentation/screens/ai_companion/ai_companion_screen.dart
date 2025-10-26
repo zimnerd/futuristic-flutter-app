@@ -13,6 +13,7 @@ import '../../widgets/common/pulse_toast.dart';
 import '../../widgets/ai_companion/companion_card_widget.dart';
 import '../../widgets/ai_companion/companion_creation_widget.dart';
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Main screen for AI Companion functionality
 class AiCompanionScreen extends StatefulWidget {
@@ -33,11 +34,11 @@ class _AiCompanionScreenState extends State<AiCompanionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('AI Companions'),
+        title: Text('AI Companions'),
         actions: [
           IconButton(
             onPressed: () => _showCreateCompanionDialog(),
-            icon: const Icon(Icons.add),
+            icon: Icon(Icons.add),
             tooltip: 'Create New Companion',
           ),
         ],
@@ -45,7 +46,7 @@ class _AiCompanionScreenState extends State<AiCompanionScreen> {
       body: BlocBuilder<AiCompanionBloc, AiCompanionState>(
         builder: (context, state) {
           if (state is AiCompanionLoading) {
-            return const Center(child: PulseLoadingWidget());
+            return Center(child: PulseLoadingWidget());
           }
 
           if (state is AiCompanionError) {
@@ -61,7 +62,7 @@ class _AiCompanionScreenState extends State<AiCompanionScreen> {
             return _buildCompanionsList(state);
           }
 
-          return const Center(child: PulseLoadingWidget());
+          return Center(child: PulseLoadingWidget());
         },
       ),
     );
@@ -102,9 +103,13 @@ class _AiCompanionScreenState extends State<AiCompanionScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.psychology_outlined, size: 80, color: Colors.grey[400]),
+            Icon(
+              Icons.psychology_outlined,
+              size: 80,
+              color: context.outlineColor.withValues(alpha: 0.2),
+            ),
             const SizedBox(height: 24),
-            const Text(
+            Text(
               'No AI Companions Yet',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
@@ -112,16 +117,19 @@ class _AiCompanionScreenState extends State<AiCompanionScreen> {
             Text(
               'Create your first AI companion to get personalized dating advice and practice conversations',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+              style: TextStyle(
+                fontSize: 16,
+                color: context.onSurfaceVariantColor,
+              ),
             ),
             const SizedBox(height: 32),
             ElevatedButton.icon(
               onPressed: _showCreateCompanionDialog,
-              icon: const Icon(Icons.add),
-              label: const Text('Create Your First Companion'),
+              icon: Icon(Icons.add),
+              label: Text('Create Your First Companion'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: PulseColors.primary,
-                foregroundColor: Colors.white,
+                foregroundColor: context.onSurfaceColor,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
                   vertical: 12,
@@ -158,8 +166,8 @@ class _AiCompanionScreenState extends State<AiCompanionScreen> {
           maxChildSize: 0.95,
           minChildSize: 0.5,
           builder: (context, scrollController) => Container(
-            decoration: const BoxDecoration(
-              color: Colors.white,
+            decoration: BoxDecoration(
+              color: context.onSurfaceColor,
               borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
             ),
             child: BlocBuilder<AiCompanionBloc, AiCompanionState>(
@@ -200,7 +208,7 @@ class _AiCompanionScreenState extends State<AiCompanionScreen> {
                     if (isCreating)
                       Container(
                         color: Colors.black54,
-                        child: const Center(
+                        child: Center(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -211,7 +219,7 @@ class _AiCompanionScreenState extends State<AiCompanionScreen> {
                               Text(
                                 'Creating your AI companion...',
                                 style: TextStyle(
-                                  color: Colors.white,
+                                  color: context.onSurfaceColor,
                                   fontSize: 16,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -240,8 +248,8 @@ class _AiCompanionScreenState extends State<AiCompanionScreen> {
         maxChildSize: 0.95,
         minChildSize: 0.5,
         builder: (context, scrollController) => Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
+          decoration: BoxDecoration(
+            color: context.onSurfaceColor,
             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
           child: CompanionCreationWidget(
@@ -278,14 +286,14 @@ class _AiCompanionScreenState extends State<AiCompanionScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Companion'),
+        title: Text('Delete Companion'),
         content: Text(
           'Are you sure you want to delete ${companion.name}? This action cannot be undone.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           TextButton(
             onPressed: () {
@@ -294,8 +302,8 @@ class _AiCompanionScreenState extends State<AiCompanionScreen> {
               );
               Navigator.pop(context);
             },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
+            style: TextButton.styleFrom(foregroundColor: context.errorColor),
+            child: Text('Delete'),
           ),
         ],
       ),

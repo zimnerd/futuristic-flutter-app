@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../blocs/messaging/messaging_bloc.dart';
 import '../../../data/models/match_model.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Widget for starting a conversation with a match
 class StartConversationWidget extends StatelessWidget {
@@ -20,7 +21,7 @@ class StartConversationWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.onSurfaceColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -38,8 +39,12 @@ class StartConversationWidget extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 24,
-                backgroundColor: Colors.grey[300],
-                child: Icon(Icons.person, size: 24, color: Colors.grey[600]),
+                backgroundColor: context.outlineColor.withValues(alpha: 0.3),
+                child: Icon(
+                  Icons.person,
+                  size: 24,
+                  color: context.onSurfaceVariantColor,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -57,7 +62,9 @@ class StartConversationWidget extends StatelessWidget {
                       'Start your conversation',
                       style: Theme.of(
                         context,
-                      ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+                      ).textTheme.bodyMedium?.copyWith(
+                        color: context.onSurfaceVariantColor,
+                      ),
                     ),
                   ],
                 ),
@@ -77,7 +84,7 @@ class StartConversationWidget extends StatelessWidget {
               ),
               child: Text(
                 '${(match.compatibilityScore * 100).round()}% Compatible',
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.green,
                   fontWeight: FontWeight.w600,
                   fontSize: 12,
@@ -114,8 +121,8 @@ class StartConversationWidget extends StatelessWidget {
           // Custom message option
           ElevatedButton.icon(
             onPressed: () => _startCustomConversation(context),
-            icon: const Icon(Icons.edit),
-            label: const Text('Write your own message'),
+            icon: Icon(Icons.edit),
+            label: Text('Write your own message'),
             style: ElevatedButton.styleFrom(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(25),
@@ -210,8 +217,8 @@ class _CustomMessageSheetState extends State<_CustomMessageSheet> {
   Widget build(BuildContext context) {
     return Container(
       height: MediaQuery.of(context).size.height * 0.6,
-      decoration: const BoxDecoration(
-        color: Colors.white,
+      decoration: BoxDecoration(
+        color: context.onSurfaceColor,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Padding(
@@ -230,7 +237,7 @@ class _CustomMessageSheetState extends State<_CustomMessageSheet> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.grey[300],
+                  color: context.outlineColor.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -270,7 +277,7 @@ class _CustomMessageSheetState extends State<_CustomMessageSheet> {
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Cancel'),
+                    child: Text('Cancel'),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -282,7 +289,7 @@ class _CustomMessageSheetState extends State<_CustomMessageSheet> {
                         Navigator.of(context).pop();
                       }
                     },
-                    child: const Text('Send'),
+                    child: Text('Send'),
                   ),
                 ),
               ],

@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../data/repositories/call_history_repository.dart';
 import '../../blocs/call_history/call_history_barrel.dart';
 import '../../widgets/common/loading_indicator.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Screen for displaying detailed call information with quality metrics
 class CallDetailsScreen extends StatefulWidget {
@@ -26,11 +27,11 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Call Details')),
+      appBar: AppBar(title: Text('Call Details')),
       body: BlocBuilder<CallHistoryBloc, CallHistoryState>(
         builder: (context, state) {
           if (state is CallDetailsLoading) {
-            return const Center(child: LoadingIndicator());
+            return Center(child: LoadingIndicator());
           }
 
           if (state is CallDetailsError) {
@@ -38,12 +39,16 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                  Icon(
+                    Icons.error_outline,
+                    size: 64,
+                    color: context.errorColor,
+                  ),
                   const SizedBox(height: 16),
                   Text(
                     state.message,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 16),
+                    style: TextStyle(fontSize: 16),
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton(
@@ -52,7 +57,7 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
                         ViewCallDetails(widget.callId),
                       );
                     },
-                    child: const Text('Retry'),
+                    child: Text('Retry'),
                   ),
                 ],
               ),
@@ -63,7 +68,7 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
             return _buildDetailsContent(state.details);
           }
 
-          return const Center(child: Text('Loading call details...'));
+          return Center(child: Text('Loading call details...'));
         },
       ),
     );
@@ -114,14 +119,17 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
                     children: [
                       Text(
                         '${details.type == 'VIDEO' ? 'Video' : 'Audio'} Call',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       Text(
                         dateFormat.format(details.startedAt ?? DateTime.now()),
-                        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: context.onSurfaceVariantColor,
+                        ),
                       ),
                     ],
                   ),
@@ -146,7 +154,7 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Participants',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
@@ -171,7 +179,7 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
                         children: [
                           Text(
                             participant.user.displayName,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
                             ),
@@ -180,7 +188,7 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
                             '${participant.role} • ${_formatStatus(participant.status)}',
                             style: TextStyle(
                               fontSize: 14,
-                              color: Colors.grey[600],
+                              color: context.onSurfaceVariantColor,
                             ),
                           ),
                         ],
@@ -203,7 +211,7 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Call Quality',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
@@ -234,13 +242,16 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
               const SizedBox(height: 8),
               Text(
                 'Quality tracked over ${stats.snapshots.length} snapshots',
-                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                style: TextStyle(
+                  fontSize: 14,
+                  color: context.onSurfaceVariantColor,
+                ),
               ),
             ],
             const SizedBox(height: 16),
             const Divider(),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Distribution',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
@@ -260,7 +271,7 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
         distribution.poor;
 
     if (total == 0) {
-      return const Text('No distribution data available');
+      return Text('No distribution data available');
     }
 
     return Column(
@@ -309,14 +320,17 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
             children: [
               Text(
                 label,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
               ),
               Text(
                 '$count ($percentage%)',
-                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                style: TextStyle(
+                  fontSize: 14,
+                  color: context.onSurfaceVariantColor,
+                ),
               ),
             ],
           ),
@@ -325,7 +339,7 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
             borderRadius: BorderRadius.circular(4),
             child: LinearProgressIndicator(
               value: count / total,
-              backgroundColor: Colors.grey[200],
+              backgroundColor: context.outlineColor.withValues(alpha: 0.15),
               valueColor: AlwaysStoppedAnimation<Color>(color),
               minHeight: 8,
             ),
@@ -347,7 +361,10 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
           ),
         ),
         const SizedBox(height: 4),
-        Text(label, style: TextStyle(fontSize: 14, color: Colors.grey[600])),
+        Text(
+          label,
+          style: TextStyle(fontSize: 14, color: context.onSurfaceVariantColor),
+        ),
       ],
     );
   }
@@ -358,10 +375,16 @@ class _CallDetailsScreenState extends State<CallDetailsScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(fontSize: 14, color: Colors.grey[600])),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 14,
+              color: context.onSurfaceVariantColor,
+            ),
+          ),
           Text(
             value,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
           ),
         ],
       ),

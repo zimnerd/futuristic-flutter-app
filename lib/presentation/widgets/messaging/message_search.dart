@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Enhanced search widget for message conversations
 class MessageSearchDelegate extends SearchDelegate<String> {
@@ -34,7 +35,7 @@ class MessageSearchDelegate extends SearchDelegate<String> {
     return [
       if (query.isNotEmpty)
         IconButton(
-          icon: const Icon(Icons.clear),
+          icon: Icon(Icons.clear),
           onPressed: () {
             query = '';
             showSuggestions(context);
@@ -46,7 +47,7 @@ class MessageSearchDelegate extends SearchDelegate<String> {
   @override
   Widget buildLeading(BuildContext context) {
     return IconButton(
-      icon: const Icon(Icons.arrow_back),
+      icon: Icon(Icons.arrow_back),
       onPressed: () {
         close(context, '');
       },
@@ -118,7 +119,7 @@ class MessageSearchDelegate extends SearchDelegate<String> {
             ? Text(
                 conversation['name']?.substring(0, 1).toUpperCase() ?? '?',
                 style: PulseTextStyles.titleMedium.copyWith(
-                  color: Colors.white,
+                  color: context.onSurfaceColor,
                 ),
               )
             : null,
@@ -159,7 +160,7 @@ class MessageSearchDelegate extends SearchDelegate<String> {
               child: Text(
                 '${conversation['unreadCount']}',
                 style: PulseTextStyles.bodySmall.copyWith(
-                  color: Colors.white,
+                  color: context.onSurfaceColor,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -177,7 +178,7 @@ class MessageSearchDelegate extends SearchDelegate<String> {
     Map<String, dynamic> conversation,
   ) {
     return ListTile(
-      leading: const Icon(Icons.search, color: PulseColors.outline),
+      leading: Icon(Icons.search, color: PulseColors.outline),
       title: RichText(
         text: TextSpan(
           style: PulseTextStyles.bodyMedium.copyWith(
@@ -224,10 +225,10 @@ class MessageSearchDelegate extends SearchDelegate<String> {
         ),
         ...recentSearches.map(
           (search) => ListTile(
-            leading: const Icon(Icons.history, color: PulseColors.outline),
+            leading: Icon(Icons.history, color: PulseColors.outline),
             title: Text(search),
             trailing: IconButton(
-              icon: const Icon(Icons.close, color: PulseColors.outline),
+              icon:  Icon(Icons.close, color: PulseColors.outline),
               onPressed: () {
                 // Remove from recent searches
               },
@@ -294,7 +295,7 @@ class MessageSearchDelegate extends SearchDelegate<String> {
       spans.add(
         TextSpan(
           text: text.substring(index, index + searchTerm.length),
-          style: const TextStyle(
+          style: TextStyle(
             backgroundColor: PulseColors.primaryContainer,
             fontWeight: FontWeight.bold,
           ),
@@ -379,10 +380,10 @@ class _MessageSearchBarState extends State<MessageSearchBar> {
             horizontal: PulseSpacing.lg,
             vertical: PulseSpacing.md,
           ),
-          prefixIcon: const Icon(Icons.search, color: PulseColors.outline),
+          prefixIcon: Icon(Icons.search, color: PulseColors.outline),
           suffixIcon: _controller.text.isNotEmpty
               ? IconButton(
-                  icon: const Icon(Icons.clear, color: PulseColors.outline),
+                  icon: Icon(Icons.clear, color: PulseColors.outline),
                   onPressed: () {
                     _controller.clear();
                     widget.onChanged('');

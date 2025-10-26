@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 import '../screens/profile/profile_edit_screen.dart';
 import '../../domain/entities/user_profile.dart';
 import 'app_router.dart';
@@ -55,8 +56,8 @@ class ProfileNavigation {
         padding: EdgeInsets.only(
           bottom: MediaQuery.of(context).viewInsets.bottom,
         ),
-        decoration: const BoxDecoration(
-          color: Colors.white,
+        decoration: BoxDecoration(
+          color: context.onSurfaceColor,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: Column(
@@ -68,7 +69,7 @@ class ProfileNavigation {
               height: 4,
               margin: const EdgeInsets.symmetric(vertical: 12),
               decoration: BoxDecoration(
-                color: Colors.grey[300],
+                color: context.outlineColor.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -89,7 +90,10 @@ class ProfileNavigation {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Text(
                 'A complete profile gets 3x more matches!',
-                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                style: TextStyle(
+                  fontSize: 14,
+                  color: context.onSurfaceVariantColor,
+                ),
               ),
             ),
             const SizedBox(height: 20),
@@ -112,12 +116,12 @@ class ProfileNavigation {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Complete Profile',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                          color: context.onSurfaceColor,
                         ),
                       ),
                     ),
@@ -132,7 +136,10 @@ class ProfileNavigation {
                       ),
                       child: Text(
                         'Maybe Later',
-                        style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: context.onSurfaceVariantColor,
+                        ),
                       ),
                     ),
                   ),

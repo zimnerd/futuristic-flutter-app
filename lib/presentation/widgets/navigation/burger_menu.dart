@@ -7,6 +7,7 @@ import '../../blocs/user/user_bloc.dart';
 import '../../blocs/user/user_state.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_event.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Modern burger menu with sliding drawer animation
 /// Provides access to profile, settings, and other user features
@@ -146,7 +147,7 @@ class _BurgerMenuState extends State<BurgerMenu>
           Text(
             'Menu',
             style: PulseTypography.h3.copyWith(
-              color: PulseColors.grey800,
+              color: context.borderColor.shade800,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -155,10 +156,14 @@ class _BurgerMenuState extends State<BurgerMenu>
             child: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: PulseColors.grey100,
+                color: context.borderColor.shade100,
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: Icon(Icons.close, color: PulseColors.grey600, size: 20),
+              child: Icon(
+                Icons.close,
+                color: context.borderColor.shade600,
+                size: 20,
+              ),
             ),
           ),
         ],
@@ -184,7 +189,7 @@ class _BurgerMenuState extends State<BurgerMenu>
           decoration: BoxDecoration(
             color: PulseColors.white,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: PulseColors.grey200),
+            border: Border.all(color: context.borderColor.shade200),
             boxShadow: PulseShadows.card,
           ),
           child: Row(
@@ -219,7 +224,7 @@ class _BurgerMenuState extends State<BurgerMenu>
                     Text(
                       displayName,
                       style: PulseTypography.bodyLarge.copyWith(
-                        color: PulseColors.grey800,
+                        color: context.borderColor.shade800,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -237,7 +242,7 @@ class _BurgerMenuState extends State<BurgerMenu>
               // Arrow
               Icon(
                 Icons.arrow_forward_ios,
-                color: PulseColors.grey500,
+                color: context.borderColor.shade500,
                 size: 16,
               ),
             ],
@@ -333,7 +338,7 @@ class _BurgerMenuState extends State<BurgerMenu>
                   ? PulseColors.primary.withValues(alpha: 0.1)
                   : item.isDestructive
                   ? PulseColors.reject.withValues(alpha: 0.05)
-                  : PulseColors.grey50,
+                  : context.borderColor.shade50,
               borderRadius: BorderRadius.circular(16),
               border: item.isHighlighted
                   ? Border.all(
@@ -362,7 +367,7 @@ class _BurgerMenuState extends State<BurgerMenu>
                         ? PulseColors.primary
                         : item.isDestructive
                         ? PulseColors.reject
-                        : PulseColors.grey600,
+                        :context.borderColor.shade600,
                     size: 22,
                   ),
                 ),
@@ -379,7 +384,7 @@ class _BurgerMenuState extends State<BurgerMenu>
                               ? PulseColors.primary
                               : item.isDestructive
                               ? PulseColors.reject
-                              : PulseColors.grey800,
+                              :context.borderColor.shade800,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -390,7 +395,7 @@ class _BurgerMenuState extends State<BurgerMenu>
                           style: PulseTypography.bodySmall.copyWith(
                             color: item.isDestructive
                                 ? PulseColors.reject.withValues(alpha: 0.7)
-                                : PulseColors.grey600,
+                                : context.borderColor.shade600,
                           ),
                         ),
                       ],
@@ -402,7 +407,7 @@ class _BurgerMenuState extends State<BurgerMenu>
                   Icons.arrow_forward_ios,
                   color: item.isDestructive
                       ? PulseColors.reject.withValues(alpha: 0.5)
-                      : PulseColors.grey500,
+                      : context.borderColor.shade500,
                   size: 14,
                 ),
               ],
@@ -419,11 +424,11 @@ class _BurgerMenuState extends State<BurgerMenu>
       builder: (context) {
         final isDarkMode = Theme.of(context).brightness == Brightness.dark;
         final titleColor = isDarkMode
-            ? PulseColors.grey100
-            : PulseColors.grey900;
+            ? context.borderColor.shade100
+            : context.borderColor.shade900;
         final contentColor = isDarkMode
-            ? PulseColors.grey300
-            : PulseColors.grey700;
+            ? context.borderColor.shade300
+            : context.borderColor.shade700;
 
         return AlertDialog(
           title: Text(
@@ -440,11 +445,13 @@ class _BurgerMenuState extends State<BurgerMenu>
               onPressed: () => Navigator.of(context).pop(false),
               style: OutlinedButton.styleFrom(
                 side: BorderSide(
-                  color: isDarkMode ? PulseColors.grey600 : PulseColors.grey300,
+                  color: isDarkMode
+                      ? context.borderColor.shade600
+                      : context.borderColor.shade300,
                 ),
                 foregroundColor: contentColor,
               ),
-              child: const Text('Cancel'),
+              child: Text('Cancel'),
             ),
             // Filled destructive Sign Out button
             ElevatedButton(
@@ -453,7 +460,7 @@ class _BurgerMenuState extends State<BurgerMenu>
                 backgroundColor: PulseColors.reject,
                 foregroundColor: PulseColors.white,
               ),
-              child: const Text('Sign Out'),
+              child: Text('Sign Out'),
             ),
           ],
         );
@@ -472,7 +479,9 @@ class _BurgerMenuState extends State<BurgerMenu>
       padding: const EdgeInsets.all(20),
       child: Text(
         'PulseLink v1.0.0',
-        style: PulseTypography.bodySmall.copyWith(color: PulseColors.grey500),
+        style: PulseTypography.bodySmall.copyWith(
+          color: context.borderColor.shade500,
+        ),
         textAlign: TextAlign.center,
       ),
     );

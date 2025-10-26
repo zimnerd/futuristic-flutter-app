@@ -13,6 +13,7 @@ import '../../navigation/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../screens/payment_demo_screen.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 class PaymentMethodsScreen extends StatefulWidget {
   final String? planId;
@@ -44,27 +45,29 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
         widget.planId != null && widget.planName != null && widget.amount != null;
 
     return KeyboardDismissibleScaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.surfaceColor,
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               isPurchaseMode ? 'Complete Purchase' : 'Payment Methods',
-              style: AppTextStyles.heading2.copyWith(color: AppColors.textPrimary),
+              style: AppTextStyles.heading2.copyWith(
+                color: context.onSurfaceColor,
+              ),
             ),
             if (isPurchaseMode && widget.planName != null)
               Text(
                 '${widget.planName} - \$${widget.amount?.toStringAsFixed(2)}',
                 style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.textSecondary,
+                  color: context.onSurfaceVariantColor,
                 ),
               ),
           ],
         ),
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.surfaceColor,
         elevation: 0,
-        iconTheme: IconThemeData(color: AppColors.textPrimary),
+        iconTheme: IconThemeData(color: context.onSurfaceColor),
       ),
       body: BlocConsumer<PaymentBloc, PaymentState>(
         listener: (context, state) {
@@ -76,7 +79,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
         },
         builder: (context, state) {
           if (state is PaymentLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(child: CircularProgressIndicator());
           }
 
           if (state is PaymentMethodsLoaded) {
@@ -89,7 +92,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddPaymentMethodDialog(context),
         backgroundColor: AppColors.primary,
-        child: const Icon(Icons.add, color: Colors.white),
+        child: Icon(Icons.add, color: Colors.white),
       ),
     );
   }
@@ -141,7 +144,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.surfaceColor,
         borderRadius: BorderRadius.circular(12),
         border: isDefault
             ? Border.all(color: AppColors.primary, width: 2)
@@ -153,14 +156,14 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
         title: Text(
           '$brand **** $last4',
           style: AppTextStyles.bodyLarge.copyWith(
-            color: AppColors.textPrimary,
+            color: context.onSurfaceColor,
             fontWeight: FontWeight.w600,
           ),
         ),
         subtitle: Text(
           type.toUpperCase(),
           style: AppTextStyles.bodySmall.copyWith(
-            color: AppColors.textSecondary,
+            color: context.onSurfaceVariantColor,
           ),
         ),
         trailing: Row(
@@ -185,17 +188,17 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
             if (!isPurchaseMode)
               IconButton(
                 onPressed: () => _showDeleteConfirmation(context, method),
-                icon: Icon(Icons.delete_outline, color: AppColors.error),
+                icon: Icon(Icons.delete_outline, color: context.errorColor),
               ),
             if (isPurchaseMode)
               ElevatedButton(
                 onPressed: () => _confirmPurchaseWithMethod(methodId),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
+                  foregroundColor: context.onSurfaceColor,
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 ),
-                child: const Text('Use This'),
+                child: Text('Use This'),
               ),
           ],
         ),
@@ -237,19 +240,23 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.credit_card_off, size: 64, color: AppColors.textSecondary),
+          Icon(
+            Icons.credit_card_off,
+            size: 64,
+            color: context.onSurfaceVariantColor,
+          ),
           const SizedBox(height: 16),
           Text(
             'No Payment Methods',
             style: AppTextStyles.heading3.copyWith(
-              color: AppColors.textSecondary,
+              color: context.onSurfaceVariantColor,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             'Add a payment method to purchase premium features',
             style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
+              color: context.onSurfaceVariantColor,
             ),
             textAlign: TextAlign.center,
           ),
@@ -279,7 +286,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
   void _showAddPaymentMethodDialog(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.surface,
+      backgroundColor: context.surfaceColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -294,15 +301,15 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.surfaceColor,
         title: Text(
           'Delete Payment Method',
-          style: AppTextStyles.heading3.copyWith(color: AppColors.textPrimary),
+          style: AppTextStyles.heading3.copyWith(color: context.onSurfaceColor),
         ),
         content: Text(
           'Are you sure you want to delete this payment method?',
           style: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.textSecondary,
+            color: context.onSurfaceVariantColor,
           ),
         ),
         actions: [
@@ -311,7 +318,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
             child: Text(
               'Cancel',
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+                color: context.onSurfaceVariantColor,
               ),
             ),
           ),
@@ -325,7 +332,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
             child: Text(
               'Delete',
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.error,
+                color: context.errorColor,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -349,10 +356,10 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.surfaceColor,
         title: Text(
           'Confirm Purchase',
-          style: AppTextStyles.heading3.copyWith(color: AppColors.textPrimary),
+          style: AppTextStyles.heading3.copyWith(color: context.onSurfaceColor),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -361,14 +368,14 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
             Text(
               'You are about to subscribe to:',
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+                color: context.onSurfaceVariantColor,
               ),
             ),
             const SizedBox(height: 12),
             Text(
               widget.planName!,
               style: AppTextStyles.bodyLarge.copyWith(
-                color: AppColors.textPrimary,
+                color: context.onSurfaceColor,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -395,7 +402,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                     child: Text(
                       'Auto-renews monthly. Cancel anytime.',
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.textPrimary,
+                        color: context.onSurfaceColor,
                       ),
                     ),
                   ),
@@ -410,7 +417,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
             child: Text(
               'Cancel',
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+                color: context.onSurfaceVariantColor,
               ),
             ),
           ),
@@ -421,9 +428,9 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
+              foregroundColor: context.onSurfaceColor,
             ),
-            child: const Text('Confirm Purchase'),
+            child: Text('Confirm Purchase'),
           ),
         ],
       ),
@@ -435,7 +442,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const Center(
+      builder: (context) => Center(
         child: CircularProgressIndicator(),
       ),
     );
@@ -522,7 +529,7 @@ class _AddPaymentMethodSheetState extends State<AddPaymentMethodSheet> {
           Text(
             'Add Payment Method',
             style: AppTextStyles.heading2.copyWith(
-              color: AppColors.textPrimary,
+              color: context.onSurfaceColor,
             ),
           ),
           const SizedBox(height: 24),
@@ -615,7 +622,7 @@ class _AddPaymentMethodSheetState extends State<AddPaymentMethodSheet> {
         Text(
           'Payment Type',
           style: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.textPrimary,
+            color: context.onSurfaceColor,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -635,9 +642,11 @@ class _AddPaymentMethodSheetState extends State<AddPaymentMethodSheet> {
                 }
               },
               selectedColor: AppColors.primary.withValues(alpha: 0.2),
-              backgroundColor: AppColors.background,
+              backgroundColor: context.surfaceColor,
               labelStyle: TextStyle(
-                color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                color: isSelected
+                    ? AppColors.primary
+                    : context.onSurfaceVariantColor,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),
             );

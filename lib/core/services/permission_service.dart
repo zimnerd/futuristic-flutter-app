@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:logger/logger.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Proactive permission management service for iOS and Android
 ///
@@ -205,7 +206,7 @@ class PermissionService {
       context: context,
       barrierDismissible: true,
       builder: (BuildContext dialogContext) => AlertDialog(
-        title: const Text(
+        title: Text(
           '📍 Location Features Limited',
           style: TextStyle(
             fontSize: 20,
@@ -213,7 +214,7 @@ class PermissionService {
             color: Colors.black,
           ),
         ),
-        content: const Text(
+        content: Text(
           'Without location access, you won\'t be able to:\n\n• See people nearby\n• View coverage maps\n• Get location-based recommendations\n\nYou can enable location access in Settings > PulseLink > Location',
           style: TextStyle(fontSize: 16, color: Colors.black),
         ),
@@ -221,7 +222,7 @@ class PermissionService {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Later', style: TextStyle(color: Colors.grey)),
+            child: Text('Later', style: TextStyle(color: context.outlineColor)),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -235,7 +236,7 @@ class PermissionService {
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            child: const Text('Open Settings'),
+            child: Text('Open Settings'),
           ),
         ],
       ),
@@ -368,7 +369,10 @@ class PermissionService {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Not Now', style: TextStyle(color: Colors.grey)),
+            child: Text(
+              'Not Now',
+              style: TextStyle(color: context.outlineColor),
+            ),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
@@ -379,7 +383,7 @@ class PermissionService {
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            child: const Text('Continue'),
+            child: Text('Continue'),
           ),
         ],
       ),
@@ -414,7 +418,10 @@ class PermissionService {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: context.outlineColor),
+            ),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -428,7 +435,7 @@ class PermissionService {
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            child: const Text('Open Settings'),
+            child: Text('Open Settings'),
           ),
         ],
       ),

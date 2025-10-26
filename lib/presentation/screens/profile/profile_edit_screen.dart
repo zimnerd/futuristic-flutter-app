@@ -25,6 +25,7 @@ import '../../../domain/entities/user_profile.dart';
 import '../../../data/models/interest.dart';
 import '../../../core/services/error_handler.dart';
 import './profile_details_screen.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 // Logger instance for debugging
 final logger = Logger();
@@ -548,16 +549,21 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
       return await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Unsaved Changes'),
-          content: const Text('You have unsaved changes. Do you want to discard them?'),
+              title: Text('Unsaved Changes'),
+              content: Text(
+                'You have unsaved changes. Do you want to discard them?',
+              ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel'),
+                  child: Text('Cancel'),
             ),
             TextButton(
               onPressed: () => Navigator.pop(context, true),
-              child: Text('Discard', style: TextStyle(color: Colors.red)),
+                  child: Text(
+                    'Discard',
+                    style: TextStyle(color: context.errorColor),
+                  ),
             ),
           ],
         ),
@@ -580,13 +586,13 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
       child: KeyboardDismissibleScaffold(
         backgroundColor: Colors.grey[50],
         appBar: AppBar(
-        backgroundColor: Colors.white,
+          backgroundColor: context.surfaceColor,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.close, color: Colors.black87),
+            icon: Icon(Icons.close, color: Colors.black87),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text(
+          title: Text(
           'Edit Profile',
           style: TextStyle(
             color: Colors.black87,
@@ -621,7 +627,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              color: Colors.white,
+                color: context.onSurfaceColor,
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.05),
@@ -672,7 +678,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
                     vertical: 4,
                   ),
                   labelColor: Colors.white,
-                  unselectedLabelColor: Colors.grey[600],
+                    unselectedLabelColor: context.onSurfaceVariantColor,
                   labelStyle: TextStyle(
                     fontSize: fontSize,
                     fontWeight: FontWeight.w700,
@@ -921,7 +927,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
               // Profile completion card (collapsible)
               if (_currentProfile != null)
                 Container(
-                  color: Colors.white,
+                    color: context.onSurfaceColor,
                   child: Column(
                     children: [
                       InkWell(
@@ -938,13 +944,13 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
                           ),
                           child: Row(
                             children: [
-                              const Icon(
+                                Icon(
                                 Icons.trending_up,
                                 color: PulseColors.primary,
                                 size: 20,
                               ),
                               const SizedBox(width: 8),
-                              const Text(
+                                Text(
                                 'Complete Your Profile',
                                 style: TextStyle(
                                   fontSize: 14,
@@ -994,7 +1000,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
 
               // Bottom navigation
               Container(
-                color: Colors.white,
+                color: context.onSurfaceColor,
                 padding: const EdgeInsets.all(16),
                 child: Row(
                   children: [
@@ -1038,7 +1044,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
             height: 20,
             width: 100,
             decoration: BoxDecoration(
-              color: Colors.grey[300],
+              color: context.outlineColor.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(4),
             ),
           ),
@@ -1046,7 +1052,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
           Container(
             height: 48,
             decoration: BoxDecoration(
-              color: Colors.grey[200],
+              color: context.outlineColor.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(8),
             ),
           ),
@@ -1055,7 +1061,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
             height: 20,
             width: 80,
             decoration: BoxDecoration(
-              color: Colors.grey[300],
+              color: context.outlineColor.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(4),
             ),
           ),
@@ -1063,7 +1069,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
           Container(
             height: 100,
             decoration: BoxDecoration(
-              color: Colors.grey[200],
+              color: context.outlineColor.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(8),
             ),
           ),
@@ -1130,9 +1136,11 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
                   vertical: 16,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: context.onSurfaceColor,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey[300]!),
+                  border: Border.all(
+                    color: context.outlineColor.withValues(alpha: 0.3),
+                  ),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1144,7 +1152,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
                           'Date of Birth',
                           style: TextStyle(
                             fontSize: 12,
-                            color: Colors.grey[600],
+                            color: context.onSurfaceVariantColor,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -1157,7 +1165,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
                             fontSize: 16,
                             color: _dateOfBirth != null
                                 ? Colors.black87
-                                : Colors.grey[400],
+                                : context.outlineColor.withValues(alpha: 0.2),
                           ),
                         ),
                       ],
@@ -1282,7 +1290,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Tell us more about yourself',
             style: TextStyle(
               fontSize: 20,
@@ -1293,7 +1301,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
           const SizedBox(height: 8),
           Text(
             'This helps us match you with compatible people',
-            style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+            style: TextStyle(
+              fontSize: 14,
+              color: context.onSurfaceVariantColor,
+            ),
           ),
           const SizedBox(height: 24),
 
@@ -1444,16 +1455,22 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
           validator: validator,
           decoration: InputDecoration(
             hintText: hintText,
-            hintStyle: TextStyle(color: Colors.grey[500]),
+            hintStyle: TextStyle(
+              color: context.onSurfaceVariantColor.withValues(alpha: 0.6),
+            ),
             filled: true,
             fillColor: Colors.white,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey[300]!),
+              borderSide: BorderSide(
+                color: context.outlineColor.withValues(alpha: 0.3),
+              ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey[300]!),
+              borderSide: BorderSide(
+                color: context.outlineColor.withValues(alpha: 0.3),
+              ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
@@ -1484,7 +1501,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
       children: [
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
             color: Colors.black87,
@@ -1500,11 +1517,15 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
             hintText: value == null ? 'Select an option' : null,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey[300]!),
+              borderSide: BorderSide(
+                color: context.outlineColor.withValues(alpha: 0.3),
+              ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey[300]!),
+              borderSide: BorderSide(
+                color: context.outlineColor.withValues(alpha: 0.3),
+              ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),

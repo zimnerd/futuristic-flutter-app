@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../theme/pulse_colors.dart';
 import 'event_countdown_timer.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Widget to display speed dating event information
 class SpeedDatingEventCard extends StatelessWidget {
@@ -79,7 +80,7 @@ class SpeedDatingEventCard extends StatelessWidget {
                         ? CachedNetworkImage(
                             imageUrl: imageUrl,
                             fit: BoxFit.cover,
-                            placeholder: (context, url) => const Center(
+                            placeholder: (context, url) => Center(
                               child: SizedBox(
                                 width: 20,
                                 height: 20,
@@ -88,13 +89,13 @@ class SpeedDatingEventCard extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            errorWidget: (context, url, error) => const Icon(
+                            errorWidget: (context, url, error) => Icon(
                               Icons.event,
                               color: PulseColors.primary,
                               size: 28,
                             ),
                           )
-                        : const Icon(
+                        : Icon(
                             Icons.event,
                             color: PulseColors.primary,
                             size: 28,
@@ -105,7 +106,7 @@ class SpeedDatingEventCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -120,21 +121,25 @@ class SpeedDatingEventCard extends StatelessWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.green.withValues(alpha: 0.2),
+                      color: context.successColor.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.green, width: 1),
+                      border: Border.all(color: context.successColor, width: 1),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.check_circle, size: 14, color: Colors.green),
+                        Icon(
+                          Icons.check_circle,
+                          size: 14,
+                          color: context.successColor,
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           'Registered',
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
-                            color: Colors.green,
+                            color: context.successColor,
                           ),
                         ),
                       ],
@@ -148,6 +153,7 @@ class SpeedDatingEventCard extends StatelessWidget {
                   ),
                   decoration: BoxDecoration(
                     color: _getStatusColor(
+                      context,
                       event['status'],
                     ).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12),
@@ -157,7 +163,7 @@ class SpeedDatingEventCard extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: _getStatusColor(event['status']),
+                      color: _getStatusColor(context, event['status']),
                     ),
                   ),
                 ),
@@ -179,6 +185,7 @@ class SpeedDatingEventCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: _buildDetailItem(
+                    context: context,
                     icon: Icons.location_on,
                     label: 'Location',
                     value: location,
@@ -186,6 +193,7 @@ class SpeedDatingEventCard extends StatelessWidget {
                 ),
                 Expanded(
                   child: _buildDetailItem(
+                    context: context,
                     icon: Icons.calendar_today,
                     label: 'Date',
                     value: date,
@@ -199,6 +207,7 @@ class SpeedDatingEventCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: _buildDetailItem(
+                    context: context,
                     icon: Icons.access_time,
                     label: 'Time',
                     value: time,
@@ -206,6 +215,7 @@ class SpeedDatingEventCard extends StatelessWidget {
                 ),
                 Expanded(
                   child: _buildDetailItem(
+                    context: context,
                     icon: Icons.people,
                     label: 'Age Range',
                     value: ageRange,
@@ -218,18 +228,25 @@ class SpeedDatingEventCard extends StatelessWidget {
             // Participants progress
             Row(
               children: [
-                Icon(Icons.group, size: 16, color: Colors.grey[600]),
+                Icon(
+                  Icons.group,
+                  size: 16,
+                  color: context.onSurfaceVariantColor,
+                ),
                 const SizedBox(width: 8),
                 Text(
                   'Participants: $participantCount/$maxParticipants',
-                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: context.onSurfaceVariantColor,
+                  ),
                 ),
                 const Spacer(),
                 Text(
                   '${((participantCount / maxParticipants) * 100).round()}% Full',
                   style: TextStyle(
                     fontSize: 12,
-                    color: isFull ? Colors.red : Colors.green,
+                    color: isFull ? context.errorColor : context.successColor,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -240,9 +257,9 @@ class SpeedDatingEventCard extends StatelessWidget {
             // Progress bar
             LinearProgressIndicator(
               value: participantCount / maxParticipants,
-              backgroundColor: Colors.grey[300],
+              backgroundColor: context.outlineColor.withValues(alpha: 0.3),
               valueColor: AlwaysStoppedAnimation<Color>(
-                isFull ? Colors.red : PulseColors.primary,
+                isFull ? context.errorColor : PulseColors.primary,
               ),
             ),
             const SizedBox(height: 16),
@@ -259,7 +276,7 @@ class SpeedDatingEventCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    child: const Text('View Details'),
+                    child: Text('View Details'),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -268,9 +285,9 @@ class SpeedDatingEventCard extends StatelessWidget {
                     onPressed: (isFull && !isJoined) ? null : onJoin,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: isJoined
-                          ? Colors.green
+                          ? context.successColor
                           : PulseColors.primary,
-                      foregroundColor: Colors.white,
+                      foregroundColor: context.onSurfaceColor,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -293,6 +310,7 @@ class SpeedDatingEventCard extends StatelessWidget {
   }
 
   Widget _buildDetailItem({
+    required BuildContext context,
     required IconData icon,
     required String label,
     required String value,
@@ -307,11 +325,14 @@ class SpeedDatingEventCard extends StatelessWidget {
             children: [
               Text(
                 label,
-                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: context.onSurfaceVariantColor,
+                ),
               ),
               Text(
                 value,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
@@ -325,16 +346,16 @@ class SpeedDatingEventCard extends StatelessWidget {
     );
   }
 
-  Color _getStatusColor(String? status) {
+  Color _getStatusColor(BuildContext context, String? status) {
     switch (status) {
       case 'upcoming':
         return Colors.blue;
       case 'live':
-        return Colors.green;
+        return context.successColor;
       case 'completed':
-        return Colors.grey;
+        return context.outlineColor;
       case 'cancelled':
-        return Colors.red;
+        return context.errorColor;
       default:
         return PulseColors.primary;
     }

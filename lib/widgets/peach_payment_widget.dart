@@ -135,7 +135,7 @@ class _PeachPaymentWidgetState extends State<PeachPaymentWidget> {
         elevation: 0,
         title: Text('Secure Payment', style: AppTextStyles.headlineSmall),
         leading: IconButton(
-          icon: const Icon(Icons.close, color: AppColors.textPrimary),
+          icon: Icon(Icons.close, color: AppColors.textPrimary),
           onPressed: widget.onCancel ?? () => Navigator.of(context).pop(),
         ),
       ),

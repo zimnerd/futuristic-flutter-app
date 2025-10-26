@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/pulse_colors.dart';
-import '../../theme/theme_extensions.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Reusable empty state widget for consistent UX across the app
 /// Displays icon, title, message, and optional action button
@@ -149,12 +149,12 @@ class EmptyStates {
   );
 
   // Search Results
-  static Widget noSearchResults({required String query}) => EmptyStateWidget(
+  static Widget noSearchResults(BuildContext context,{required String query}) => EmptyStateWidget(
     icon: Icons.search_off,
     title: 'No Results Found',
     message:
         'We couldn\'t find anything matching "$query".\nTry different keywords.',
-    iconColor: Colors.grey,
+    iconColor: context.outlineColor,
   );
 
   // Blocked Users

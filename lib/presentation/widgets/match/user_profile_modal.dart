@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../../domain/entities/user_profile.dart';
 import '../../../data/models/match_model.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Modal widget to display user profile details with action buttons
 class UserProfileModal extends StatelessWidget {
@@ -45,7 +46,7 @@ class UserProfileModal extends StatelessWidget {
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    _buildPhotosSection(userProfile),
+                    _buildPhotosSection(context, userProfile),
                     const SizedBox(height: 16),
                     _buildBasicInfo(context, userProfile),
                     const SizedBox(height: 16),
@@ -73,7 +74,7 @@ class UserProfileModal extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline, color: Colors.red, size: 48),
+            Icon(Icons.error_outline, color: context.errorColor, size: 48),
             const SizedBox(height: 16),
             Text(
               message,
@@ -83,7 +84,7 @@ class UserProfileModal extends StatelessWidget {
             const SizedBox(height: 16),
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Close'),
+              child: Text('Close'),
             ),
           ],
         ),
@@ -113,7 +114,7 @@ class UserProfileModal extends StatelessWidget {
           ),
           IconButton(
             onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.close),
+            icon: Icon(Icons.close),
             tooltip: 'Close',
           ),
         ],
@@ -121,16 +122,16 @@ class UserProfileModal extends StatelessWidget {
     );
   }
 
-  Widget _buildPhotosSection(UserProfile userProfile) {
+  Widget _buildPhotosSection(BuildContext context, UserProfile userProfile) {
     if (userProfile.photos.isEmpty) {
       return Container(
         height: 200,
         decoration: BoxDecoration(
-          color: Colors.grey[200],
+          color: context.outlineColor.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(12),
         ),
-        child: const Center(
-          child: Icon(Icons.person, size: 80, color: Colors.grey),
+        child: Center(
+          child: Icon(Icons.person, size: 80, color: context.outlineColor),
         ),
       );
     }
@@ -196,7 +197,7 @@ class UserProfileModal extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(icon, size: 16, color: Colors.grey[600]),
+          Icon(icon, size: 16, color: context.onSurfaceVariantColor),
           const SizedBox(width: 8),
           Expanded(
             child: Column(
@@ -206,7 +207,9 @@ class UserProfileModal extends StatelessWidget {
                   label,
                   style: Theme.of(
                     context,
-                  ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+                  ).textTheme.bodySmall?.copyWith(
+                    color: context.onSurfaceVariantColor,
+                  ),
                 ),
                 Text(
                   value,
@@ -272,7 +275,7 @@ class UserProfileModal extends StatelessWidget {
               .take(10) // Limit to avoid overflow
               .map(
                 (interest) => Chip(
-                  label: Text(interest, style: const TextStyle(fontSize: 12)),
+                  label: Text(interest, style: TextStyle(fontSize: 12)),
                   backgroundColor: Theme.of(
                     context,
                   ).primaryColor.withValues(alpha: 0.1),
@@ -348,8 +351,8 @@ class UserProfileModal extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: onStartConversation,
-                icon: const Icon(Icons.chat),
-                label: const Text('Start Conversation'),
+                icon: Icon(Icons.chat),
+                label: Text('Start Conversation'),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
@@ -367,8 +370,8 @@ class UserProfileModal extends StatelessWidget {
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: onUnmatch,
-                  icon: const Icon(Icons.heart_broken, size: 16),
-                  label: const Text('Unmatch'),
+                  icon: Icon(Icons.heart_broken, size: 16),
+                  label: Text('Unmatch'),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.orange,
                     side: const BorderSide(color: Colors.orange),
@@ -383,11 +386,11 @@ class UserProfileModal extends StatelessWidget {
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: onReport,
-                  icon: const Icon(Icons.report, size: 16),
-                  label: const Text('Report'),
+                  icon: Icon(Icons.report, size: 16),
+                  label: Text('Report'),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.red,
-                    side: const BorderSide(color: Colors.red),
+                    foregroundColor: context.errorColor,
+                    side: BorderSide(color: context.errorColor),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),

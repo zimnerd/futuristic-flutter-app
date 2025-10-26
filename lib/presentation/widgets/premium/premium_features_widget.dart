@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../data/models/premium.dart';
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 class PremiumFeaturesWidget extends StatelessWidget {
   final UserSubscription? subscription;
@@ -57,7 +58,7 @@ class PremiumFeaturesWidget extends StatelessWidget {
         border: Border.all(
           color: isUnlocked
               ? PulseColors.primary.withValues(alpha: 0.3)
-              : Colors.grey[300]!,
+              : context.outlineColor.withValues(alpha: 0.3),
         ),
         color: isUnlocked
             ? PulseColors.primary.withValues(alpha: 0.05)
@@ -70,12 +71,14 @@ class PremiumFeaturesWidget extends StatelessWidget {
             decoration: BoxDecoration(
               color: isUnlocked
                   ? PulseColors.primary.withValues(alpha: 0.1)
-                  : Colors.grey[200],
+                  : context.outlineColor.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
               featureInfo.icon,
-              color: isUnlocked ? PulseColors.primary : Colors.grey[600],
+              color: isUnlocked
+                  ? PulseColors.primary
+                  : context.onSurfaceVariantColor,
               size: 20,
             ),
           ),
@@ -93,7 +96,9 @@ class PremiumFeaturesWidget extends StatelessWidget {
                         featureInfo.title,
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.w600,
-                          color: isUnlocked ? Colors.black87 : Colors.grey[600],
+                          color: isUnlocked
+                              ? Colors.black87
+                              : context.onSurfaceVariantColor,
                         ),
                       ),
                     ),
@@ -104,14 +109,22 @@ class PremiumFeaturesWidget extends StatelessWidget {
                         size: 18,
                       )
                     else
-                      Icon(Icons.lock, color: Colors.grey[500], size: 18),
+                      Icon(
+                        Icons.lock,
+                        color: context.onSurfaceVariantColor.withValues(
+                          alpha: 0.6,
+                        ),
+                        size: 18,
+                      ),
                   ],
                 ),
                 const SizedBox(height: 4),
                 Text(
                   featureInfo.description,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: isUnlocked ? Colors.grey[700] : Colors.grey[500],
+                    color: isUnlocked
+                        ? context.onSurfaceVariantColor
+                        : context.onSurfaceVariantColor.withValues(alpha: 0.6),
                   ),
                 ),
                 if (featureInfo.coinCost > 0) ...[

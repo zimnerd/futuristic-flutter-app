@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Skeleton loading widget for LiveStreamCard
 /// Displays a shimmering placeholder while stream data is loading
@@ -16,7 +17,7 @@ class StreamCardSkeleton extends StatelessWidget {
         children: [
           // Thumbnail skeleton
           Shimmer.fromColors(
-            baseColor: Colors.grey[300]!,
+            baseColor: context.outlineColor.withValues(alpha: 0.3),
             highlightColor: Colors.grey[100]!,
             child: Container(
               height: 200,
@@ -25,7 +26,7 @@ class StreamCardSkeleton extends StatelessWidget {
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(12),
                 ),
-                color: Colors.white,
+                color: context.onSurfaceColor,
               ),
             ),
           ),
@@ -38,28 +39,28 @@ class StreamCardSkeleton extends StatelessWidget {
               children: [
                 // Title skeleton
                 Shimmer.fromColors(
-                  baseColor: Colors.grey[300]!,
+                  baseColor: context.outlineColor.withValues(alpha: 0.3),
                   highlightColor: Colors.grey[100]!,
                   child: Container(
                     height: 16,
                     width: double.infinity,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(4),
-                      color: Colors.white,
+                      color: context.onSurfaceColor,
                     ),
                   ),
                 ),
                 const SizedBox(height: 8),
                 // Second line of title
                 Shimmer.fromColors(
-                  baseColor: Colors.grey[300]!,
+                  baseColor: context.outlineColor.withValues(alpha: 0.3),
                   highlightColor: Colors.grey[100]!,
                   child: Container(
                     height: 16,
                     width: MediaQuery.of(context).size.width * 0.6,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(4),
-                      color: Colors.white,
+                      color: context.onSurfaceColor,
                     ),
                   ),
                 ),
@@ -69,14 +70,14 @@ class StreamCardSkeleton extends StatelessWidget {
                   children: [
                     // Avatar skeleton
                     Shimmer.fromColors(
-                      baseColor: Colors.grey[300]!,
+                      baseColor: context.outlineColor.withValues(alpha: 0.3),
                       highlightColor: Colors.grey[100]!,
                       child: Container(
                         width: 24,
                         height: 24,
-                        decoration: const BoxDecoration(
+                        decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Colors.white,
+                          color: context.onSurfaceColor,
                         ),
                       ),
                     ),
@@ -84,28 +85,28 @@ class StreamCardSkeleton extends StatelessWidget {
                     // Name skeleton
                     Expanded(
                       child: Shimmer.fromColors(
-                        baseColor: Colors.grey[300]!,
+                        baseColor: context.outlineColor.withValues(alpha: 0.3),
                         highlightColor: Colors.grey[100]!,
                         child: Container(
                           height: 14,
                           width: 100,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(4),
-                            color: Colors.white,
+                            color: context.onSurfaceColor,
                           ),
                         ),
                       ),
                     ),
                     // Category skeleton
                     Shimmer.fromColors(
-                      baseColor: Colors.grey[300]!,
+                      baseColor: context.outlineColor.withValues(alpha: 0.3),
                       highlightColor: Colors.grey[100]!,
                       child: Container(
                         height: 24,
                         width: 60,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(8),
-                          color: Colors.white,
+                          color: context.onSurfaceColor,
                         ),
                       ),
                     ),

@@ -10,6 +10,8 @@ import '../../core/models/location_models.dart';
 import '../../data/models/heat_map_models.dart';
 import '../../data/services/heat_map_service.dart';
 import '../../core/services/location_service.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
+
 
 /// Coverage map widget showing user distribution and coverage areas
 class CoverageMapWidget extends StatefulWidget {
@@ -506,7 +508,7 @@ class _CoverageMapWidgetState extends State<CoverageMapWidget> {
           if (_isLoading)
             Container(
               color: Colors.black54,
-              child: const Center(
+              child: Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -514,7 +516,10 @@ class _CoverageMapWidgetState extends State<CoverageMapWidget> {
                     SizedBox(height: 16),
                     Text(
                       'Loading coverage data...',
-                      style: TextStyle(color: Colors.white, fontSize: 16),
+                      style: TextStyle(
+                        color: context.onSurfaceColor,
+                        fontSize: 16,
+                      ),
                     ),
                   ],
                 ),
@@ -529,11 +534,14 @@ class _CoverageMapWidgetState extends State<CoverageMapWidget> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.error, color: Colors.red, size: 48),
+                    Icon(Icons.error, color: context.errorColor, size: 48),
                     const SizedBox(height: 16),
                     Text(
                       _error!,
-                      style: const TextStyle(color: Colors.white, fontSize: 16),
+                      style: TextStyle(
+                        color: context.onSurfaceColor,
+                        fontSize: 16,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 16),
@@ -542,7 +550,7 @@ class _CoverageMapWidgetState extends State<CoverageMapWidget> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF6E3BFF),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Retry',
                         style: TextStyle(color: Colors.white),
                       ),
@@ -562,8 +570,8 @@ class _CoverageMapWidgetState extends State<CoverageMapWidget> {
                 FloatingActionButton(
                   mini: true,
                   onPressed: _refreshData,
-                  backgroundColor: Colors.white,
-                  child: const Icon(Icons.refresh, color: Color(0xFF6E3BFF)),
+                  backgroundColor: context.surfaceColor,
+                  child: Icon(Icons.refresh, color: Color(0xFF6E3BFF)),
                 ),
                 const SizedBox(height: 8),
 
@@ -571,8 +579,8 @@ class _CoverageMapWidgetState extends State<CoverageMapWidget> {
                 FloatingActionButton(
                   mini: true,
                   onPressed: _centerOnUser,
-                  backgroundColor: Colors.white,
-                  child: const Icon(
+                  backgroundColor: context.surfaceColor,
+                  child: Icon(
                     Icons.my_location,
                     color: Color(0xFF6E3BFF),
                   ),
@@ -583,8 +591,8 @@ class _CoverageMapWidgetState extends State<CoverageMapWidget> {
                 FloatingActionButton(
                   mini: true,
                   onPressed: _switchMapType,
-                  backgroundColor: Colors.white,
-                  child: const Icon(Icons.layers, color: Color(0xFF6E3BFF)),
+                  backgroundColor: context.surfaceColor,
+                  child: Icon(Icons.layers, color: Color(0xFF6E3BFF)),
                 ),
               ],
             ),
@@ -607,7 +615,7 @@ class _CoverageMapWidgetState extends State<CoverageMapWidget> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.onSurfaceColor,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -621,7 +629,7 @@ class _CoverageMapWidgetState extends State<CoverageMapWidget> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text(
+          Text(
             'Coverage Statistics',
             style: TextStyle(
               fontSize: 16,
@@ -634,14 +642,17 @@ class _CoverageMapWidgetState extends State<CoverageMapWidget> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               _buildStatItem(
+                context,
                 'Total Users',
                 _coverageData!.totalUsers.toString(),
               ),
               _buildStatItem(
+                context,
                 'Coverage Areas',
                 _coverageData!.coverageAreas.length.toString(),
               ),
               _buildStatItem(
+                context,
                 'Avg Density',
                 _coverageData!.averageDensity.toStringAsFixed(1),
               ),
@@ -652,18 +663,21 @@ class _CoverageMapWidgetState extends State<CoverageMapWidget> {
     );
   }
 
-  Widget _buildStatItem(String label, String value) {
+  Widget _buildStatItem(BuildContext context, String label, String value) {
     return Column(
       children: [
         Text(
           value,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
             color: Color(0xFF6E3BFF),
           ),
         ),
-        Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+        Text(
+          label,
+          style: TextStyle(fontSize: 12, color: context.onSurfaceVariantColor),
+        ),
       ],
     );
   }

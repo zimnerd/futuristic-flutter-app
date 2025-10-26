@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 import '../../../core/utils/phone_utils.dart';
 import '../../../core/utils/haptic_feedback_utils.dart';
@@ -8,7 +9,6 @@ import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_event.dart';
 import '../../blocs/auth/auth_state.dart';
 import '../../theme/pulse_colors.dart';
-import '../../theme/theme_extensions.dart';
 import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 import '../../widgets/common/pulse_toast.dart';
 import '../../widgets/developer_auto_login_fab.dart';
@@ -110,20 +110,20 @@ class _LoginScreenState extends State<LoginScreen> {
 
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) {
         return AlertDialog(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
           title: Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.phone_android,
-                color: PulseColors.primary,
+                color: dialogContext.primaryColor,
                 size: 28,
               ),
               const SizedBox(width: 12),
-              const Text(
+              Text(
                 'Confirm Phone Number',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
               ),
@@ -133,38 +133,38 @@ class _LoginScreenState extends State<LoginScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'We will send an OTP code to:',
                 style: TextStyle(
                   fontSize: 14,
-                  color: PulseColors.onSurfaceVariant,
+                  color: dialogContext.textSecondary,
                 ),
               ),
               const SizedBox(height: 16),
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: PulseColors.primary.withValues(alpha: 0.1),
+                  color: dialogContext.primaryColor.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: PulseColors.primary.withValues(alpha: 0.3),
+                    color: dialogContext.primaryColor.withOpacity(0.3),
                   ),
                 ),
                 child: Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.verified_user,
-                      color: PulseColors.primary,
+                      color: dialogContext.primaryColor,
                       size: 24,
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         displayNumber,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: PulseColors.primary,
+                          color: dialogContext.primaryColor,
                           letterSpacing: 0.5,
                         ),
                       ),
@@ -175,10 +175,10 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 16),
               Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.info_outline,
                     size: 16,
-                    color: PulseColors.onSurfaceVariant,
+                    color: dialogContext.textSecondary,
                   ),
                   const SizedBox(width: 8),
                   Expanded(
@@ -186,9 +186,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       'The OTP will be sent via WhatsApp',
                       style: TextStyle(
                         fontSize: 12,
-                        color: PulseColors.onSurfaceVariant.withValues(
-                          alpha: 0.8,
-                        ),
+                        color: dialogContext.textSecondary.withOpacity(0.8),
                         fontStyle: FontStyle.italic,
                       ),
                     ),
@@ -199,20 +197,20 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: const Text(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: Text(
                 'Edit',
                 style: TextStyle(
-                  color: PulseColors.onSurfaceVariant,
+                  color: dialogContext.textSecondary,
                   fontWeight: FontWeight.w500,
                 ),
               ),
             ),
             ElevatedButton(
-              onPressed: () => Navigator.of(context).pop(true),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
               style: ElevatedButton.styleFrom(
-                backgroundColor: PulseColors.primary,
-                foregroundColor: context.theme.colorScheme.onPrimary,
+                backgroundColor: dialogContext.primaryColor,
+                foregroundColor: dialogContext.theme.colorScheme.onPrimary,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
                   vertical: 12,
@@ -221,7 +219,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              child: const Text(
+              child: Text(
                 'Send OTP',
                 style: TextStyle(fontWeight: FontWeight.w600),
               ),
@@ -329,7 +327,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 60),
 
                 // Logo and title
-                const Icon(
+                Icon(
                   Icons.favorite,
                   size: 80,
                   color: PulseColors.primary,
@@ -340,7 +338,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   'Welcome Back',
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: PulseColors.onSurface,
+                    color: context.onSurfaceColor,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -349,7 +347,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Text(
                   'Sign in to continue',
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: PulseColors.onSurfaceVariant,
+                    color: context.onSurfaceVariantColor,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -360,18 +358,18 @@ class _LoginScreenState extends State<LoginScreen> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: PulseColors.success.withValues(alpha: 0.1),
+                      color: context.successColor.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: PulseColors.success.withValues(alpha: 0.3),
+                        color: context.successColor.withOpacity(0.3),
                         width: 1,
                       ),
                     ),
                     child: Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.check_circle_outline,
-                          color: PulseColors.success,
+                          color: context.successColor,
                           size: 24,
                         ),
                         const SizedBox(width: 12),
@@ -379,12 +377,12 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
+                              Text(
                                 '🎉 Account Created!',
                                 style: TextStyle(
                                   fontWeight: FontWeight.w600,
                                   fontSize: 16,
-                                  color: PulseColors.success,
+                                  color: context.successColor,
                                 ),
                               ),
                               const SizedBox(height: 4),
@@ -392,8 +390,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 _registrationSuccessMessage!,
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color: PulseColors.onSurface.withValues(
-                                    alpha: 0.8,
+                                  color: context.onSurfaceColor.withOpacity(
+                                    0.8,
                                   ),
                                 ),
                               ),
@@ -470,7 +468,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Text(
                         'or sign in with',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: PulseColors.onSurfaceVariant,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
                     ),
@@ -494,7 +492,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ? PulseColors.primary
                               : PulseColors.onSurfaceVariant,
                         ),
-                        child: const Text('Phone'),
+                        child: Text('Phone'),
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -509,7 +507,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ? PulseColors.primary
                               : PulseColors.onSurfaceVariant,
                         ),
-                        child: const Text('Email'),
+                        child: Text('Email'),
                       ),
                     ),
                   ],
@@ -552,28 +550,28 @@ class _LoginScreenState extends State<LoginScreen> {
                           decoration: InputDecoration(
                             labelText: 'Email',
                             hintText: 'Enter your email address',
-                            prefixIcon: const Icon(Icons.email),
+                            prefixIcon: Icon(Icons.email),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(
-                                color: Color(0xFFE0E0E0),
+                              borderSide: BorderSide(
+                                color: context.formFieldBorder,
                               ),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(
-                                color: Color(0xFFE0E0E0),
+                              borderSide: BorderSide(
+                                color: context.formFieldBorder,
                               ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                               borderSide: BorderSide(
-                                color: PulseColors.primary,
+                                color: context.formFieldBorderFocused,
                                 width: 2,
                               ),
                             ),
                             filled: true,
-                            fillColor: const Color(0xFFFAFAFA),
+                            fillColor: context.formFieldBackground,
                             floatingLabelBehavior: FloatingLabelBehavior.auto,
                           ),
                         ),
@@ -587,7 +585,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           decoration: InputDecoration(
                             labelText: 'Password',
                             hintText: 'Enter your password',
-                            prefixIcon: const Icon(Icons.lock),
+                            prefixIcon: Icon(Icons.lock),
                             suffixIcon: IconButton(
                               icon: Icon(
                                 _obscurePassword
@@ -600,25 +598,25 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(
-                                color: Color(0xFFE0E0E0),
+                              borderSide: BorderSide(
+                                color: context.formFieldBorder,
                               ),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(
-                                color: Color(0xFFE0E0E0),
+                              borderSide: BorderSide(
+                                color: context.formFieldBorder,
                               ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                               borderSide: BorderSide(
-                                color: PulseColors.primary,
+                                color: context.formFieldBorderFocused,
                                 width: 2,
                               ),
                             ),
                             filled: true,
-                            fillColor: const Color(0xFFFAFAFA),
+                            fillColor: context.formFieldBackground,
                             floatingLabelBehavior: FloatingLabelBehavior.auto,
                           ),
                         ),
@@ -652,7 +650,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               )
                             : Text(
                                 _isPhoneMode ? 'Send OTP' : 'Sign In',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -665,7 +663,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         // Forgot password
                         TextButton(
                           onPressed: () => context.push('/forgot-password'),
-                          child: const Text('Forgot Password?'),
+                          child: Text('Forgot Password?'),
                         ),
                       ],
 
@@ -682,7 +680,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           TextButton(
                             onPressed: () => context.push('/register'),
-                            child: const Text('Sign Up'),
+                            child: Text('Sign Up'),
                           ),
                         ],
                       ),
@@ -712,11 +710,11 @@ class _LoginScreenState extends State<LoginScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 24, color: PulseColors.onSurface),
+          Icon(icon, size: 24, color: Theme.of(context).colorScheme.onSurface),
           const SizedBox(height: 4),
           Text(
             label,
-            style: TextStyle(fontSize: 11, color: PulseColors.onSurface),
+            style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurface),
           ),
         ],
       ),

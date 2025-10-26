@@ -10,6 +10,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/logger.dart';
 import '../../../core/services/call_invitation_service.dart';
 import '../../../core/models/call_invitation.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 class AudioCallScreen extends StatefulWidget {
   final String callId;
@@ -297,7 +298,7 @@ class _AudioCallScreenState extends State<AudioCallScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Call Error'),
+        title: Text('Call Error'),
         content: Text(message),
         actions: [
           TextButton(
@@ -305,7 +306,7 @@ class _AudioCallScreenState extends State<AudioCallScreen>
               Navigator.of(context).pop();
               _endCall();
             },
-            child: const Text('OK'),
+            child: Text('OK'),
           ),
         ],
       ),
@@ -383,7 +384,7 @@ class _AudioCallScreenState extends State<AudioCallScreen>
       case QualityType.qualityVbad:
         return Colors.red.shade900;
       default:
-        return Colors.grey;
+        return context.outlineColor;
     }
   }
 
@@ -555,17 +556,19 @@ class _AudioCallScreenState extends State<AudioCallScreen>
                   ),
                   child: CircleAvatar(
                     radius: 78,
-                    backgroundColor: Colors.white.withValues(alpha: 0.2),
+                    backgroundColor: context.surfaceColor.withValues(
+                      alpha: 0.2,
+                    ),
                     backgroundImage: widget.userPhotoUrl != null
                         ? CachedNetworkImageProvider(widget.userPhotoUrl!)
                         : null,
                     child: widget.userPhotoUrl == null
                         ? Text(
                             widget.userName[0].toUpperCase(),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 64,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: context.onSurfaceColor,
                             ),
                           )
                         : null,
@@ -580,11 +583,11 @@ class _AudioCallScreenState extends State<AudioCallScreen>
                       decoration: BoxDecoration(
                         color: Colors.green,
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 3),
+                        border: Border.all(color: context.onSurfaceColor, width: 3),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.mic,
-                        color: Colors.white,
+                        color: context.onSurfaceColor,
                         size: 20,
                       ),
                     ),
@@ -602,8 +605,8 @@ class _AudioCallScreenState extends State<AudioCallScreen>
       children: [
         Text(
           widget.userName,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: context.onSurfaceColor,
             fontSize: 28,
             fontWeight: FontWeight.bold,
           ),
@@ -757,7 +760,11 @@ class _AudioCallScreenState extends State<AudioCallScreen>
                   ),
                 ],
               ),
-              child: Icon(icon, color: Colors.white, size: size * 0.45),
+              child: Icon(
+                icon,
+                color: context.onSurfaceColor,
+                size: size * 0.45,
+              ),
             ),
           ),
         ),

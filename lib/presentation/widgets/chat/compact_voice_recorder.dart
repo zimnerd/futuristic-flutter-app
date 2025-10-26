@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import '../../../data/models/voice_message.dart';
 import '../../theme/pulse_colors.dart';
 import '../common/pulse_toast.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Compact voice recorder widget for chat input with live waveform
 class CompactVoiceRecorder extends StatefulWidget {
@@ -212,7 +213,7 @@ class _CompactVoiceRecorderState extends State<CompactVoiceRecorder> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.onSurfaceColor,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
@@ -233,9 +234,9 @@ class _CompactVoiceRecorderState extends State<CompactVoiceRecorder> {
               ),
               const Spacer(),
               IconButton(
-                icon: const Icon(Icons.close, size: 20),
+                icon: Icon(Icons.close, size: 20),
                 onPressed: _cancelRecording,
-                color: Colors.grey[600],
+                color: context.onSurfaceVariantColor,
               ),
             ],
           ),
@@ -252,7 +253,7 @@ class _CompactVoiceRecorderState extends State<CompactVoiceRecorder> {
               waveStyle: WaveStyle(
                 waveColor: _isRecording
                     ? (_isPaused ? Colors.orange : PulseColors.primary)
-                    : Colors.grey,
+                    : context.outlineColor,
                 showDurationLabel: false,
                 spacing: 4,
                 extendWaveform: true,
@@ -271,7 +272,7 @@ class _CompactVoiceRecorderState extends State<CompactVoiceRecorder> {
               fontWeight: FontWeight.bold,
               color: _isRecording
                   ? (_isPaused ? Colors.orange : PulseColors.primary)
-                  : Colors.grey,
+                  : context.outlineColor,
             ),
           ),
 
@@ -285,7 +286,7 @@ class _CompactVoiceRecorderState extends State<CompactVoiceRecorder> {
               _buildControlButton(
                 icon: Icons.delete,
                 label: 'Cancel',
-                color: Colors.red,
+                color: context.errorColor,
                 onPressed: _cancelRecording,
               ),
 
@@ -316,7 +317,7 @@ class _CompactVoiceRecorderState extends State<CompactVoiceRecorder> {
             value:
                 _recordedDuration.inMilliseconds /
                 widget.maxDuration.inMilliseconds,
-            backgroundColor: Colors.grey[300],
+            backgroundColor: context.outlineColor.withValues(alpha: 0.3),
             valueColor: AlwaysStoppedAnimation<Color>(
               _recordedDuration.inSeconds > (widget.maxDuration.inSeconds * 0.8)
                   ? Colors.red
@@ -326,7 +327,10 @@ class _CompactVoiceRecorderState extends State<CompactVoiceRecorder> {
           const SizedBox(height: 4),
           Text(
             'Max: ${_formatDuration(widget.maxDuration)}',
-            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+            style: TextStyle(
+              fontSize: 12,
+              color: context.onSurfaceVariantColor,
+            ),
           ),
         ],
       ),
@@ -345,7 +349,9 @@ class _CompactVoiceRecorderState extends State<CompactVoiceRecorder> {
           width: 56,
           height: 56,
           decoration: BoxDecoration(
-            color: onPressed != null ? color : Colors.grey[300],
+            color: onPressed != null
+                ? color
+                : context.outlineColor.withValues(alpha: 0.3),
             shape: BoxShape.circle,
             boxShadow: onPressed != null
                 ? [
@@ -359,7 +365,7 @@ class _CompactVoiceRecorderState extends State<CompactVoiceRecorder> {
           ),
           child: IconButton(
             icon: Icon(icon, size: 24),
-            color: Colors.white,
+            color: context.onSurfaceColor,
             onPressed: onPressed,
           ),
         ),
@@ -368,7 +374,9 @@ class _CompactVoiceRecorderState extends State<CompactVoiceRecorder> {
           label,
           style: TextStyle(
             fontSize: 13,
-            color: onPressed != null ? color : Colors.grey[500],
+            color: onPressed != null
+                ? color
+                : context.onSurfaceVariantColor.withValues(alpha: 0.6),
             fontWeight: FontWeight.w600,
           ),
         ),

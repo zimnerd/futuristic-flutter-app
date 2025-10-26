@@ -26,6 +26,7 @@ import '../../widgets/common/pulse_toast.dart';
 import '../../widgets/common/skeleton_loading.dart';
 import '../../widgets/common/sync_status_indicator.dart';
 import '../ai_companion/ai_companion_screen.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Modern Discovery Screen - PulseLink's unique swipe interface
 ///
@@ -402,7 +403,10 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                           end: Alignment.bottomRight,
                         )
                       : LinearGradient(
-                          colors: [PulseColors.grey400, PulseColors.grey500],
+                          colors: [
+                            context.borderColor.shade400,
+                            context.borderColor.shade500,
+                          ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -410,7 +414,9 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                   boxShadow: [
                     BoxShadow(
                       color:
-                          (isPremium ? PulseColors.accent : PulseColors.grey500)
+                          (isPremium
+                                  ? PulseColors.accent
+                                  : context.borderColor.shade500)
                               .withValues(alpha: 0.3),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
@@ -420,19 +426,19 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.undo, color: Colors.white, size: 20),
+                    Icon(Icons.undo, color: context.onSurfaceColor, size: 20),
                     const SizedBox(width: 8),
                     Text(
                       isPremium ? 'Undo last action' : 'Undo (Premium)',
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: context.onSurfaceColor,
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     if (!isPremium) ...[
                       const SizedBox(width: 4),
-                      Icon(Icons.lock, color: Colors.white, size: 16),
+                      Icon(Icons.lock, color: context.onSurfaceColor, size: 16),
                     ],
                   ],
                 ),
@@ -460,26 +466,26 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                 ),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.workspace_premium,
-                color: Colors.white,
+                color: context.onSurfaceColor,
                 size: 24,
               ),
             ),
             const SizedBox(width: 12),
-            const Text('Premium Feature'),
+            Text('Premium Feature'),
           ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Undo your last swipe with Premium!',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 12),
-            const Text(
+            Text(
               'Take back accidental swipes and get unlimited undos with PulseLink Premium.',
               style: TextStyle(fontSize: 14),
             ),
@@ -512,7 +518,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Maybe Later'),
+            child: Text('Maybe Later'),
           ),
           ElevatedButton(
             onPressed: () {
@@ -521,12 +527,12 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: PulseColors.primary,
-              foregroundColor: Colors.white,
+              foregroundColor: context.onSurfaceColor,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            child: const Text('Upgrade Now'),
+            child: Text('Upgrade Now'),
           ),
         ],
       ),
@@ -550,7 +556,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
       ],
       child: Scaffold(
         body: Container(
-          decoration: const BoxDecoration(gradient: PulseGradients.background),
+          decoration: BoxDecoration(gradient: PulseGradients.background),
           child: BlocListener<DiscoveryBloc, DiscoveryState>(
             listener: (context, state) {
               // Handle rewind success/error feedback
@@ -666,13 +672,15 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                           Text(
                             'Good ${_getTimeOfDay()}',
                             style: PulseTypography.bodyMedium.copyWith(
-                              color: PulseColors.grey600,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
                             ),
                           ),
                           Text(
                             'Ready to explore?',
                             style: PulseTypography.h3.copyWith(
-                              color: PulseColors.grey900,
+                              color: Theme.of(context).colorScheme.onSurface,
                             ),
                           ),
                         ],
@@ -700,7 +708,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                     const SizedBox(width: PulseSpacing.sm),
                     _buildHeaderButton(
                       icon: PulseIcons.notifications,
-                      color: PulseColors.grey600,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                       onTap: _showNotificationsModal,
                     ),
                   ],
@@ -738,15 +746,15 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                     ? PulseGradients.primary
                     : LinearGradient(
                         colors: [
-                          PulseColors.grey400.withValues(alpha: 0.1),
-                          PulseColors.grey400.withValues(alpha: 0.1),
+                          context.borderColor.shade400.withValues(alpha: 0.1),
+                          context.borderColor.shade400.withValues(alpha: 0.1),
                         ],
                       ),
                 borderRadius: BorderRadius.circular(PulseBorderRadius.md),
                 border: Border.all(
                   color: likeCount > 0
                       ? PulseColors.primary.withValues(alpha: 0.3)
-                      : PulseColors.grey400.withValues(alpha: 0.2),
+                      : context.borderColor.shade400.withValues(alpha: 0.2),
                   width: 1,
                 ),
                 boxShadow: likeCount > 0
@@ -766,7 +774,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                       Icons.favorite,
                       color: likeCount > 0
                           ? PulseColors.white
-                          : PulseColors.grey600,
+                          : context.borderColor.shade600,
                       size: 20,
                     ),
                   ),
@@ -780,7 +788,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                           color: PulseColors.success,
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: PulseColors.white,
+                            color: Theme.of(context).colorScheme.surface,
                             width: 1.5,
                           ),
                         ),
@@ -791,8 +799,8 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                         child: Center(
                           child: Text(
                             likeCount > 99 ? '99+' : '$likeCount',
-                            style: const TextStyle(
-                              color: PulseColors.white,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.surface,
                               fontSize: 9,
                               fontWeight: FontWeight.bold,
                             ),
@@ -1128,7 +1136,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                 color: PulseColors.reject.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.error_outline,
                 size: 40,
                 color: PulseColors.reject,
@@ -1137,13 +1145,15 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
             const SizedBox(height: PulseSpacing.lg),
             Text(
               'Something went wrong',
-              style: PulseTypography.h4.copyWith(color: PulseColors.grey900),
+              style: PulseTypography.h4.copyWith(
+                color: context.borderColor.shade900,
+              ),
             ),
             const SizedBox(height: PulseSpacing.sm),
             Text(
               state.message,
               style: PulseTypography.bodyMedium.copyWith(
-                color: PulseColors.grey600,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
               textAlign: TextAlign.center,
               maxLines: 2,
@@ -1160,7 +1170,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                 backgroundColor: PulseColors.primary,
                 foregroundColor: PulseColors.white,
               ),
-              child: const Text('Try Again'),
+              child: Text('Try Again'),
             ),
           ],
         ),
@@ -1207,7 +1217,9 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                     child: CircularProgressIndicator(
                       value: progress,
                       strokeWidth: 4,
-                      backgroundColor: Colors.grey.withValues(alpha: 0.2),
+                      backgroundColor: context.outlineColor.withValues(
+                        alpha: 0.2,
+                      ),
                       valueColor: AlwaysStoppedAnimation<Color>(
                         remainingMinutes <= 5
                             ? PulseColors.warning
@@ -1240,9 +1252,9 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                         ),
                       ],
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.rocket_launch,
-                      color: Colors.white,
+                      color: context.onSurfaceColor,
                       size: 28,
                     ),
                   ),
@@ -1291,9 +1303,9 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                   ),
                 ],
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.rocket_launch,
-                color: Colors.white,
+                color: context.onSurfaceColor,
                 size: 28,
               ),
             ),
@@ -1344,19 +1356,19 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                   color: Colors.white.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.rocket_launch,
-                  color: Colors.white,
+                  color: context.onSurfaceColor,
                   size: 48,
                 ),
               ),
               const SizedBox(height: 16),
 
               // Title
-              const Text(
+              Text(
                 'Boost Active!',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: context.onSurfaceColor,
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                 ),
@@ -1364,9 +1376,9 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
               const SizedBox(height: 8),
 
               // Subtitle
-              const Text(
+              Text(
                 'You\'re getting 10x more visibility',
-                style: TextStyle(color: Colors.white, fontSize: 14),
+                style: TextStyle(color: context.onSurfaceColor, fontSize: 14),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
@@ -1381,20 +1393,23 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.timer, color: Colors.white, size: 24),
+                    Icon(Icons.timer, color: context.onSurfaceColor, size: 24),
                     const SizedBox(width: 8),
                     Text(
                       '$remainingMinutes:${remainingSeconds.toString().padLeft(2, '0')}',
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: context.onSurfaceColor,
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(width: 8),
-                    const Text(
+                    Text(
                       'remaining',
-                      style: TextStyle(color: Colors.white, fontSize: 14),
+                      style: TextStyle(
+                        color: context.onSurfaceColor,
+                        fontSize: 14,
+                      ),
                     ),
                   ],
                 ),
@@ -1406,7 +1421,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                 borderRadius: BorderRadius.circular(4),
                 child: LinearProgressIndicator(
                   value: progress,
-                  backgroundColor: Colors.white.withValues(alpha: 0.3),
+                  backgroundColor: context.surfaceColor.withValues(alpha: 0.3),
                   valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                   minHeight: 8,
                 ),
@@ -1429,10 +1444,10 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                         size: 20,
                       ),
                       const SizedBox(width: 8),
-                      const Text(
+                      Text(
                         'Boost ending soon!',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: context.onSurfaceColor,
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
@@ -1448,7 +1463,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
                 style: TextButton.styleFrom(
-                  backgroundColor: Colors.white.withValues(alpha: 0.2),
+                  backgroundColor: context.surfaceColor.withValues(alpha: 0.2),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 32,
                     vertical: 12,
@@ -1457,10 +1472,10 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Text(
+                child: Text(
                   'Got it!',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: context.onSurfaceColor,
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),
@@ -1492,9 +1507,9 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                     gradient: PulseGradients.success,
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.favorite,
-                    color: PulseColors.white,
+                    color: Theme.of(context).colorScheme.surface,
                     size: 50,
                   ),
                 ),
@@ -1509,7 +1524,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                 Text(
                   'You and ${state.matchedUser.name} liked each other',
                   style: PulseTypography.bodyMedium.copyWith(
-                    color: PulseColors.grey600,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -1525,10 +1540,10 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                           );
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: PulseColors.grey200,
-                          foregroundColor: PulseColors.grey700,
+                          backgroundColor: context.borderColor.shade200,
+                          foregroundColor: context.borderColor.shade700,
                         ),
-                        child: const Text('Continue'),
+                        child: Text('Continue'),
                       ),
                     ),
                     const SizedBox(width: PulseSpacing.md),
@@ -1542,7 +1557,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                           backgroundColor: PulseColors.primary,
                           foregroundColor: PulseColors.white,
                         ),
-                        child: const Text('Say Hi'),
+                        child: Text('Say Hi'),
                       ),
                     ),
                   ],
@@ -1588,7 +1603,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
         minChildSize: 0.5,
         maxChildSize: 0.95,
         builder: (context, scrollController) => Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             color: PulseColors.white,
             borderRadius: BorderRadius.only(
               topLeft: Radius.circular(PulseSpacing.xl),
@@ -1603,7 +1618,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                 height: 4,
                 margin: const EdgeInsets.only(top: PulseSpacing.md),
                 decoration: BoxDecoration(
-                  color: PulseColors.grey400,
+                  color: context.borderColor.shade400,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -1616,12 +1631,15 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                     Text(
                       'Filters',
                       style: PulseTypography.h3.copyWith(
-                        color: PulseColors.black,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                     IconButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(Icons.close, color: PulseColors.grey600),
+                      icon: Icon(
+                        Icons.close,
+                        color: context.borderColor.shade600,
+                      ),
                     ),
                   ],
                 ),
@@ -1704,7 +1722,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
         minChildSize: 0.5,
         maxChildSize: 0.9,
         builder: (context, scrollController) => Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             color: PulseColors.white,
             borderRadius: BorderRadius.only(
               topLeft: Radius.circular(PulseSpacing.xl),
@@ -1719,7 +1737,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                 height: 4,
                 margin: const EdgeInsets.only(top: PulseSpacing.md),
                 decoration: BoxDecoration(
-                  color: PulseColors.grey400,
+                  color: context.borderColor.shade400,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -1732,12 +1750,15 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                     Text(
                       'AI Companion',
                       style: PulseTypography.h3.copyWith(
-                        color: PulseColors.black,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                     IconButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(Icons.close, color: PulseColors.grey600),
+                      icon: Icon(
+                        Icons.close,
+                        color: context.borderColor.shade600,
+                      ),
                     ),
                   ],
                 ),
@@ -1772,7 +1793,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                             Text(
                               'Get personalized advice, conversation starters, and dating insights powered by AI.',
                               style: PulseTypography.bodyMedium.copyWith(
-                                color: PulseColors.black,
+                                color: Theme.of(context).colorScheme.onSurface,
                               ),
                             ),
                           ],
@@ -1861,7 +1882,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
         minChildSize: 0.5,
         maxChildSize: 0.95,
         builder: (context, scrollController) => Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             color: PulseColors.white,
             borderRadius: BorderRadius.only(
               topLeft: Radius.circular(PulseSpacing.xl),
@@ -1876,7 +1897,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                 height: 4,
                 margin: const EdgeInsets.only(top: PulseSpacing.md),
                 decoration: BoxDecoration(
-                  color: PulseColors.grey400,
+                  color: context.borderColor.shade400,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -1889,12 +1910,15 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                     Text(
                       'Notifications',
                       style: PulseTypography.h3.copyWith(
-                        color: PulseColors.black,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                     IconButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(Icons.close, color: PulseColors.grey600),
+                      icon: Icon(
+                        Icons.close,
+                        color: context.borderColor.shade600,
+                      ),
                     ),
                   ],
                 ),
@@ -1971,7 +1995,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
           Text(
             title,
             style: PulseTypography.bodyMedium.copyWith(
-              color: PulseColors.black,
+              color: Theme.of(context).colorScheme.onSurface,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -1991,7 +2015,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
       padding: const EdgeInsets.only(bottom: PulseSpacing.md),
       child: Row(
         children: [
-          Text(emoji, style: const TextStyle(fontSize: 24)),
+          Text(emoji, style: TextStyle(fontSize: 24)),
           const SizedBox(width: PulseSpacing.md),
           Expanded(
             child: Column(
@@ -2000,14 +2024,14 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                 Text(
                   title,
                   style: PulseTypography.bodyMedium.copyWith(
-                    color: PulseColors.black,
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 Text(
                   description,
                   style: PulseTypography.labelMedium.copyWith(
-                    color: PulseColors.grey600,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
               ],
@@ -2035,7 +2059,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
         border: Border.all(
           color: isUnread
               ? PulseColors.primary.withValues(alpha: 0.2)
-              : PulseColors.grey200,
+              : context.borderColor.shade200,
         ),
       ),
       child: Row(
@@ -2044,7 +2068,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
             Container(
               width: 8,
               height: 8,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: PulseColors.primary,
                 shape: BoxShape.circle,
               ),
@@ -2057,7 +2081,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                 Text(
                   title,
                   style: PulseTypography.bodyMedium.copyWith(
-                    color: PulseColors.black,
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontWeight: isUnread ? FontWeight.w600 : FontWeight.normal,
                   ),
                 ),
@@ -2065,14 +2089,14 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                 Text(
                   message,
                   style: PulseTypography.labelMedium.copyWith(
-                    color: PulseColors.grey600,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   time,
                   style: PulseTypography.labelSmall.copyWith(
-                    color: PulseColors.grey500,
+                    color: context.borderColor.shade500,
                   ),
                 ),
               ],

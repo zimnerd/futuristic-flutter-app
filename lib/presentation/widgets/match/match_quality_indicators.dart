@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../data/models/match_model.dart';
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Widget to display match quality indicators including:
 /// - Conversation health badges
@@ -34,20 +35,20 @@ class MatchQualityIndicators extends StatelessWidget {
       spacing: compact ? 6 : 8,
       runSpacing: compact ? 6 : 8,
       children: [
-        if (showHealth) _buildHealthBadge(),
+        if (showHealth) _buildHealthBadge(context),
         if (showEngagement && match.engagementScore > 50)
-          _buildEngagementBadge(),
-        if (showQuality && match.qualityScore > 60) _buildQualityBadge(),
-        if (showSource && match.matchSource != null) _buildSourceBadge(),
-        if (match.isPremiumMatch) _buildPremiumBadge(),
-        if (match.meetupScheduled) _buildMeetupBadge(),
-        if (onFavoriteToggle != null) _buildFavoriteButton(),
+          _buildEngagementBadge(context),
+        if (showQuality && match.qualityScore > 60) _buildQualityBadge(context),
+        if (showSource && match.matchSource != null) _buildSourceBadge(context),
+        if (match.isPremiumMatch) _buildPremiumBadge(context),
+        if (match.meetupScheduled) _buildMeetupBadge(context),
+        if (onFavoriteToggle != null) _buildFavoriteButton(context),
       ],
     );
   }
 
   /// Build conversation health badge with color-coded indicators
-  Widget _buildHealthBadge() {
+  Widget _buildHealthBadge(BuildContext context) {
     final health = match.conversationHealth;
     final config = _getHealthConfig(health);
 
@@ -70,12 +71,16 @@ class MatchQualityIndicators extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(config.icon, color: Colors.white, size: compact ? 12 : 14),
+          Icon(
+            config.icon,
+            color: context.onSurfaceColor,
+            size: compact ? 12 : 14,
+          ),
           SizedBox(width: compact ? 3 : 4),
           Text(
             config.label,
             style: TextStyle(
-              color: Colors.white,
+              color: context.onSurfaceColor,
               fontSize: compact ? 10 : 12,
               fontWeight: FontWeight.w600,
             ),
@@ -86,7 +91,7 @@ class MatchQualityIndicators extends StatelessWidget {
   }
 
   /// Build engagement score badge with percentage
-  Widget _buildEngagementBadge() {
+  Widget _buildEngagementBadge(BuildContext context) {
     final score = match.engagementScore.round();
     final color = _getEngagementColor(score);
 
@@ -119,7 +124,7 @@ class MatchQualityIndicators extends StatelessWidget {
   }
 
   /// Build quality tier badge
-  Widget _buildQualityBadge() {
+  Widget _buildQualityBadge(BuildContext context) {
     final quality = match.matchQualityDisplay;
     final config = _getQualityConfig(quality);
 
@@ -135,12 +140,16 @@ class MatchQualityIndicators extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(config.icon, color: Colors.white, size: compact ? 12 : 14),
+          Icon(
+            config.icon,
+            color: context.onSurfaceColor,
+            size: compact ? 12 : 14,
+          ),
           SizedBox(width: compact ? 3 : 4),
           Text(
             config.label,
             style: TextStyle(
-              color: Colors.white,
+              color: context.onSurfaceColor,
               fontSize: compact ? 10 : 12,
               fontWeight: FontWeight.w600,
             ),
@@ -151,9 +160,9 @@ class MatchQualityIndicators extends StatelessWidget {
   }
 
   /// Build match source badge (swipe, AI, event, etc.)
-  Widget _buildSourceBadge() {
+  Widget _buildSourceBadge(BuildContext context) {
     final source = match.matchSource;
-    final config = _getSourceConfig(source ?? '');
+    final config = _getSourceConfig(context, source ?? '');
 
     return Container(
       padding: EdgeInsets.symmetric(
@@ -186,7 +195,7 @@ class MatchQualityIndicators extends StatelessWidget {
   }
 
   /// Build premium match badge
-  Widget _buildPremiumBadge() {
+  Widget _buildPremiumBadge(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: compact ? 8 : 12,
@@ -201,15 +210,15 @@ class MatchQualityIndicators extends StatelessWidget {
         children: [
           Icon(
             Icons.workspace_premium,
-            color: Colors.white,
+            color: context.onSurfaceColor,
             size: compact ? 12 : 14,
           ),
           if (!compact) ...[
             const SizedBox(width: 4),
-            const Text(
+            Text(
               'Premium',
               style: TextStyle(
-                color: Colors.white,
+                color: context.onSurfaceColor,
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
               ),
@@ -221,7 +230,7 @@ class MatchQualityIndicators extends StatelessWidget {
   }
 
   /// Build meetup scheduled badge
-  Widget _buildMeetupBadge() {
+  Widget _buildMeetupBadge(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: compact ? 8 : 12,
@@ -238,15 +247,15 @@ class MatchQualityIndicators extends StatelessWidget {
         children: [
           Icon(
             Icons.calendar_today,
-            color: Colors.white,
+            color: context.onSurfaceColor,
             size: compact ? 12 : 14,
           ),
           if (!compact) ...[
             const SizedBox(width: 4),
-            const Text(
+            Text(
               'Meetup',
               style: TextStyle(
-                color: Colors.white,
+                color: context.onSurfaceColor,
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
               ),
@@ -258,7 +267,7 @@ class MatchQualityIndicators extends StatelessWidget {
   }
 
   /// Build favorite toggle button
-  Widget _buildFavoriteButton() {
+  Widget _buildFavoriteButton(BuildContext context) {
     return GestureDetector(
       onTap: onFavoriteToggle,
       child: Container(
@@ -266,16 +275,20 @@ class MatchQualityIndicators extends StatelessWidget {
         decoration: BoxDecoration(
           color: match.isFavorite
               ? PulseColors.secondary.withValues(alpha: 0.15)
-              : Colors.grey.withValues(alpha: 0.1),
+              : context.outlineColor.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(compact ? 12 : 16),
           border: Border.all(
-            color: match.isFavorite ? PulseColors.secondary : Colors.grey,
+            color: match.isFavorite
+                ? PulseColors.secondary
+                : context.outlineColor,
             width: 1.5,
           ),
         ),
         child: Icon(
           match.isFavorite ? Icons.star : Icons.star_border,
-          color: match.isFavorite ? PulseColors.secondary : Colors.grey,
+          color: match.isFavorite
+              ? PulseColors.secondary
+              : context.outlineColor,
           size: compact ? 14 : 16,
         ),
       ),
@@ -361,7 +374,7 @@ class MatchQualityIndicators extends StatelessWidget {
   }
 
   /// Get configuration for match source display
-  _SourceConfig _getSourceConfig(String source) {
+  _SourceConfig _getSourceConfig(BuildContext context, String source) {
     switch (source.toUpperCase()) {
       case 'SUPER_LIKE':
         return _SourceConfig(
@@ -403,7 +416,7 @@ class MatchQualityIndicators extends StatelessWidget {
         return _SourceConfig(
           label: 'Swipe',
           icon: Icons.swipe,
-          color: Colors.grey,
+          color: context.outlineColor,
         );
     }
   }

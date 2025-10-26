@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 import '../../blocs/event/event_bloc.dart';
 import '../../blocs/event/event_event.dart';
@@ -289,7 +290,7 @@ class _AdvancedFiltersModalState extends State<AdvancedFiltersModal> {
         ),
         const SizedBox(height: 12),
         CheckboxListTile(
-          title: const Text('Events with available spots'),
+          title: Text('Events with available spots'),
           subtitle: Text(
             'Show only events that are not full',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -312,7 +313,7 @@ class _AdvancedFiltersModalState extends State<AdvancedFiltersModal> {
         ),
         const SizedBox(height: 8),
         CheckboxListTile(
-          title: const Text('Events I joined'),
+          title: Text('Events I joined'),
           subtitle: Text(
             'Show only events you are attending',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -365,13 +366,13 @@ class _AdvancedFiltersModalState extends State<AdvancedFiltersModal> {
             onPressed: _applyFilters,
             style: ElevatedButton.styleFrom(
               backgroundColor: PulseColors.primary,
-              foregroundColor: Colors.white,
+              foregroundColor: context.onSurfaceColor,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            child: const Text(
+            child: Text(
               'Apply Filters',
               style: TextStyle(fontWeight: FontWeight.w600),
             ),

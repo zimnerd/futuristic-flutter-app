@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../domain/entities/user_profile.dart';
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Displays profile analytics indicators for engagement level and quality
 /// Used to show profile metrics like engagement level, profile strength, etc.
@@ -32,11 +33,11 @@ class ProfileAnalyticsIndicators extends StatelessWidget {
     final indicators = <Widget>[];
 
     if (showEngagementLevel) {
-      indicators.add(_buildEngagementLevelBadge());
+      indicators.add(_buildEngagementLevelBadge(context));
     }
 
     if (showProfileQuality && profile.isHighQualityProfile) {
-      indicators.add(_buildProfileQualityBadge());
+      indicators.add(_buildProfileQualityBadge(context));
     }
 
     if (indicators.isEmpty) {
@@ -50,7 +51,7 @@ class ProfileAnalyticsIndicators extends StatelessWidget {
     );
   }
 
-  Widget _buildEngagementLevelBadge() {
+  Widget _buildEngagementLevelBadge(BuildContext context) {
     final engagementLevel = profile.engagementLevel;
     final config = _getEngagementLevelConfig(engagementLevel);
 
@@ -77,12 +78,16 @@ class ProfileAnalyticsIndicators extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(config.icon, color: Colors.white, size: compact ? 14 : 16),
+          Icon(
+            config.icon,
+            color: context.onSurfaceColor,
+            size: compact ? 14 : 16,
+          ),
           SizedBox(width: compact ? 4 : 6),
           Text(
             config.label,
             style: TextStyle(
-              color: Colors.white,
+              color: context.onSurfaceColor,
               fontSize: compact ? 11 : 13,
               fontWeight: FontWeight.w600,
             ),
@@ -92,7 +97,7 @@ class ProfileAnalyticsIndicators extends StatelessWidget {
     );
   }
 
-  Widget _buildProfileQualityBadge() {
+  Widget _buildProfileQualityBadge(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: compact ? 8 : 12,
@@ -116,12 +121,16 @@ class ProfileAnalyticsIndicators extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.star, color: Colors.white, size: compact ? 14 : 16),
+          Icon(
+            Icons.star,
+            color: context.onSurfaceColor,
+            size: compact ? 14 : 16,
+          ),
           SizedBox(width: compact ? 4 : 6),
           Text(
             'High Quality',
             style: TextStyle(
-              color: Colors.white,
+              color: context.onSurfaceColor,
               fontSize: compact ? 11 : 13,
               fontWeight: FontWeight.w600,
             ),

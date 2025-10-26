@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../data/models/virtual_gift.dart';
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Widget for displaying the gift catalog with categories and purchase options
 class GiftCatalogWidget extends StatefulWidget {
@@ -69,7 +70,9 @@ class _GiftCatalogWidgetState extends State<GiftCatalogWidget> {
                   'Send meaningful gifts to your matches',
                   style: Theme.of(
                     context,
-                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+                  ).textTheme.bodyMedium?.copyWith(
+                    color: context.onSurfaceVariantColor,
+                  ),
                 ),
               ],
             ),
@@ -104,11 +107,11 @@ class _GiftCatalogWidgetState extends State<GiftCatalogWidget> {
           const SizedBox(width: 8),
           ElevatedButton.icon(
             onPressed: widget.onPurchaseCredits,
-            icon: const Icon(Icons.add, size: 20),
-            label: const Text('Buy'),
+            icon: Icon(Icons.add, size: 20),
+            label: Text('Buy'),
             style: ElevatedButton.styleFrom(
               backgroundColor: PulseColors.primary,
-              foregroundColor: Colors.white,
+              foregroundColor: context.onSurfaceColor,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
@@ -154,7 +157,7 @@ class _GiftCatalogWidgetState extends State<GiftCatalogWidget> {
         selectedColor: PulseColors.primary.withValues(alpha: 0.2),
         checkmarkColor: PulseColors.primary,
         labelStyle: TextStyle(
-          color: isSelected ? PulseColors.primary : Colors.grey[700],
+          color: isSelected ? PulseColors.primary : context.onSurfaceVariantColor,
           fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
         ),
       ),
@@ -170,21 +173,23 @@ class _GiftCatalogWidgetState extends State<GiftCatalogWidget> {
             Icon(
               Icons.card_giftcard_outlined,
               size: 64,
-              color: Colors.grey[400],
+              color: context.outlineColor.withValues(alpha: 0.2),
             ),
             const SizedBox(height: 16),
             Text(
               'No gifts in this category',
               style: Theme.of(
                 context,
-              ).textTheme.titleMedium?.copyWith(color: Colors.grey[600]),
+              ).textTheme.titleMedium?.copyWith(color: context.onSurfaceVariantColor),
             ),
             const SizedBox(height: 8),
             Text(
               'Try selecting a different category',
               style: Theme.of(
                 context,
-              ).textTheme.bodyMedium?.copyWith(color: Colors.grey[500]),
+              ).textTheme.bodyMedium?.copyWith(
+                color: context.onSurfaceVariantColor.withValues(alpha: 0.6),
+              ),
             ),
           ],
         ),
@@ -275,7 +280,9 @@ class _GiftCatalogWidgetState extends State<GiftCatalogWidget> {
                       gift.description,
                       style: Theme.of(
                         context,
-                      ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+                      ).textTheme.bodySmall?.copyWith(
+                        color: context.onSurfaceVariantColor,
+                      ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -324,7 +331,11 @@ class _GiftCatalogWidgetState extends State<GiftCatalogWidget> {
                           ),
                         ),
                         if (!canAfford)
-                          Icon(Icons.lock, size: 16, color: Colors.grey[400]),
+                          Icon(
+                            Icons.lock,
+                            size: 16,
+                            color: context.outlineColor.withValues(alpha: 0.2),
+                          ),
                       ],
                     ),
                   ],

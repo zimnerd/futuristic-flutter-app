@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../navigation/navigation_helper.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Advanced Features Navigation Demo Screen
 /// This screen showcases all the advanced features and their navigation
@@ -11,23 +12,23 @@ class AdvancedFeaturesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Advanced Features'),
+        title: Text('Advanced Features'),
         backgroundColor: Colors.deepPurple,
-        foregroundColor: Colors.white,
+        foregroundColor: context.onSurfaceColor,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Explore Advanced Features',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Tap any feature below to explore PulseLink\'s advanced capabilities',
-              style: TextStyle(fontSize: 16, color: Colors.grey),
+              style: TextStyle(fontSize: 16, color: context.outlineColor),
             ),
             const SizedBox(height: 24),
 
@@ -133,7 +134,7 @@ class AdvancedFeaturesScreen extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     feature['description'],
-                    style: const TextStyle(fontSize: 11, color: Colors.grey),
+                    style: TextStyle(fontSize: 11, color: context.outlineColor),
                     textAlign: TextAlign.center,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -151,25 +152,25 @@ class AdvancedFeaturesScreen extends StatelessWidget {
     return Column(
       children: [
         ListTile(
-          leading: const Icon(Icons.card_giftcard, color: Colors.pink),
-          title: const Text('Send Virtual Gift'),
-          subtitle: const Text('Send a gift to someone special'),
-          trailing: const Icon(Icons.arrow_forward_ios),
+          leading: Icon(Icons.card_giftcard, color: Colors.pink),
+          title: Text('Send Virtual Gift'),
+          subtitle: Text('Send a gift to someone special'),
+          trailing: Icon(Icons.arrow_forward_ios),
           onTap: () =>
               context.showVirtualGiftsBottomSheet(recipientName: 'Demo User'),
         ),
         ListTile(
-          leading: const Icon(Icons.videocam, color: Colors.blue),
-          title: const Text('Start Video Call'),
-          subtitle: const Text('Begin a video conversation'),
-          trailing: const Icon(Icons.arrow_forward_ios),
+          leading: Icon(Icons.videocam, color: Colors.blue),
+          title: Text('Start Video Call'),
+          subtitle: Text('Begin a video conversation'),
+          trailing: Icon(Icons.arrow_forward_ios),
           onTap: () => context.goToVideoCall('demo_call_123'),
         ),
         ListTile(
-          leading: const Icon(Icons.psychology, color: Colors.purple),
-          title: const Text('AI Dating Assistant'),
-          subtitle: const Text('Get personalized dating advice'),
-          trailing: const Icon(Icons.arrow_forward_ios),
+          leading: Icon(Icons.psychology, color: Colors.purple),
+          title: Text('AI Dating Assistant'),
+          subtitle: Text('Get personalized dating advice'),
+          trailing: Icon(Icons.arrow_forward_ios),
           onTap: () => context.goToAiCompanion(),
         ),
       ],
@@ -183,12 +184,12 @@ class AdvancedFeaturesScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Test Navigation System',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 12),
-            const Text(
+            Text(
               'This section tests our navigation system with various feature names:',
               style: TextStyle(fontSize: 14),
             ),

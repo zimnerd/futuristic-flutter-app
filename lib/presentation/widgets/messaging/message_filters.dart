@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Enhanced filter options for message conversations
 class MessageFilters {
@@ -112,7 +113,7 @@ class _MessageFilterBottomSheetState extends State<MessageFilterBottomSheet> {
                       _filters = const MessageFilters();
                     });
                   },
-                  child: const Text('Reset'),
+                  child: Text('Reset'),
                 ),
               ],
             ),
@@ -150,7 +151,7 @@ class _MessageFilterBottomSheetState extends State<MessageFilterBottomSheet> {
                   widget.onFiltersChanged(_filters);
                   Navigator.of(context).pop();
                 },
-                child: const Text('Apply Filters'),
+                child: Text('Apply Filters'),
               ),
             ),
           ),
@@ -239,8 +240,8 @@ class _MessageFilterBottomSheetState extends State<MessageFilterBottomSheet> {
     return Column(
       children: [
         SwitchListTile(
-          title: const Text('Show online only'),
-          subtitle: const Text('Only show users who are currently online'),
+          title: Text('Show online only'),
+          subtitle: Text('Only show users who are currently online'),
           value: _filters.showOnlineOnly,
           onChanged: (value) {
             setState(() {
@@ -249,8 +250,8 @@ class _MessageFilterBottomSheetState extends State<MessageFilterBottomSheet> {
           },
         ),
         SwitchListTile(
-          title: const Text('Show unread only'),
-          subtitle: const Text('Only show conversations with unread messages'),
+          title: Text('Show unread only'),
+          subtitle: Text('Only show conversations with unread messages'),
           value: _filters.showUnreadOnly,
           onChanged: (value) {
             setState(() {
@@ -272,7 +273,9 @@ class _MessageFilterBottomSheetState extends State<MessageFilterBottomSheet> {
             isSelected
                 ? Icons.radio_button_checked
                 : Icons.radio_button_unchecked,
-            color: isSelected ? Theme.of(context).primaryColor : Colors.grey,
+            color: isSelected
+                ? Theme.of(context).primaryColor
+                : context.outlineColor,
           ),
           onTap: () {
             setState(() {

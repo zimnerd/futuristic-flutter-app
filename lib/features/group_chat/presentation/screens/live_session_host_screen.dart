@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 import '../../../../presentation/blocs/group_chat/group_chat_bloc.dart';
 import '../../../../presentation/widgets/common/pulse_toast.dart';
 import '../../data/models.dart';
@@ -44,11 +45,11 @@ class _LiveSessionHostScreenState extends State<LiveSessionHostScreen> {
         title: Text(widget.session.title),
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings),
+            icon: Icon(Icons.settings),
             onPressed: _showSessionSettings,
           ),
           IconButton(
-            icon: const Icon(Icons.stop_circle),
+            icon: Icon(Icons.stop_circle),
             onPressed: _showEndSessionDialog,
           ),
         ],
@@ -132,7 +133,10 @@ class _LiveSessionHostScreenState extends State<LiveSessionHostScreen> {
           const SizedBox(height: 8),
           Text(
             widget.session.description ?? 'No description',
-            style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+            style: TextStyle(
+              fontSize: 14,
+              color: context.onSurfaceVariantColor,
+            ),
           ),
         ],
       ),
@@ -144,20 +148,27 @@ class _LiveSessionHostScreenState extends State<LiveSessionHostScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.pending_actions, size: 80, color: Colors.grey[400]),
+          Icon(
+            Icons.pending_actions,
+            size: 80,
+            color: context.outlineColor.withValues(alpha: 0.5),
+          ),
           const SizedBox(height: 16),
           Text(
             'No pending join requests',
             style: TextStyle(
               fontSize: 18,
-              color: Colors.grey[600],
+              color: context.onSurfaceVariantColor,
               fontWeight: FontWeight.w500,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             'Waiting for people to request joining...',
-            style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+            style: TextStyle(
+              fontSize: 14,
+              color: context.onSurfaceVariantColor.withValues(alpha: 0.6),
+            ),
           ),
         ],
       ),
@@ -202,19 +213,19 @@ class _LiveSessionHostScreenState extends State<LiveSessionHostScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text('Session Settings'),
+              leading: Icon(Icons.settings),
+              title: Text('Session Settings'),
               subtitle: Text(widget.session.title),
             ),
             const Divider(),
             ListTile(
-              leading: const Icon(Icons.group),
-              title: const Text('Current Participants'),
+              leading: Icon(Icons.group),
+              title: Text('Current Participants'),
               trailing: Text('${widget.session.currentParticipants}'),
             ),
             ListTile(
-              leading: const Icon(Icons.lock),
-              title: const Text(
+              leading: Icon(Icons.lock),
+              title: Text(
                 'Require Approval',
                 style: TextStyle(
                   color: Color(0xFF202124),
@@ -226,8 +237,8 @@ class _LiveSessionHostScreenState extends State<LiveSessionHostScreen> {
               ),
             ),
             ListTile(
-              leading: const Icon(Icons.people_alt),
-              title: const Text('Max Participants'),
+              leading: Icon(Icons.people_alt),
+              title: Text('Max Participants'),
               trailing: Text(widget.session.maxParticipants.toString()),
             ),
           ],
@@ -240,14 +251,14 @@ class _LiveSessionHostScreenState extends State<LiveSessionHostScreen> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('End Live Session'),
-        content: const Text(
+        title: Text('End Live Session'),
+        content: Text(
           'Are you sure you want to end this live session? All participants will be removed.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () {
@@ -256,7 +267,7 @@ class _LiveSessionHostScreenState extends State<LiveSessionHostScreen> {
               PulseToast.success(context, message: 'Live session ended');
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('End Session'),
+            child: Text('End Session'),
           ),
         ],
       ),
@@ -320,12 +331,17 @@ class _JoinRequestCard extends StatelessWidget {
                           '${request.requesterAge} years old',
                           style: TextStyle(
                             fontSize: 14,
-                            color: Colors.grey[600],
+                            color: context.onSurfaceVariantColor,
                           ),
                         ),
                       Text(
                         _formatTime(request.requestedAt),
-                        style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: context.onSurfaceVariantColor.withValues(
+                            alpha: 0.6,
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -352,8 +368,8 @@ class _JoinRequestCard extends StatelessWidget {
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: onReject,
-                    icon: const Icon(Icons.close, size: 18),
-                    label: const Text('Reject'),
+                    icon: Icon(Icons.close, size: 18),
+                    label: Text('Reject'),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.red,
                       side: const BorderSide(color: Colors.red),
@@ -367,8 +383,8 @@ class _JoinRequestCard extends StatelessWidget {
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: onApprove,
-                    icon: const Icon(Icons.check, size: 18),
-                    label: const Text('Approve'),
+                    icon: Icon(Icons.check, size: 18),
+                    label: Text('Approve'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
                       foregroundColor: Colors.white,

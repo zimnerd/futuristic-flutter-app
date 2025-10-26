@@ -4,6 +4,7 @@ import '../../theme/pulse_colors.dart' hide PulseTextStyles;
 import '../../theme/pulse_theme.dart';
 import '../../widgets/common/pulse_toast.dart';
 import '../../blocs/block_report/block_report_bloc.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Screen displaying list of blocked users for safety
 class SafetyBlockedUsersScreen extends StatefulWidget {
@@ -51,7 +52,7 @@ class _SafetyBlockedUsersScreenState extends State<SafetyBlockedUsersScreen> {
             onPressed: () => Navigator.of(context).pop(true),
             style: ElevatedButton.styleFrom(
               backgroundColor: PulseColors.primary,
-              foregroundColor: Colors.white,
+              foregroundColor: context.onSurfaceColor,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -59,7 +60,7 @@ class _SafetyBlockedUsersScreenState extends State<SafetyBlockedUsersScreen> {
             child: Text(
               'Unblock',
               style: PulseTextStyles.labelLarge.copyWith(
-                color: Colors.white,
+                color: context.onSurfaceColor,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -183,8 +184,8 @@ class _SafetyBlockedUsersScreenState extends State<SafetyBlockedUsersScreen> {
           // Unblock button
           OutlinedButton.icon(
             onPressed: () => _handleUnblock(userId, 'Blocked User'),
-            icon: const Icon(Icons.block, size: 18),
-            label: const Text('Unblock'),
+            icon: Icon(Icons.block, size: 18),
+            label: Text('Unblock'),
             style: OutlinedButton.styleFrom(
               foregroundColor: PulseColors.error,
               side: BorderSide(color: PulseColors.error),
@@ -271,11 +272,11 @@ class _SafetyBlockedUsersScreenState extends State<SafetyBlockedUsersScreen> {
               onPressed: () {
                 context.read<BlockReportBloc>().add(LoadBlockedUsers());
               },
-              icon: const Icon(Icons.refresh),
-              label: const Text('Try Again'),
+              icon: Icon(Icons.refresh),
+              label: Text('Try Again'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: PulseColors.primary,
-                foregroundColor: Colors.white,
+                foregroundColor: context.onSurfaceColor,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),

@@ -5,6 +5,7 @@ import '../../blocs/boost/boost_bloc.dart';
 import '../../blocs/boost/boost_event.dart';
 import '../../blocs/boost/boost_state.dart';
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Banner widget that displays active boost status with countdown timer
 ///
@@ -136,9 +137,9 @@ class _BoostBannerWidgetState extends State<BoostBannerWidget>
                             color: Colors.white.withValues(alpha: 0.2),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.rocket_launch,
-                            color: Colors.white,
+                            color: context.onSurfaceColor,
                             size: 24,
                           ),
                         ),
@@ -146,14 +147,14 @@ class _BoostBannerWidgetState extends State<BoostBannerWidget>
                       const SizedBox(width: 12),
 
                       // Boost active text
-                      const Expanded(
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               'Boost Active',
                               style: TextStyle(
-                                color: Colors.white,
+                                color: context.onSurfaceColor,
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -161,7 +162,7 @@ class _BoostBannerWidgetState extends State<BoostBannerWidget>
                             Text(
                               'You\'re getting 10x more visibility!',
                               style: TextStyle(
-                                color: Colors.white,
+                                color: context.onSurfaceColor,
                                 fontSize: 12,
                               ),
                             ),
@@ -182,9 +183,9 @@ class _BoostBannerWidgetState extends State<BoostBannerWidget>
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.timer,
-                              color: Colors.white,
+                              color: context.onSurfaceColor,
                               size: 16,
                             ),
                             const SizedBox(width: 4),
@@ -193,8 +194,8 @@ class _BoostBannerWidgetState extends State<BoostBannerWidget>
                                 remainingMinutes,
                                 remainingSeconds,
                               ),
-                              style: const TextStyle(
-                                color: Colors.white,
+                              style: TextStyle(
+                                color: context.onSurfaceColor,
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -212,7 +213,9 @@ class _BoostBannerWidgetState extends State<BoostBannerWidget>
                     borderRadius: BorderRadius.circular(4),
                     child: LinearProgressIndicator(
                       value: progress,
-                      backgroundColor: Colors.white.withValues(alpha: 0.3),
+                      backgroundColor: context.surfaceColor.withValues(
+                        alpha: 0.3,
+                      ),
                       valueColor: const AlwaysStoppedAnimation<Color>(
                         Colors.white,
                       ),

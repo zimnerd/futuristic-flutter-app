@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../data/models/virtual_gift.dart';
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Widget for confirming and completing gift purchases
 class GiftPurchaseWidget extends StatefulWidget {
@@ -48,7 +49,7 @@ class _GiftPurchaseWidgetState extends State<GiftPurchaseWidget> {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.onSurfaceColor,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         boxShadow: [
           BoxShadow(
@@ -91,14 +92,16 @@ class _GiftPurchaseWidgetState extends State<GiftPurchaseWidget> {
                   'To ${widget.recipientName}',
                   style: Theme.of(
                     context,
-                  ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
+                  ).textTheme.bodyLarge?.copyWith(
+                    color: context.onSurfaceVariantColor,
+                  ),
                 ),
               ],
             ),
           ),
           IconButton(
             onPressed: widget.onCancel,
-            icon: const Icon(Icons.close),
+            icon: Icon(Icons.close),
             style: IconButton.styleFrom(backgroundColor: Colors.grey[100]),
           ),
         ],
@@ -118,7 +121,9 @@ class _GiftPurchaseWidgetState extends State<GiftPurchaseWidget> {
           ],
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey[200]!),
+        border: Border.all(
+          color: context.outlineColor.withValues(alpha: 0.15)!,
+        ),
       ),
       child: Row(
         children: [
@@ -127,7 +132,7 @@ class _GiftPurchaseWidgetState extends State<GiftPurchaseWidget> {
             height: 80,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
-              color: Colors.white,
+              color: context.onSurfaceColor,
             ),
             child: widget.gift.iconUrl.isNotEmpty
                 ? ClipRRect(
@@ -157,7 +162,9 @@ class _GiftPurchaseWidgetState extends State<GiftPurchaseWidget> {
                   widget.gift.description,
                   style: Theme.of(
                     context,
-                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+                  ).textTheme.bodyMedium?.copyWith(
+                    color: context.onSurfaceVariantColor,
+                  ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -224,7 +231,9 @@ class _GiftPurchaseWidgetState extends State<GiftPurchaseWidget> {
               hintText: 'Write something sweet...',
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.grey[300]!),
+                borderSide: BorderSide(
+                  color: context.outlineColor.withValues(alpha: 0.3),
+                ),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -319,14 +328,14 @@ class _GiftPurchaseWidgetState extends State<GiftPurchaseWidget> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.red[100],
+                color: context.errorColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
                 children: [
                   Icon(
                     Icons.warning_amber_rounded,
-                    color: Colors.red[700],
+                    color: context.errorColor.withValues(alpha: 0.7),
                     size: 20,
                   ),
                   const SizedBox(width: 8),
@@ -334,7 +343,7 @@ class _GiftPurchaseWidgetState extends State<GiftPurchaseWidget> {
                     child: Text(
                       'Insufficient balance. You need ${widget.gift.price - widget.userBalance} more credits.',
                       style: TextStyle(
-                        color: Colors.red[700],
+                        color: context.errorColor.withValues(alpha: 0.7),
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -362,7 +371,7 @@ class _GiftPurchaseWidgetState extends State<GiftPurchaseWidget> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text('Cancel'),
+              child: Text('Cancel'),
             ),
           ),
           const SizedBox(width: 16),
@@ -374,7 +383,7 @@ class _GiftPurchaseWidgetState extends State<GiftPurchaseWidget> {
                   : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: PulseColors.primary,
-                foregroundColor: Colors.white,
+                foregroundColor: context.onSurfaceColor,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -391,7 +400,7 @@ class _GiftPurchaseWidgetState extends State<GiftPurchaseWidget> {
                     )
                   : Text(
                       canAfford ? 'Send Gift' : 'Insufficient Credits',
-                      style: const TextStyle(fontWeight: FontWeight.w600),
+                      style: TextStyle(fontWeight: FontWeight.w600),
                     ),
             ),
           ),

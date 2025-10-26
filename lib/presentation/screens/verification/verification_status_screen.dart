@@ -6,6 +6,7 @@ import '../../../core/utils/logger.dart';
 import '../../../data/repositories/verification_repository.dart';
 import '../../../data/models/verification_status.dart';
 import '../../widgets/common/pulse_toast.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Verification status screen showing pending/approved/rejected states
 /// Displays verification requests and their current status
@@ -101,25 +102,25 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.surfaceColor,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.surfaceColor,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: Icon(Icons.arrow_back, color: context.onSurfaceColor),
           onPressed: () => context.go('/settings'),
         ),
-        title: const Text(
+        title: Text(
           'Verification Status',
           style: TextStyle(
-            color: AppColors.textPrimary,
+            color: context.onSurfaceColor,
             fontSize: 20,
             fontWeight: FontWeight.w600,
           ),
         ),
       ),
       body: _isLoading
-          ? const Center(
+          ? Center(
               child: CircularProgressIndicator(color: AppColors.primary),
             )
           : RefreshIndicator(
@@ -137,10 +138,10 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
                       _buildStatusCard(),
                     const SizedBox(height: 32),
                     if (_requests.isNotEmpty) ...[
-                      const Text(
+                      Text(
                         'Verification History',
                         style: TextStyle(
-                          color: AppColors.textPrimary,
+                          color: context.onSurfaceColor,
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),
@@ -200,13 +201,13 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
                 color: Colors.white.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.verified, size: 48, color: Colors.white),
+              child: Icon(Icons.verified, size: 48, color: Colors.white),
             ),
             const SizedBox(height: 24),
-            const Text(
+            Text(
               'You\'re Verified!',
               style: TextStyle(
-                color: Colors.white,
+                color: context.onSurfaceColor,
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
               ),
@@ -215,8 +216,8 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
             Text(
               'Your account verified $methodsText',
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: context.onSurfaceColor,
                 fontSize: 16,
                 height: 1.5,
               ),
@@ -247,7 +248,7 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
       child: Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: context.surfaceColor,
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
             color: AppColors.warning.withValues(alpha: 0.3),
@@ -263,27 +264,27 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
                 color: AppColors.warning.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.schedule,
                 size: 48,
                 color: AppColors.warning,
               ),
             ),
             const SizedBox(height: 24),
-            const Text(
+            Text(
               'Verification Pending',
               style: TextStyle(
-                color: AppColors.textPrimary,
+                color: context.onSurfaceColor,
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'We\'re reviewing your submission',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: AppColors.textSecondary,
+                color: context.onSurfaceVariantColor,
               fontSize: 16,
               height: 1.5,
             ),
@@ -297,17 +298,17 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
             ),
             child: Row(
               children: [
-                const Icon(
+                  Icon(
                   Icons.info_outline,
                   color: AppColors.warning,
                   size: 24,
                 ),
                 const SizedBox(width: 12),
-                const Expanded(
+                  Expanded(
                   child: Text(
                     'Usually takes 24-48 hours',
                     style: TextStyle(
-                      color: AppColors.textSecondary,
+                        color: context.onSurfaceVariantColor,
                       fontSize: 14,
                     ),
                   ),
@@ -329,10 +330,10 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
       child: Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: context.surfaceColor,
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: AppColors.error.withValues(alpha: 0.3),
+            color: context.errorColor.withValues(alpha: 0.3),
             width: 2,
           ),
         ),
@@ -342,16 +343,16 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: AppColors.error.withValues(alpha: 0.1),
+                color: context.errorColor.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.cancel, size: 48, color: AppColors.error),
+              child: Icon(Icons.cancel, size: 48, color: context.errorColor),
             ),
             const SizedBox(height: 24),
-            const Text(
+            Text(
               'Verification Declined',
               style: TextStyle(
-                color: AppColors.textPrimary,
+                color: context.onSurfaceColor,
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
             ),
@@ -361,8 +362,8 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
             rejectedRequest.rejectionReason ??
                 'Unable to verify with provided information',
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
+              style: TextStyle(
+                color: context.onSurfaceVariantColor,
               fontSize: 16,
               height: 1.5,
             ),
@@ -373,14 +374,14 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
             height: 56,
             child: ElevatedButton.icon(
               onPressed: _retryVerification,
-              icon: const Icon(Icons.refresh),
-              label: const Text(
+                icon: Icon(Icons.refresh),
+                label: Text(
                 'Try Again',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
+                  foregroundColor: context.onSurfaceColor,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -390,7 +391,7 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
           const SizedBox(height: 12),
           TextButton(
             onPressed: _contactSupport,
-            child: const Text(
+              child: Text(
               'Contact Support',
               style: TextStyle(
                 color: AppColors.primary,
@@ -411,9 +412,9 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
       child: Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: context.surfaceColor,
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: AppColors.border, width: 2),
+          border: Border.all(color: context.outlineColor, width: 2),
         ),
         child: Column(
           children: [
@@ -424,27 +425,27 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
                 color: AppColors.primary.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.verified_user,
                 size: 48,
                 color: AppColors.primary,
               ),
             ),
             const SizedBox(height: 24),
-            const Text(
+            Text(
               'Not Verified Yet',
               style: TextStyle(
-                color: AppColors.textPrimary,
+                color: context.onSurfaceColor,
                 fontSize: 24,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
+            Text(
               'Verify your email or WhatsApp to build trust with other users',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: AppColors.textSecondary,
+                color: context.onSurfaceVariantColor,
               fontSize: 16,
               height: 1.5,
             ),
@@ -459,7 +460,7 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Row(
+                  Row(
                     children: [
                       Icon(
                         Icons.info_outline,
@@ -471,7 +472,7 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
                         child: Text(
                           'Choose one verification method:',
                           style: TextStyle(
-                            color: AppColors.textPrimary,
+                            color: context.onSurfaceColor,
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                           ),
@@ -483,7 +484,7 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
                   Text(
                     '• Email: Verify via confirmation link',
                     style: TextStyle(
-                      color: AppColors.textSecondary,
+                      color: context.onSurfaceVariantColor,
                       fontSize: 13,
                       height: 1.4,
                     ),
@@ -492,7 +493,7 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
                   Text(
                     '• WhatsApp: Verify via SMS code',
                     style: TextStyle(
-                      color: AppColors.textSecondary,
+                      color: context.onSurfaceVariantColor,
                       fontSize: 13,
                       height: 1.4,
                     ),
@@ -506,14 +507,14 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
             height: 56,
             child: ElevatedButton.icon(
               onPressed: _startVerification,
-                icon: const Icon(Icons.verified_user),
-              label: const Text(
+                icon: Icon(Icons.verified_user),
+                label: Text(
                   'Get Verified',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
+                  foregroundColor: context.onSurfaceColor,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -531,9 +532,9 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.surfaceColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border, width: 1),
+        border: Border.all(color: context.outlineColor, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -548,8 +549,8 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
                   children: [
                     Text(
                       _getRequestTypeLabel(request.type),
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
+                      style: TextStyle(
+                        color: context.onSurfaceColor,
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
@@ -571,12 +572,16 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
           const SizedBox(height: 12),
           Row(
             children: [
-              Icon(Icons.access_time, size: 16, color: AppColors.textSecondary),
+              Icon(
+                Icons.access_time,
+                size: 16,
+                color: context.onSurfaceVariantColor,
+              ),
               const SizedBox(width: 8),
               Text(
                 'Submitted ${_formatDateTime(request.submittedAt)}',
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
+                style: TextStyle(
+                  color: context.onSurfaceVariantColor,
                   fontSize: 14,
                 ),
               ),
@@ -589,13 +594,13 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
                 Icon(
                   Icons.check_circle_outline,
                   size: 16,
-                  color: AppColors.textSecondary,
+                  color: context.onSurfaceVariantColor,
                 ),
                 const SizedBox(width: 8),
                 Text(
                   'Reviewed ${_formatDateTime(request.reviewedAt!)}',
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
+                  style: TextStyle(
+                    color: context.onSurfaceVariantColor,
                     fontSize: 14,
                   ),
                 ),
@@ -618,7 +623,7 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
         break;
       case 'rejected':
         icon = Icons.cancel;
-        color = AppColors.error;
+        color = context.errorColor;
         break;
       case 'under_review':
         icon = Icons.hourglass_empty;
@@ -670,7 +675,7 @@ class _VerificationStatusScreenState extends State<VerificationStatusScreen> {
       case 'approved':
         return AppColors.success;
       case 'rejected':
-        return AppColors.error;
+        return context.errorColor;
       case 'under_review':
       case 'pending':
       default:

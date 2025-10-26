@@ -31,7 +31,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
         backgroundColor: AppColors.background,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text('Payment History', style: AppTextStyles.headlineSmall),
@@ -181,7 +181,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
               ),
               child: Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.error_outline,
                     size: 16,
                     color: AppColors.error,

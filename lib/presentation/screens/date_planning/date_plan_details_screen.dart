@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 import '../../navigation/app_router.dart';
 import '../../theme/pulse_colors.dart';
 import '../../blocs/date_planning/date_planning_bloc.dart';
@@ -112,8 +113,8 @@ class _DatePlanDetailsScreenState extends State<DatePlanDetailsScreen> {
             if (scheduledDate != null)
               Card(
                 child: ListTile(
-                  leading: const Icon(Icons.schedule),
-                  title: const Text('Date & Time'),
+                  leading: Icon(Icons.schedule),
+                  title: Text('Date & Time'),
                   subtitle: Text(
                     '${_formatDate(scheduledDate)} at ${_formatTime(scheduledDate)}',
                   ),
@@ -125,11 +126,11 @@ class _DatePlanDetailsScreenState extends State<DatePlanDetailsScreen> {
             if (plan['location'] != null && plan['location'].isNotEmpty)
               Card(
                 child: ListTile(
-                  leading: const Icon(Icons.location_on),
-                  title: const Text('Location'),
+                  leading: Icon(Icons.location_on),
+                  title: Text('Location'),
                   subtitle: Text(plan['location']),
                   trailing: IconButton(
-                    icon: const Icon(Icons.map),
+                    icon: Icon(Icons.map),
                     onPressed: () => _openLocation(plan['location']),
                   ),
                 ),
@@ -140,8 +141,8 @@ class _DatePlanDetailsScreenState extends State<DatePlanDetailsScreen> {
             if (plan['budget'] != null && plan['budget'].isNotEmpty)
               Card(
                 child: ListTile(
-                  leading: const Icon(Icons.attach_money),
-                  title: const Text('Budget'),
+                  leading: Icon(Icons.attach_money),
+                  title: Text('Budget'),
                   subtitle: Text(plan['budget']),
                 ),
               ),
@@ -166,7 +167,7 @@ class _DatePlanDetailsScreenState extends State<DatePlanDetailsScreen> {
                           padding: const EdgeInsets.symmetric(vertical: 4),
                           child: Row(
                             children: [
-                              const Icon(Icons.check_circle_outline, size: 16),
+                              Icon(Icons.check_circle_outline, size: 16),
                               const SizedBox(width: 8),
                               Expanded(child: Text(activity)),
                             ],
@@ -185,11 +186,11 @@ class _DatePlanDetailsScreenState extends State<DatePlanDetailsScreen> {
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: _sendInvitation,
-                    icon: const Icon(Icons.send),
-                    label: const Text('Send Invitation'),
+                    icon:  Icon(Icons.send),
+                    label: Text('Send Invitation'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: PulseColors.primary,
-                      foregroundColor: Colors.white,
+                      foregroundColor: context.onSurfaceColor,
                     ),
                   ),
                 ),
@@ -197,8 +198,8 @@ class _DatePlanDetailsScreenState extends State<DatePlanDetailsScreen> {
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: _editPlan,
-                    icon: const Icon(Icons.edit),
-                    label: const Text('Edit Plan'),
+                    icon: Icon(Icons.edit),
+                    label: Text('Edit Plan'),
                   ),
                 ),
               ],
@@ -254,14 +255,14 @@ class _DatePlanDetailsScreenState extends State<DatePlanDetailsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Date Plan'),
-        content: const Text(
+        title: Text('Delete Date Plan'),
+        content: Text(
           'Are you sure you want to delete this date plan? This action cannot be undone.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           TextButton(
             onPressed: () {
@@ -274,8 +275,8 @@ class _DatePlanDetailsScreenState extends State<DatePlanDetailsScreen> {
               Navigator.pop(context); // Close dialog
               context.pop(); // Return to previous screen
             },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
+            style: TextButton.styleFrom(foregroundColor: context.errorColor),
+            child: Text('Delete'),
           ),
         ],
       ),
@@ -287,7 +288,7 @@ class _DatePlanDetailsScreenState extends State<DatePlanDetailsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Send Invitation'),
+        title: Text('Send Invitation'),
         content: const Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -308,14 +309,14 @@ class _DatePlanDetailsScreenState extends State<DatePlanDetailsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
               PulseToast.success(context, message: 'Invitation sent!');
             },
-            child: const Text('Send'),
+            child: Text('Send'),
           ),
         ],
       ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../data/models/virtual_gift.dart';
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Widget for displaying gift transaction history
 class GiftHistoryWidget extends StatefulWidget {
@@ -79,7 +80,9 @@ class _GiftHistoryWidgetState extends State<GiftHistoryWidget> {
                   'Your sent and received gifts',
                   style: Theme.of(
                     context,
-                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+                  ).textTheme.bodyMedium?.copyWith(
+                    color: context.onSurfaceVariantColor,
+                  ),
                 ),
               ],
             ),
@@ -87,9 +90,9 @@ class _GiftHistoryWidgetState extends State<GiftHistoryWidget> {
           if (widget.onRefresh != null)
             IconButton(
               onPressed: widget.onRefresh,
-              icon: const Icon(Icons.refresh),
+              icon: Icon(Icons.refresh),
               style: IconButton.styleFrom(
-                backgroundColor: Colors.white,
+                backgroundColor: context.surfaceColor,
                 foregroundColor: PulseColors.primary,
               ),
             ),
@@ -119,7 +122,9 @@ class _GiftHistoryWidgetState extends State<GiftHistoryWidget> {
               avatar: Icon(
                 filter['icon'] as IconData,
                 size: 18,
-                color: isSelected ? PulseColors.primary : Colors.grey[600],
+                color: isSelected
+                    ? PulseColors.primary
+                    : context.onSurfaceVariantColor,
               ),
               label: Text(filter['label'] as String),
               selected: isSelected,
@@ -132,7 +137,9 @@ class _GiftHistoryWidgetState extends State<GiftHistoryWidget> {
               selectedColor: PulseColors.primary.withValues(alpha: 0.2),
               checkmarkColor: PulseColors.primary,
               labelStyle: TextStyle(
-                color: isSelected ? PulseColors.primary : Colors.grey[700],
+                color: isSelected
+                    ? PulseColors.primary
+                    : context.onSurfaceVariantColor,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),
             ),
@@ -256,7 +263,9 @@ class _GiftHistoryWidgetState extends State<GiftHistoryWidget> {
                         : 'From ${transaction.senderName ?? 'Unknown'}',
                     style: Theme.of(
                       context,
-                    ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+                    ).textTheme.bodyMedium?.copyWith(
+                      color: context.onSurfaceVariantColor,
+                    ),
                   ),
                   if (transaction.message != null) ...[
                     const SizedBox(height: 8),
@@ -265,13 +274,15 @@ class _GiftHistoryWidgetState extends State<GiftHistoryWidget> {
                       decoration: BoxDecoration(
                         color: Colors.grey[50],
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.grey[200]!),
+                        border: Border.all(
+                          color: context.outlineColor.withValues(alpha: 0.15)!,
+                        ),
                       ),
                       child: Text(
                         '"${transaction.message}"',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           fontStyle: FontStyle.italic,
-                          color: Colors.grey[700],
+                          color: context.onSurfaceVariantColor,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -285,7 +296,9 @@ class _GiftHistoryWidgetState extends State<GiftHistoryWidget> {
                       Text(
                         _formatDate(transaction.sentAt),
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.grey[500],
+                          color: context.onSurfaceVariantColor.withValues(
+                            alpha: 0.6,
+                          ),
                         ),
                       ),
                       Row(
@@ -328,20 +341,28 @@ class _GiftHistoryWidgetState extends State<GiftHistoryWidget> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.card_giftcard_outlined, size: 64, color: Colors.grey[400]),
+          Icon(
+            Icons.card_giftcard_outlined,
+            size: 64,
+            color: context.outlineColor.withValues(alpha: 0.2),
+          ),
           const SizedBox(height: 16),
           Text(
             'No gift history',
             style: Theme.of(
               context,
-            ).textTheme.titleLarge?.copyWith(color: Colors.grey[600]),
+            ).textTheme.titleLarge?.copyWith(
+              color: context.onSurfaceVariantColor,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             'Start sending gifts to see them here',
             style: Theme.of(
               context,
-            ).textTheme.bodyMedium?.copyWith(color: Colors.grey[500]),
+            ).textTheme.bodyMedium?.copyWith(
+              color: context.onSurfaceVariantColor.withValues(alpha: 0.6),
+            ),
           ),
         ],
       ),
@@ -349,7 +370,7 @@ class _GiftHistoryWidgetState extends State<GiftHistoryWidget> {
   }
 
   Widget _buildLoadingState() {
-    return const Center(child: CircularProgressIndicator());
+    return Center(child: CircularProgressIndicator());
   }
 
   Widget _buildErrorState() {
@@ -357,27 +378,35 @@ class _GiftHistoryWidgetState extends State<GiftHistoryWidget> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.error_outline, size: 64, color: Colors.red[400]),
+          Icon(
+            Icons.error_outline,
+            size: 64,
+            color: context.errorColor.withValues(alpha: 0.2),
+          ),
           const SizedBox(height: 16),
           Text(
             'Error loading gift history',
             style: Theme.of(
               context,
-            ).textTheme.titleLarge?.copyWith(color: Colors.red[600]),
+            ).textTheme.titleLarge?.copyWith(
+              color: context.errorColor.withValues(alpha: 0.8),
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             widget.error ?? 'Unknown error occurred',
             style: Theme.of(
               context,
-            ).textTheme.bodyMedium?.copyWith(color: Colors.grey[500]),
+            ).textTheme.bodyMedium?.copyWith(
+              color: context.onSurfaceVariantColor.withValues(alpha: 0.6),
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
           if (widget.onRefresh != null)
             ElevatedButton(
               onPressed: widget.onRefresh,
-              child: const Text('Retry'),
+              child: Text('Retry'),
             ),
         ],
       ),

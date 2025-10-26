@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 class MessageSearchBar extends StatefulWidget {
   final Function(String query) onSearch;
@@ -54,7 +55,7 @@ class _MessageSearchBarState extends State<MessageSearchBar> {
         children: [
           // Back button
           IconButton(
-            icon: const Icon(Icons.arrow_back),
+            icon: Icon(Icons.arrow_back),
             onPressed: () {
               _controller.clear();
               widget.onClose();
@@ -71,7 +72,7 @@ class _MessageSearchBarState extends State<MessageSearchBar> {
                 border: InputBorder.none,
                 suffixIcon: _controller.text.isNotEmpty
                     ? IconButton(
-                        icon: const Icon(Icons.clear),
+                        icon: Icon(Icons.clear),
                         onPressed: () {
                           _controller.clear();
                           widget.onSearch('');
@@ -93,7 +94,10 @@ class _MessageSearchBarState extends State<MessageSearchBar> {
               padding: const EdgeInsets.only(right: 8),
               child: Text(
                 '${widget.resultCount} results',
-                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: context.onSurfaceVariantColor,
+                ),
               ),
             ),
         ],

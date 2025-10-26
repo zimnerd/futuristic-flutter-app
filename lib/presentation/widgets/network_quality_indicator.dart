@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 import '../../core/services/network_quality_service.dart';
 
 /// Network quality indicator widget
@@ -70,7 +71,7 @@ class _NetworkQualityIndicatorState extends State<NetworkQualityIndicator>
       case NetworkQuality.poor:
         return Colors.red;
       case NetworkQuality.unknown:
-        return Colors.grey;
+        return context.outlineColor;
     }
   }
 
@@ -162,7 +163,7 @@ class CompactNetworkQualityIndicator extends StatelessWidget {
     this.onTap,
   });
 
-  Color _getQualityColor(NetworkQuality quality) {
+  Color _getQualityColor(BuildContext context, NetworkQuality quality) {
     switch (quality) {
       case NetworkQuality.excellent:
         return Colors.green;
@@ -173,7 +174,7 @@ class CompactNetworkQualityIndicator extends StatelessWidget {
       case NetworkQuality.poor:
         return Colors.red;
       case NetworkQuality.unknown:
-        return Colors.grey;
+        return context.outlineColor;
     }
   }
 
@@ -202,14 +203,14 @@ class CompactNetworkQualityIndicator extends StatelessWidget {
         if (!snapshot.hasData) {
           return Icon(
             Icons.signal_cellular_connected_no_internet_0_bar,
-            color: Colors.grey,
+            color: context.outlineColor,
             size: size,
           );
         }
 
         final metrics = snapshot.data!;
         final quality = metrics.overallQuality;
-        final color = _getQualityColor(quality);
+        final color = _getQualityColor(context, quality);
         final icon = _getQualityIcon(quality);
 
         return GestureDetector(
@@ -231,7 +232,7 @@ class NetworkQualityBadge extends StatelessWidget {
 
   const NetworkQualityBadge({super.key, this.showScore = false, this.onTap});
 
-  Color _getQualityColor(NetworkQuality quality) {
+  Color _getQualityColor(BuildContext context, NetworkQuality quality) {
     switch (quality) {
       case NetworkQuality.excellent:
         return Colors.green;
@@ -242,7 +243,7 @@ class NetworkQualityBadge extends StatelessWidget {
       case NetworkQuality.poor:
         return Colors.red;
       case NetworkQuality.unknown:
-        return Colors.grey;
+        return context.outlineColor;
     }
   }
 
@@ -269,15 +270,15 @@ class NetworkQualityBadge extends StatelessWidget {
       stream: networkQualityService.metricsStream,
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
-          return const Chip(
-            label: Text('Unknown'),
-            backgroundColor: Colors.grey,
+          return Chip(
+            label: const Text('Unknown'),
+            backgroundColor: context.outlineColor,
           );
         }
 
         final metrics = snapshot.data!;
         final quality = metrics.overallQuality;
-        final color = _getQualityColor(quality);
+        final color = _getQualityColor(context, quality);
         final text = _getQualityText(quality);
 
         return GestureDetector(
@@ -285,8 +286,8 @@ class NetworkQualityBadge extends StatelessWidget {
           child: Chip(
             label: Text(
               showScore ? '$text (${metrics.qualityScore})' : text,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: context.onSurfaceColor,
                 fontWeight: FontWeight.bold,
               ),
             ),

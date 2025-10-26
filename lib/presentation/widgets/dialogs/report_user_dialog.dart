@@ -4,6 +4,7 @@ import '../../theme/pulse_colors.dart' hide PulseTextStyles;
 import '../../theme/pulse_theme.dart';
 import '../../blocs/block_report/block_report_bloc.dart';
 import '../common/pulse_toast.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Dialog for reporting a user
 class ReportUserDialog extends StatefulWidget {
@@ -212,7 +213,7 @@ class _ReportUserDialogState extends State<ReportUserDialog> {
           onPressed: _isReporting ? null : _handleReport,
           style: ElevatedButton.styleFrom(
             backgroundColor: PulseColors.error,
-            foregroundColor: Colors.white,
+            foregroundColor: context.onSurfaceColor,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),
@@ -229,7 +230,7 @@ class _ReportUserDialogState extends State<ReportUserDialog> {
               : Text(
                   'Submit Report',
                   style: PulseTextStyles.labelLarge.copyWith(
-                    color: Colors.white,
+                    color: context.onSurfaceColor,
                     fontWeight: FontWeight.bold,
                   ),
                 ),

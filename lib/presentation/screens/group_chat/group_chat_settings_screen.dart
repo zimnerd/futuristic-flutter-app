@@ -10,6 +10,7 @@ import '../../../features/group_chat/data/group_chat_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 import '../../widgets/common/pulse_toast.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 final sl = GetIt.instance;
 
@@ -135,7 +136,7 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      title: const Text('Group Settings'),
+      title: Text('Group Settings'),
       backgroundColor: Colors.transparent,
       elevation: 0,
       actions: [
@@ -238,7 +239,7 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: context.onSurfaceColor,
                         ),
                       ),
                     ],
@@ -254,10 +255,10 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
                           backgroundColor: PulseColors.primary.withValues(
                             alpha: 0.2,
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.group,
                             size: 50,
-                            color: Colors.white,
+                            color: context.onSurfaceColor,
                           ),
                         ),
                         if (_isAdmin())
@@ -276,10 +277,10 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
                                     width: 2,
                                   ),
                                 ),
-                                child: const Icon(
+                                child: Icon(
                                   Icons.camera_alt,
                                   size: 16,
-                                  color: Colors.white,
+                                  color: context.onSurfaceColor,
                                 ),
                               ),
                             ),
@@ -319,7 +320,7 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
                         color: Colors.white.withValues(alpha: 0.7),
                       ),
                     ),
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(color: Colors.white),
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
                         return 'Group name is required';
@@ -360,7 +361,7 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
                         color: Colors.white.withValues(alpha: 0.7),
                       ),
                     ),
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(color: Colors.white),
                   ),
                   const SizedBox(height: 16),
 
@@ -405,8 +406,8 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
         const SizedBox(height: 4),
         Text(
           value,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: context.onSurfaceColor,
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
@@ -557,7 +558,7 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
         child: participant.profilePhoto == null
             ? Text(
                 participant.firstName[0].toUpperCase(),
-                style: const TextStyle(color: Colors.white, fontSize: 20),
+                style: TextStyle(color: context.onSurfaceColor, fontSize: 20),
               )
             : null,
       ),
@@ -566,8 +567,8 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
           Expanded(
             child: Text(
               participant.fullName,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: context.onSurfaceColor,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -579,7 +580,7 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
                 color: PulseColors.primary.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Text(
+              child: Text(
                 'You',
                 style: TextStyle(
                   color: PulseColors.primary,
@@ -598,7 +599,7 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
             Container(
               width: 8,
               height: 8,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: Colors.green,
                 shape: BoxShape.circle,
               ),
@@ -631,11 +632,17 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
                     contentPadding: EdgeInsets.zero,
                   ),
                 ),
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'remove',
                   child: ListTile(
-                    leading: Icon(Icons.person_remove, color: Colors.red),
-                    title: Text('Remove', style: TextStyle(color: Colors.red)),
+                    leading: Icon(
+                      Icons.person_remove,
+                      color: context.errorColor,
+                    ),
+                    title: Text(
+                      'Remove',
+                      style: TextStyle(color: context.errorColor),
+                    ),
                     contentPadding: EdgeInsets.zero,
                   ),
                 ),
@@ -693,7 +700,7 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
       children: [
         ListTile(
           leading: Icon(Icons.block, color: Colors.orange.shade300),
-          title: const Text(
+          title: Text(
             'Blocked Users',
             style: TextStyle(color: Colors.white),
           ),
@@ -712,8 +719,11 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
         ),
         const Divider(height: 1, color: Colors.white12),
         ListTile(
-          leading: Icon(Icons.flag, color: Colors.red.shade300),
-          title: const Text(
+          leading: Icon(
+            Icons.flag,
+            color: context.errorColor.withValues(alpha: 0.8),
+          ),
+          title: Text(
             'Reported Content',
             style: TextStyle(color: Colors.white),
           ),
@@ -742,8 +752,8 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
       title: 'Danger Zone',
       children: [
         ListTile(
-          leading: const Icon(Icons.exit_to_app, color: Colors.orange),
-          title: const Text(
+          leading: Icon(Icons.exit_to_app, color: Colors.orange),
+          title: Text(
             'Leave Group',
             style: TextStyle(color: Colors.orange),
           ),
@@ -763,10 +773,10 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
         if (_isOwner()) ...[
           const Divider(height: 1, color: Colors.white12),
           ListTile(
-            leading: const Icon(Icons.delete_forever, color: Colors.red),
-            title: const Text(
+            leading: Icon(Icons.delete_forever, color: context.errorColor),
+            title: Text(
               'Delete Group',
-              style: TextStyle(color: Colors.red),
+              style: TextStyle(color: context.errorColor),
             ),
             subtitle: Text(
               'Permanently delete this group and all messages',
@@ -828,10 +838,10 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
                     Expanded(
                       child: Text(
                         title,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: context.onSurfaceColor,
                         ),
                       ),
                     ),
@@ -858,8 +868,8 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       title: Text(
         title,
-        style: const TextStyle(
-          color: Colors.white,
+        style: TextStyle(
+          color: context.onSurfaceColor,
           fontWeight: FontWeight.w500,
         ),
       ),
@@ -893,8 +903,8 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
           child: Text(
             title,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: context.onSurfaceColor,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -936,22 +946,22 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1A1F3A),
-        title: const Text(
+        title: Text(
           'Unsaved Changes',
           style: TextStyle(color: Colors.white),
         ),
-        content: const Text(
+        content: Text(
           'You have unsaved changes. Do you want to discard them?',
           style: TextStyle(color: Colors.white70),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Discard', style: TextStyle(color: Colors.red)),
+            child: Text('Discard', style: TextStyle(color: context.errorColor)),
           ),
         ],
       ),
@@ -1026,8 +1036,8 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
         child: Wrap(
           children: [
             ListTile(
-              leading: const Icon(Icons.photo_library, color: Colors.white),
-              title: const Text(
+              leading: Icon(Icons.photo_library, color: Colors.white),
+              title: Text(
                 'Choose from gallery',
                 style: TextStyle(color: Colors.white),
               ),
@@ -1037,8 +1047,8 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.camera_alt, color: Colors.white),
-              title: const Text(
+              leading: Icon(Icons.camera_alt, color: Colors.white),
+              title: Text(
                 'Take photo',
                 style: TextStyle(color: Colors.white),
               ),
@@ -1048,10 +1058,10 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.delete, color: Colors.red),
-              title: const Text(
+              leading: Icon(Icons.delete, color: context.errorColor),
+              title: Text(
                 'Remove photo',
-                style: TextStyle(color: Colors.red),
+                style: TextStyle(color: context.errorColor),
               ),
               onTap: () {
                 Navigator.pop(context);
@@ -1098,7 +1108,7 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
         backgroundColor: const Color(0xFF1A1F3A),
         title: Text(
           'Change Role for ${participant.fullName}',
-          style: const TextStyle(color: Colors.white),
+          style: TextStyle(color: Colors.white),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -1123,9 +1133,9 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
   ) {
     final isSelected = participant.role == role;
     return ListTile(
-      title: Text(label, style: const TextStyle(color: Colors.white)),
+      title: Text(label, style: TextStyle(color: Colors.white)),
       trailing: isSelected
-          ? const Icon(Icons.check, color: Colors.green)
+          ? Icon(Icons.check, color: Colors.green)
           : null,
       onTap: () {
         Navigator.pop(context);
@@ -1165,25 +1175,25 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1A1F3A),
-        title: const Text(
+        title: Text(
           'Remove Participant',
           style: TextStyle(color: Colors.white),
         ),
         content: Text(
           'Are you sure you want to remove ${participant.fullName} from this group?',
-          style: const TextStyle(color: Colors.white70),
+          style: TextStyle(color: Colors.white70),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
               _removeParticipant(participant);
             },
-            child: const Text('Remove', style: TextStyle(color: Colors.red)),
+            child: Text('Remove', style: TextStyle(color: context.errorColor)),
           ),
         ],
       ),
@@ -1237,22 +1247,22 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1A1F3A),
-        title: const Text('Leave Group', style: TextStyle(color: Colors.white)),
-        content: const Text(
+        title: Text('Leave Group', style: TextStyle(color: Colors.white)),
+        content: Text(
           'Are you sure you want to leave this group? You can rejoin later if it\'s public.',
           style: TextStyle(color: Colors.white70),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
               _leaveGroup();
             },
-            child: const Text('Leave', style: TextStyle(color: Colors.orange)),
+            child: Text('Leave', style: TextStyle(color: Colors.orange)),
           ),
         ],
       ),
@@ -1284,22 +1294,25 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1A1F3A),
-        title: const Text('Delete Group', style: TextStyle(color: Colors.red)),
-        content: const Text(
+        title: Text(
+          'Delete Group',
+          style: TextStyle(color: context.errorColor),
+        ),
+        content: Text(
           'Are you sure you want to permanently delete this group? This action cannot be undone.',
           style: TextStyle(color: Colors.white70),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
               _deleteGroup();
             },
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            child: Text('Delete', style: TextStyle(color: context.errorColor)),
           ),
         ],
       ),
@@ -1408,22 +1421,25 @@ class _GroupChatSettingsScreenState extends State<GroupChatSettingsScreen> {
         context: context,
         builder: (context) => AlertDialog(
           backgroundColor: const Color(0xFF1A1F3A),
-          title: const Text(
+          title: Text(
             'Remove Photo',
             style: TextStyle(color: Colors.white),
           ),
-          content: const Text(
+          content: Text(
             'Are you sure you want to remove the group photo?',
             style: TextStyle(color: Colors.white70),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel'),
+              child: Text('Cancel'),
             ),
             TextButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('Remove', style: TextStyle(color: Colors.red)),
+              child: Text(
+                'Remove',
+                style: TextStyle(color: context.errorColor),
+              ),
             ),
           ],
         ),
@@ -1533,16 +1549,16 @@ class _AddParticipantsDialogState extends State<AddParticipantsDialog> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   'Add Participants',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: context.onSurfaceColor,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white),
+                  icon: Icon(Icons.close, color: Colors.white),
                   onPressed: () => Navigator.pop(context),
                 ),
               ],
@@ -1550,11 +1566,11 @@ class _AddParticipantsDialogState extends State<AddParticipantsDialog> {
             const SizedBox(height: 16),
             TextField(
               controller: _searchController,
-              style: const TextStyle(color: Colors.white),
+              style: TextStyle(color: Colors.white),
               decoration: InputDecoration(
                 hintText: 'Search users...',
-                hintStyle: const TextStyle(color: Colors.white54),
-                prefixIcon: const Icon(Icons.search, color: Colors.white54),
+                hintStyle: TextStyle(color: Colors.white54),
+                prefixIcon: Icon(Icons.search, color: Colors.white54),
                 filled: true,
                 fillColor: Colors.white.withValues(alpha: 0.1),
                 border: OutlineInputBorder(
@@ -1585,9 +1601,9 @@ class _AddParticipantsDialogState extends State<AddParticipantsDialog> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: _isSearching
-                    ? const Center(child: CircularProgressIndicator())
+                    ? Center(child: CircularProgressIndicator())
                     : _searchResults.isEmpty
-                    ? const Center(
+                    ? Center(
                         child: Text(
                           'Search for users to add',
                           style: TextStyle(color: Colors.white54),
@@ -1616,7 +1632,9 @@ class _AddParticipantsDialogState extends State<AddParticipantsDialog> {
                             title: Text(
                               '${user['firstName']} ${user['lastName']}',
                               style: TextStyle(
-                                color: isExisting ? Colors.grey : Colors.white,
+                                color: isExisting
+                                    ? context.outlineColor
+                                    : Colors.white,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -1631,7 +1649,7 @@ class _AddParticipantsDialogState extends State<AddParticipantsDialog> {
                               ),
                             ),
                             trailing: isExisting
-                                ? const Icon(Icons.check, color: Colors.grey)
+                                ? Icon(Icons.check, color: context.outlineColor)
                                 : Checkbox(
                                     value: isSelected,
                                     onChanged: (value) {
@@ -1660,7 +1678,9 @@ class _AddParticipantsDialogState extends State<AddParticipantsDialog> {
                     : _addParticipants,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.purple,
-                  disabledBackgroundColor: Colors.grey.withValues(alpha: 0.3),
+                  disabledBackgroundColor: context.outlineColor.withValues(
+                    alpha: 0.3,
+                  ),
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -1679,7 +1699,7 @@ class _AddParticipantsDialogState extends State<AddParticipantsDialog> {
                       )
                     : Text(
                         'Add ${_selectedUserIds.length} ${_selectedUserIds.length == 1 ? 'Person' : 'People'}',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
@@ -1792,13 +1812,13 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
       backgroundColor: const Color(0xFF0A0E21),
       appBar: AppBar(
         backgroundColor: const Color(0xFF1A1F3A),
-        title: const Text('Blocked Users'),
+        title: Text('Blocked Users'),
         elevation: 0,
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : _blockedUsers == null || _blockedUsers!.isEmpty
-          ? const Center(
+          ? Center(
               child: Text(
                 'No blocked users',
                 style: TextStyle(color: Colors.white54, fontSize: 16),
@@ -1825,8 +1845,8 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                       child: user.photoUrl == null
                           ? Text(
                               user.fullName[0].toUpperCase(),
-                              style: const TextStyle(
-                                color: Colors.white,
+                              style: TextStyle(
+                                color: context.onSurfaceColor,
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -1835,8 +1855,8 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                     ),
                     title: Text(
                       user.fullName,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: context.onSurfaceColor,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -1845,13 +1865,13 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                       children: [
                         Text(
                           '@${user.username}',
-                          style: const TextStyle(color: Colors.white70),
+                          style: TextStyle(color: Colors.white70),
                         ),
                         if (user.reason != null) ...[
                           const SizedBox(height: 4),
                           Text(
                             'Reason: ${user.reason}',
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Colors.white54,
                               fontSize: 12,
                             ),
@@ -1868,7 +1888,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                           vertical: 8,
                         ),
                       ),
-                      child: const Text('Unblock'),
+                      child: Text('Unblock'),
                     ),
                   ),
                 );
@@ -1948,13 +1968,13 @@ class _ReportedContentScreenState extends State<ReportedContentScreen> {
       backgroundColor: const Color(0xFF0A0E21),
       appBar: AppBar(
         backgroundColor: const Color(0xFF1A1F3A),
-        title: const Text('Reported Content'),
+        title: Text('Reported Content'),
         elevation: 0,
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : _reports == null || _reports!.isEmpty
-          ? const Center(
+          ? Center(
               child: Text(
                 'No reported content',
                 style: TextStyle(color: Colors.white54, fontSize: 16),
@@ -1988,8 +2008,8 @@ class _ReportedContentScreenState extends State<ReportedContentScreen> {
                               child: report.reporterPhotoUrl == null
                                   ? Text(
                                       report.reporterUsername[0].toUpperCase(),
-                                      style: const TextStyle(
-                                        color: Colors.white,
+                                      style: TextStyle(
+                                        color: context.onSurfaceColor,
                                       ),
                                     )
                                   : null,
@@ -2001,14 +2021,14 @@ class _ReportedContentScreenState extends State<ReportedContentScreen> {
                                 children: [
                                   Text(
                                     'Reported by @${report.reporterUsername}',
-                                    style: const TextStyle(
-                                      color: Colors.white,
+                                    style: TextStyle(
+                                      color: context.onSurfaceColor,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                   Text(
                                     _formatDate(report.reportedAt),
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       color: Colors.white54,
                                       fontSize: 12,
                                     ),
@@ -2027,8 +2047,8 @@ class _ReportedContentScreenState extends State<ReportedContentScreen> {
                               ),
                               child: Text(
                                 report.status.toUpperCase(),
-                                style: const TextStyle(
-                                  color: Colors.white,
+                                style: TextStyle(
+                                  color: context.onSurfaceColor,
                                   fontSize: 10,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -2040,10 +2060,10 @@ class _ReportedContentScreenState extends State<ReportedContentScreen> {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.red.withValues(alpha: 0.1),
+                            color: context.errorColor.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                              color: Colors.red.withValues(alpha: 0.3),
+                              color: context.errorColor.withValues(alpha: 0.3),
                             ),
                           ),
                           child: Column(
@@ -2051,8 +2071,8 @@ class _ReportedContentScreenState extends State<ReportedContentScreen> {
                             children: [
                               Text(
                                 'Reason: ${report.reason}',
-                                style: const TextStyle(
-                                  color: Colors.red,
+                                style: TextStyle(
+                                  color: context.errorColor,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -2060,7 +2080,7 @@ class _ReportedContentScreenState extends State<ReportedContentScreen> {
                                 const SizedBox(height: 4),
                                 Text(
                                   report.description!,
-                                  style: const TextStyle(color: Colors.white70),
+                                  style: TextStyle(color: Colors.white70),
                                 ),
                               ],
                             ],
@@ -2076,7 +2096,7 @@ class _ReportedContentScreenState extends State<ReportedContentScreen> {
                             ),
                             child: Text(
                               report.message!.content,
-                              style: const TextStyle(color: Colors.white70),
+                              style: TextStyle(color: Colors.white70),
                               maxLines: 3,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -2090,10 +2110,10 @@ class _ReportedContentScreenState extends State<ReportedContentScreen> {
                                 child: ElevatedButton.icon(
                                   onPressed: () =>
                                       _reviewReport(report, 'dismissed'),
-                                  icon: const Icon(Icons.close, size: 18),
-                                  label: const Text('Dismiss'),
+                                  icon: Icon(Icons.close, size: 18),
+                                  label: Text('Dismiss'),
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.grey,
+                                    backgroundColor: context.outlineColor,
                                   ),
                                 ),
                               ),
@@ -2102,8 +2122,8 @@ class _ReportedContentScreenState extends State<ReportedContentScreen> {
                                 child: ElevatedButton.icon(
                                   onPressed: () =>
                                       _reviewReport(report, 'action_taken'),
-                                  icon: const Icon(Icons.check, size: 18),
-                                  label: const Text('Take Action'),
+                                  icon: Icon(Icons.check, size: 18),
+                                  label: Text('Take Action'),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.red,
                                   ),
@@ -2128,11 +2148,11 @@ class _ReportedContentScreenState extends State<ReportedContentScreen> {
       case 'reviewed':
         return Colors.blue;
       case 'dismissed':
-        return Colors.grey;
+        return context.outlineColor;
       case 'action_taken':
         return Colors.green;
       default:
-        return Colors.grey;
+        return context.outlineColor;
     }
   }
 

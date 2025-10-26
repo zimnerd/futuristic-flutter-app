@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Lifestyle choices section for user profile
 /// Maps to User.drinkingHabit, User.smokingHabit, User.exerciseHabit fields (backend enums)
@@ -280,10 +281,10 @@ class ProfileLifestyleChoicesSection extends StatelessWidget {
     final subtitleColor = textColor.withValues(alpha: 0.7);
     final containerColor = isDark
         ? Colors.white.withValues(alpha: 0.05)
-        : Colors.grey.shade50; // Light grey for better contrast
+        : context.outlineColor.shade50; // Light grey for better contrast
     final borderColor = isDark
         ? Colors.white.withValues(alpha: 0.1)
-        : Colors.grey.withValues(alpha: 0.3);
+        : context.outlineColor.withValues(alpha: 0.3);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -356,10 +357,12 @@ class ProfileLifestyleChoicesSection extends StatelessWidget {
     final subtitleColor = textColor.withValues(alpha: 0.6);
     final containerColor = isDark
         ? Colors.white.withValues(alpha: 0.05)
-        : Colors.grey.shade50; // Light grey background for better contrast
+        : context
+              .outlineColor
+              .shade50; // Light grey background for better contrast
     final borderColor = isDark
         ? Colors.white.withValues(alpha: 0.1)
-        : Colors.grey.withValues(alpha: 0.3);
+        : context.outlineColor.withValues(alpha: 0.3);
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -380,7 +383,7 @@ class ProfileLifestyleChoicesSection extends StatelessWidget {
                   color: PulseColors.warning.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.favorite_border,
                   color: PulseColors.warning,
                   size: 20,
@@ -475,7 +478,7 @@ class ProfileLifestyleChoicesSection extends StatelessWidget {
             ),
             child: Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.info_outline,
                   size: 16,
                   color: PulseColors.warning,

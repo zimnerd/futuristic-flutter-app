@@ -8,6 +8,7 @@ import '../../theme/pulse_colors.dart';
 import '../../../domain/entities/user_profile.dart';
 import '../../blocs/profile/profile_bloc.dart';
 import '../common/robust_network_image.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 final _logger = Logger();
 
@@ -258,25 +259,28 @@ class _PhotoGridState extends State<PhotoGrid> {
       children: [
         Row(
           children: [
-            const Text(
+            Text(
               'Photos',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: Colors.black87,
+                color: context.textPrimary,
               ),
             ),
             const Spacer(),
             Text(
               '${_photos.length}/${widget.maxPhotos}',
-              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+              style: TextStyle(
+                fontSize: 14,
+                color: context.onSurfaceVariantColor,
+              ),
             ),
           ],
         ),
         const SizedBox(height: 8),
         Text(
           'Add ${widget.maxPhotos - _photos.length} more photos to increase your chances',
-          style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+          style: TextStyle(fontSize: 13, color: context.onSurfaceVariantColor),
         ),
         const SizedBox(height: 16),
 
@@ -357,7 +361,7 @@ class _PhotoGridState extends State<PhotoGrid> {
               child: Container(
                 width: double.infinity,
                 height: double.infinity,
-                color: Colors.grey[200],
+                color: context.outlineColor.withValues(alpha: 0.15),
                 child: Builder(
                   builder: (context) {
                     _logger.d(
@@ -390,10 +394,10 @@ class _PhotoGridState extends State<PhotoGrid> {
                     color: PulseColors.primary,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Text(
+                  child: Text(
                     'PRIMARY',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: context.onSurfaceColor,
                       fontSize: 10,
                       fontWeight: FontWeight.w600,
                     ),
@@ -411,7 +415,7 @@ class _PhotoGridState extends State<PhotoGrid> {
                     color: Colors.black.withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Center(
+                  child: Center(
                     child: CircularProgressIndicator(
                       valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                     ),
@@ -429,10 +433,10 @@ class _PhotoGridState extends State<PhotoGrid> {
                     color: Colors.green.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Center(
+                  child: Center(
                     child: Icon(
                       Icons.check_circle,
-                      color: Colors.white,
+                      color: context.onSurfaceColor,
                       size: 48,
                     ),
                   ),
@@ -474,9 +478,9 @@ class _PhotoGridState extends State<PhotoGrid> {
                     color: Colors.black.withValues(alpha: 0.6),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.info_outline,
-                    color: Colors.white,
+                    color: context.onSurfaceColor,
                     size: 16,
                   ),
                 ),
@@ -498,9 +502,9 @@ class _PhotoGridState extends State<PhotoGrid> {
                       color: Colors.black.withValues(alpha: 0.6),
                       borderRadius: BorderRadius.circular(6),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.drag_handle,
-                      color: Colors.white,
+                      color: context.onSurfaceColor,
                       size: 16,
                     ),
                   ),
@@ -537,7 +541,7 @@ class _PhotoGridState extends State<PhotoGrid> {
             child: Container(
               width: double.infinity,
               height: double.infinity,
-              color: Colors.grey[200],
+              color: context.outlineColor.withValues(alpha: 0.15),
               child: Opacity(
                 opacity: isUploading ? 0.4 : 1.0,
                 child: Image.file(
@@ -545,8 +549,13 @@ class _PhotoGridState extends State<PhotoGrid> {
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) {
                     return Container(
-                      color: Colors.grey[200],
-                      child: Icon(Icons.error_outline, color: Colors.grey[500]),
+                      color: context.outlineColor.withValues(alpha: 0.15),
+                      child: Icon(
+                        Icons.error_outline,
+                        color: context.onSurfaceVariantColor.withValues(
+                          alpha: 0.6,
+                        ),
+                      ),
                     );
                   },
                 ),
@@ -563,18 +572,18 @@ class _PhotoGridState extends State<PhotoGrid> {
                   color: Colors.black.withValues(alpha: 0.7),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Column(
+                child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    CircularProgressIndicator(
+                    const CircularProgressIndicator(
                       valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                       strokeWidth: 3,
                     ),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     Text(
                       'Uploading...',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: context.onSurfaceColor,
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),
@@ -593,9 +602,9 @@ class _PhotoGridState extends State<PhotoGrid> {
                   color: PulseColors.success.withValues(alpha: 0.9),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.check_circle,
-                  color: Colors.white,
+                  color: context.onSurfaceColor,
                   size: 48,
                 ),
               ),
@@ -613,16 +622,16 @@ class _PhotoGridState extends State<PhotoGrid> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.error_outline,
                       color: PulseColors.error,
                       size: 32,
                     ),
                     const SizedBox(height: 8),
-                    const Text(
+                    Text(
                       'Upload Failed',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: context.onSurfaceColor,
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
@@ -639,11 +648,11 @@ class _PhotoGridState extends State<PhotoGrid> {
                                 widget.onRetryUpload!(progress.tempId);
                               }
                             },
-                            icon: const Icon(Icons.refresh, size: 16),
-                            label: const Text('Retry'),
+                            icon: Icon(Icons.refresh, size: 16),
+                            label: Text('Retry'),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: PulseColors.primary,
-                              foregroundColor: Colors.white,
+                              foregroundColor: context.onSurfaceColor,
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 12,
                                 vertical: 6,
@@ -664,8 +673,8 @@ class _PhotoGridState extends State<PhotoGrid> {
                                 );
                               }
                             },
-                            icon: const Icon(Icons.close, size: 20),
-                            color: Colors.white,
+                            icon: Icon(Icons.close, size: 20),
+                            color: context.onSurfaceColor,
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(),
                             visualDensity: VisualDensity.compact,
@@ -692,7 +701,9 @@ class _PhotoGridState extends State<PhotoGrid> {
           color: Colors.grey[100],
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: _isUploading ? PulseColors.primary : Colors.grey[300]!,
+            color: _isUploading
+                ? PulseColors.primary
+                : context.outlineColor.withValues(alpha: 0.3),
             width: 2,
             style: BorderStyle.solid,
           ),
@@ -712,7 +723,7 @@ class _PhotoGridState extends State<PhotoGrid> {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
-                      color: Colors.grey[700],
+                      color: context.onSurfaceVariantColor,
                     ),
                   ),
                 ],
@@ -738,7 +749,7 @@ class _PhotoGridState extends State<PhotoGrid> {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
-                      color: Colors.grey[700],
+                      color: context.onSurfaceVariantColor,
                     ),
                   ),
                 ],
@@ -768,7 +779,7 @@ class _PhotoGridState extends State<PhotoGrid> {
             ),
           ],
         ),
-        child: Icon(icon, color: Colors.white, size: 16),
+        child: Icon(icon, color: context.onSurfaceColor, size: 16),
       ),
     );
   }
@@ -777,12 +788,12 @@ class _PhotoGridState extends State<PhotoGrid> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Maximum Photos Reached'),
+        title: Text('Maximum Photos Reached'),
         content: Text('You can only have up to ${widget.maxPhotos} photos.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
+            child: Text('OK'),
           ),
         ],
       ),
@@ -793,12 +804,12 @@ class _PhotoGridState extends State<PhotoGrid> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Error'),
+        title: Text('Error'),
         content: Text(message),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
+            child: Text('OK'),
           ),
         ],
       ),
@@ -922,7 +933,7 @@ class _PhotoViewerScreenState extends State<_PhotoViewerScreen> {
                       fit: BoxFit.contain,
                       loadingBuilder: (context, child, loadingProgress) {
                         if (loadingProgress == null) return child;
-                        return const Center(child: CircularProgressIndicator());
+                        return Center(child: CircularProgressIndicator());
                       },
                     ),
                   ),
@@ -956,9 +967,9 @@ class _PhotoViewerScreenState extends State<_PhotoViewerScreen> {
                   child: Row(
                     children: [
                       IconButton(
-                        icon: const Icon(
+                        icon: Icon(
                           Icons.close,
-                          color: Colors.white,
+                          color: context.onSurfaceColor,
                           size: 28,
                         ),
                         onPressed: () => Navigator.pop(context),
@@ -975,8 +986,8 @@ class _PhotoViewerScreenState extends State<_PhotoViewerScreen> {
                         ),
                         child: Text(
                           '${_currentIndex + 1} / ${widget.photos.length}',
-                          style: const TextStyle(
-                            color: Colors.white,
+                          style: TextStyle(
+                            color: context.onSurfaceColor,
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                           ),
@@ -1019,17 +1030,17 @@ class _PhotoViewerScreenState extends State<_PhotoViewerScreen> {
                     children: [
                       Row(
                         children: [
-                          const Text(
+                          Text(
                             'Add Description',
                             style: TextStyle(
-                              color: Colors.white,
+                              color: context.onSurfaceColor,
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
                           const Spacer(),
                           IconButton(
-                            icon: const Icon(Icons.close, color: Colors.white),
+                            icon: Icon(Icons.close, color: Colors.white),
                             onPressed: () =>
                                 setState(() => _showDescription = false),
                           ),
@@ -1038,7 +1049,7 @@ class _PhotoViewerScreenState extends State<_PhotoViewerScreen> {
                       const SizedBox(height: 8),
                       TextField(
                         controller: _descriptionController,
-                        style: const TextStyle(color: Colors.white),
+                        style: TextStyle(color: Colors.white),
                         maxLines: 3,
                         decoration: InputDecoration(
                           hintText: 'Add a caption...',
@@ -1104,8 +1115,8 @@ class _PhotoDetailsSheetState extends State<_PhotoDetailsSheet> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
+      decoration: BoxDecoration(
+        color: context.onSurfaceColor,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: SafeArea(
@@ -1125,14 +1136,14 @@ class _PhotoDetailsSheetState extends State<_PhotoDetailsSheet> {
                 children: [
                   Text(
                     'Photo ${widget.index + 1} Details',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const Spacer(),
                   IconButton(
-                    icon: const Icon(Icons.close),
+                    icon: Icon(Icons.close),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ],
@@ -1168,7 +1179,7 @@ class _PhotoDetailsSheetState extends State<_PhotoDetailsSheet> {
               const SizedBox(height: 20),
 
               // Description editor
-              const Text(
+              Text(
                 'Description',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
@@ -1200,12 +1211,12 @@ class _PhotoDetailsSheetState extends State<_PhotoDetailsSheet> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Done',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: context.onSurfaceColor,
                     ),
                   ),
                 ),
@@ -1229,12 +1240,12 @@ class _PhotoDetailsSheetState extends State<_PhotoDetailsSheet> {
               '$label:',
               style: TextStyle(
                 fontWeight: FontWeight.w600,
-                color: Colors.grey[700],
+                color: context.onSurfaceVariantColor,
               ),
             ),
           ),
           Expanded(
-            child: Text(value, style: const TextStyle(color: Colors.black87)),
+            child: Text(value, style: TextStyle(color: Colors.black87)),
           ),
         ],
       ),

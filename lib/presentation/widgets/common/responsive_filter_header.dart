@@ -5,6 +5,7 @@ import '../../blocs/filters/filter_bloc.dart';
 import '../../blocs/filters/filter_event.dart';
 import '../../blocs/filters/filter_state.dart';
 import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 import '../discovery/advanced_filters.dart';
 
 /// Responsive filter header component that adapts to screen size and context
@@ -78,7 +79,9 @@ class _ResponsiveFilterHeaderState extends State<ResponsiveFilterHeader> {
                 Icons.tune,
                 color:
                     widget.foregroundColor ??
-                    (hasActiveFilters ? PulseColors.primary : Colors.grey),
+                    (hasActiveFilters
+                        ? PulseColors.primary
+                        : context.outlineColor),
                 size: 24,
               ),
             ),
@@ -140,12 +143,12 @@ class _ResponsiveFilterHeaderState extends State<ResponsiveFilterHeader> {
           // More filters button
           TextButton.icon(
             onPressed: () => _showFiltersModal(context),
-            icon: const Icon(Icons.tune, size: 18),
-            label: const Text('Filters'),
+            icon: Icon(Icons.tune, size: 18),
+            label: Text('Filters'),
             style: TextButton.styleFrom(
               foregroundColor: hasActiveFilters
                   ? PulseColors.primary
-                  : Colors.grey[600],
+                  : context.onSurfaceVariantColor,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             ),
           ),
@@ -161,14 +164,16 @@ class _ResponsiveFilterHeaderState extends State<ResponsiveFilterHeader> {
         style: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w500,
-          color: isActive ? PulseColors.primary : Colors.grey[600],
+          color: isActive ? PulseColors.primary : context.onSurfaceVariantColor,
         ),
       ),
       selected: isActive,
       selectedColor: PulseColors.primary.withValues(alpha: 0.1),
       backgroundColor: Colors.grey[100],
       side: BorderSide(
-        color: isActive ? PulseColors.primary : Colors.grey[300]!,
+        color: isActive
+            ? PulseColors.primary
+            : context.outlineColor.withValues(alpha: 0.3),
         width: 1,
       ),
       onSelected: (selected) {
@@ -183,7 +188,9 @@ class _ResponsiveFilterHeaderState extends State<ResponsiveFilterHeader> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.grey[50],
-        border: Border(top: BorderSide(color: Colors.grey[200]!)),
+        border: Border(
+          top: BorderSide(color: context.outlineColor.withValues(alpha: 0.15)!),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -204,7 +211,7 @@ class _ResponsiveFilterHeaderState extends State<ResponsiveFilterHeader> {
                   onPressed: () {
                     context.read<FilterBLoC>().add(ResetFilterPreferences());
                   },
-                  child: const Text('Reset'),
+                  child: Text('Reset'),
                 ),
               ),
               const SizedBox(width: 12),
@@ -216,7 +223,7 @@ class _ResponsiveFilterHeaderState extends State<ResponsiveFilterHeader> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: PulseColors.primary,
                   ),
-                  child: const Text('Apply'),
+                  child: Text('Apply'),
                 ),
               ),
             ],
@@ -235,7 +242,7 @@ class _ResponsiveFilterHeaderState extends State<ResponsiveFilterHeader> {
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: Colors.grey[700],
+            color: context.onSurfaceVariantColor,
           ),
         ),
         const SizedBox(height: 8),
@@ -261,7 +268,7 @@ class _ResponsiveFilterHeaderState extends State<ResponsiveFilterHeader> {
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: Colors.grey[700],
+            color: context.onSurfaceVariantColor,
           ),
         ),
         const SizedBox(height: 8),

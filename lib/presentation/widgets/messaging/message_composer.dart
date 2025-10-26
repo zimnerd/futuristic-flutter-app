@@ -12,6 +12,7 @@ import '../../theme/pulse_colors.dart';
 import '../../../core/services/service_locator.dart';
 import '../../../core/services/permission_service.dart';
 import '../common/pulse_toast.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Enhanced message composer with voice, attachments, and rich features
 class MessageComposer extends StatefulWidget {
@@ -321,8 +322,10 @@ class _MessageComposerState extends State<MessageComposer>
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: const Border(top: BorderSide(color: Colors.grey, width: 0.2)),
+        color: context.onSurfaceColor,
+        border: Border(
+          top: BorderSide(color: context.outlineColor, width: 0.2),
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -360,8 +363,8 @@ class _MessageComposerState extends State<MessageComposer>
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: PulseColors.primary.withValues(alpha: 0.05),
-        border: const Border(
-          bottom: BorderSide(color: Colors.grey, width: 0.2),
+        border: Border(
+          bottom: BorderSide(color: context.outlineColor, width: 0.2),
         ),
       ),
       child: Row(
@@ -369,7 +372,7 @@ class _MessageComposerState extends State<MessageComposer>
           Container(
             width: 3,
             height: 40,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: PulseColors.primary,
               borderRadius: BorderRadius.all(Radius.circular(2)),
             ),
@@ -381,7 +384,7 @@ class _MessageComposerState extends State<MessageComposer>
               children: [
                 Text(
                   'Replying to message',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: PulseColors.primary,
@@ -390,7 +393,10 @@ class _MessageComposerState extends State<MessageComposer>
                 const SizedBox(height: 2),
                 Text(
                   message.content,
-                  style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: context.onSurfaceVariantColor,
+                  ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -398,9 +404,9 @@ class _MessageComposerState extends State<MessageComposer>
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.close, size: 20),
+            icon: Icon(Icons.close, size: 20),
             onPressed: widget.onCancelReply,
-            color: Colors.grey[600],
+            color: context.onSurfaceVariantColor,
           ),
         ],
       ),
@@ -422,7 +428,7 @@ class _MessageComposerState extends State<MessageComposer>
                   _showAttachments ? Icons.close : Icons.add,
                   color: _showAttachments
                       ? PulseColors.primary
-                      : Colors.grey[600],
+                      : context.onSurfaceVariantColor,
                 ),
                 onPressed: _toggleAttachments,
               ),
@@ -463,12 +469,12 @@ class _MessageComposerState extends State<MessageComposer>
               ? ScaleTransition(
                   scale: _sendButtonScale,
                   child: Container(
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       color: PulseColors.primary,
                       shape: BoxShape.circle,
                     ),
                     child: IconButton(
-                      icon: const Icon(Icons.send, color: Colors.white),
+                      icon: Icon(Icons.send, color: Colors.white),
                       onPressed: _sendMessage,
                     ),
                   ),
@@ -480,10 +486,13 @@ class _MessageComposerState extends State<MessageComposer>
                   child: Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.grey[200],
+                      color: context.outlineColor.withValues(alpha: 0.15),
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(Icons.mic, color: Colors.grey[600]),
+                    child: Icon(
+                      Icons.mic,
+                      color: context.onSurfaceVariantColor,
+                    ),
                   ),
                 ),
         ),
@@ -495,9 +504,9 @@ class _MessageComposerState extends State<MessageComposer>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.red.withValues(alpha: 0.1),
+        color: context.errorColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(25),
-        border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+        border: Border.all(color: context.errorColor.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -505,8 +514,8 @@ class _MessageComposerState extends State<MessageComposer>
           Container(
             width: 12,
             height: 12,
-            decoration: const BoxDecoration(
-              color: Colors.red,
+            decoration: BoxDecoration(
+              color: context.errorColor,
               shape: BoxShape.circle,
             ),
           ),
@@ -515,10 +524,10 @@ class _MessageComposerState extends State<MessageComposer>
           // Recording duration
           Text(
             _formatDuration(_recordingDuration),
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
-              color: Colors.red,
+              color: context.errorColor,
             ),
           ),
 
@@ -530,10 +539,10 @@ class _MessageComposerState extends State<MessageComposer>
             child: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.red.withValues(alpha: 0.2),
+                color: context.errorColor.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.close, color: Colors.red, size: 20),
+              child: Icon(Icons.close, color: context.errorColor, size: 20),
             ),
           ),
 
@@ -544,11 +553,11 @@ class _MessageComposerState extends State<MessageComposer>
             onTap: _stopVoiceRecording,
             child: Container(
               padding: const EdgeInsets.all(8),
-              decoration: const BoxDecoration(
-                color: Colors.red,
+              decoration: BoxDecoration(
+                color: context.errorColor,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.send, color: Colors.white, size: 20),
+              child: Icon(Icons.send, color: context.onSurfaceColor, size: 20),
             ),
           ),
         ],
@@ -561,7 +570,9 @@ class _MessageComposerState extends State<MessageComposer>
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.grey[50],
-        border: const Border(top: BorderSide(color: Colors.grey, width: 0.2)),
+        border: Border(
+          top: BorderSide(color: context.outlineColor, width: 0.2),
+        ),
       ),
       child: Column(
         children: [
@@ -589,7 +600,7 @@ class _MessageComposerState extends State<MessageComposer>
               _buildAttachmentOption(
                 icon: Icons.videocam,
                 label: 'Video',
-                color: Colors.red,
+                color: context.errorColor,
                 onTap: () {
                   _handleVideoAttachment();
                   _hideAttachments();
@@ -672,7 +683,13 @@ class _MessageComposerState extends State<MessageComposer>
             child: Icon(icon, color: color, size: 24),
           ),
           const SizedBox(height: 8),
-          Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[700])),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: context.onSurfaceVariantColor,
+            ),
+          ),
         ],
       ),
     );
@@ -800,18 +817,18 @@ class _MessageComposerState extends State<MessageComposer>
       final result = await showDialog<String>(
         context: context,
         builder: (dialogContext) => AlertDialog(
-          title: const Text('Select Video'),
+          title: Text('Select Video'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
-                leading: const Icon(Icons.videocam),
-                title: const Text('Record Video'),
+                leading: Icon(Icons.videocam),
+                title: Text('Record Video'),
                 onTap: () => Navigator.pop(dialogContext, 'record'),
               ),
               ListTile(
-                leading: const Icon(Icons.video_library),
-                title: const Text('Choose from Gallery'),
+                leading: Icon(Icons.video_library),
+                title: Text('Choose from Gallery'),
                 onTap: () => Navigator.pop(dialogContext, 'gallery'),
               ),
             ],
@@ -904,15 +921,15 @@ class _MessageComposerState extends State<MessageComposer>
       await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Document Sharing'),
-          content: const Text(
+          title: Text('Document Sharing'),
+          content: Text(
             'Document sharing will be available in a future update. '
             'You can currently share images, videos, audio, and location.',
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('OK'),
+              child: Text('OK'),
             ),
           ],
         ),
@@ -931,15 +948,15 @@ class _MessageComposerState extends State<MessageComposer>
       await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Audio Files'),
-          content: const Text(
+          title: Text('Audio Files'),
+          content: Text(
             'For audio messages, use the voice recorder button. '
             'Audio file selection will be available in a future update.',
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('OK'),
+              child: Text('OK'),
             ),
           ],
         ),
@@ -958,15 +975,15 @@ class _MessageComposerState extends State<MessageComposer>
       await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Contact Sharing'),
-          content: const Text(
+          title: Text('Contact Sharing'),
+          content: Text(
             'Contact sharing will be available in a future update. '
             'You can currently share images, videos, audio, and location.',
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('OK'),
+              child: Text('OK'),
             ),
           ],
         ),
@@ -985,15 +1002,15 @@ class _MessageComposerState extends State<MessageComposer>
       await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('GIF Sharing'),
-          content: const Text(
+          title: Text('GIF Sharing'),
+          content: Text(
             'GIF sharing will be available in a future update. '
             'You can currently share images, videos, audio, and location.',
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('OK'),
+              child: Text('OK'),
             ),
           ],
         ),

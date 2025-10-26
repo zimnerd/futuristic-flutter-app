@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'common/robust_network_image.dart';
 import 'verification/verification_badge.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
+
 
 /// Enhanced swipeable card for dating profiles with gesture recognition
 /// Supports like, pass, and super like actions with smooth animations
@@ -333,8 +335,8 @@ class _SwipeableProfileCardState extends State<SwipeableProfileCard>
                 children: [
                   Text(
                     '${widget.profile.name}, ${widget.profile.age}',
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: context.onSurfaceColor,
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
                     ),
@@ -350,14 +352,14 @@ class _SwipeableProfileCardState extends State<SwipeableProfileCard>
               if (widget.profile.bio.isNotEmpty)
                 Text(
                   widget.profile.bio,
-                  style: const TextStyle(color: Colors.white, fontSize: 16),
+                  style: TextStyle(color: context.onSurfaceColor, fontSize: 16),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
               const SizedBox(height: 8),
               Text(
                 widget.profile.distance,
-                style: const TextStyle(color: Colors.white70, fontSize: 14),
+                style: TextStyle(color: Colors.white70, fontSize: 14),
               ),
             ],
           ),

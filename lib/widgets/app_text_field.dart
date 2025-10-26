@@ -407,10 +407,10 @@ class AppSearchField extends StatelessWidget {
       onChanged: onChanged,
       onSubmitted: onSubmitted,
       enabled: enabled,
-      prefixIcon: const Icon(Icons.search, color: AppColors.textSecondary),
+      prefixIcon: Icon(Icons.search, color: AppColors.textSecondary),
       suffixIcon: (controller?.text.isNotEmpty ?? false)
           ? IconButton(
-              icon: const Icon(Icons.clear, color: AppColors.textSecondary),
+              icon: Icon(Icons.clear, color: AppColors.textSecondary),
               onPressed: () {
                 controller?.clear();
                 onClear?.call();
