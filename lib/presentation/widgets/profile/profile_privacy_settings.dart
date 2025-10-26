@@ -195,7 +195,7 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: Colors.black87,
+                color: context.onSurfaceColor,
               ),
             ),
           ),
@@ -242,13 +242,15 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: isWarning
-                  ? Colors.orange.withValues(alpha: 0.1)
+                  ? PulseColors.error.withValues(alpha: 0.1)
                   : context.outlineColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
               icon,
-              color: isWarning ? Colors.orange : context.onSurfaceVariantColor,
+              color: isWarning
+                  ? PulseColors.error
+                  : context.onSurfaceVariantColor,
               size: 20,
             ),
           ),
@@ -262,7 +264,7 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
-                    color: Colors.black87,
+                    color: context.onSurfaceColor,
                   ),
                 ),
                 if (subtitle != null) ...[

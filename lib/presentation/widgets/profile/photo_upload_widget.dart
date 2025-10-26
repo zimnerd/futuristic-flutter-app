@@ -131,19 +131,21 @@ class _PhotoUploadWidgetState extends State<PhotoUploadWidget> {
               onPressed: _isProcessing ? null : _uploadPhotos,
               style: ElevatedButton.styleFrom(
                 backgroundColor: PulseColors.primary,
-                foregroundColor: context.onSurfaceColor,
+                foregroundColor: context.surfaceColor,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
               child: _isProcessing
-                  ? const SizedBox(
+                  ? SizedBox(
                       height: 20,
                       width: 20,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          context.surfaceColor,
+                        ),
                       ),
                     )
                   : Text(
@@ -214,10 +216,10 @@ class _PhotoUploadWidgetState extends State<PhotoUploadWidget> {
               child: Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.6),
+                  color: context.onSurfaceColor.withValues(alpha: 0.7),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.close, size: 16, color: Colors.white),
+                child: Icon(Icons.close, size: 16, color: context.surfaceColor),
               ),
             ),
           ),
@@ -236,7 +238,7 @@ class _PhotoUploadWidgetState extends State<PhotoUploadWidget> {
                 child: Text(
                   'MAIN',
                   style: TextStyle(
-                    color: context.onSurfaceColor,
+                    color: context.surfaceColor,
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
                   ),
@@ -253,7 +255,7 @@ class _PhotoUploadWidgetState extends State<PhotoUploadWidget> {
       padding: const EdgeInsets.only(bottom: 4),
       child: Row(
         children: [
-          Icon(Icons.check_circle, size: 16, color: Colors.green[600]),
+          Icon(Icons.check_circle, size: 16, color: PulseColors.success),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
