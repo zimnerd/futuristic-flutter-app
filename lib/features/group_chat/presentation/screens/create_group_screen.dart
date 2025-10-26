@@ -4,6 +4,7 @@ import '../../../../presentation/blocs/group_chat/group_chat_bloc.dart';
 import '../../data/models.dart';
 import '../widgets/participant_picker_dialog.dart';
 import '../../../../presentation/widgets/common/pulse_toast.dart';
+import '../../../../core/theme/theme_extensions.dart';
 
 class CreateGroupScreen extends StatefulWidget {
   const CreateGroupScreen({super.key});
@@ -43,12 +44,12 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
         title: Text(
           'Create Group',
           style: TextStyle(
-            color: Color(0xFF202124), // PulseColors.onSurface
+            color: context.onSurfaceColor,
             fontWeight: FontWeight.w600,
           ),
         ),
-        iconTheme: const IconThemeData(
-          color: Color(0xFF202124), // PulseColors.onSurface
+        iconTheme: IconThemeData(
+          color: context.onSurfaceColor,
         ),
         actions: [
           TextButton(
@@ -56,7 +57,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
             child: Text(
               'Create',
               style: TextStyle(
-                color: Color(0xFF6E3BFF), // PulseColors.primary
+                color: context.primaryColor,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -110,8 +111,8 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                 hintText: 'Enter group name',
                 border: const OutlineInputBorder(),
                 prefixIcon:  Icon(Icons.group),
-                labelStyle: const TextStyle(
-                  color: Color(0xFF202124), // PulseColors.onSurface
+                labelStyle: TextStyle(
+                  color: context.onSurfaceColor,
                 ),
               ),
               validator: (value) {
@@ -133,8 +134,8 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                 hintText: 'What is this group about?',
                 border: const OutlineInputBorder(),
                 prefixIcon:  Icon(Icons.description),
-                labelStyle: const TextStyle(
-                  color: Color(0xFF202124), // PulseColors.onSurface
+                labelStyle: TextStyle(
+                  color: context.onSurfaceColor,
                 ),
               ),
               maxLines: 3,
@@ -168,9 +169,9 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                   labelStyle: TextStyle(
                     color: _selectedType == type
                         ? Colors.white
-                        : const Color(0xFF202124), // PulseColors.onSurface
+                        : context.onSurfaceColor,
                   ),
-                  selectedColor: const Color(0xFF6E3BFF), // PulseColors.primary
+                  selectedColor: context.primaryColor,
                   onSelected: (selected) {
                     if (selected) {
                       setState(() {
@@ -253,11 +254,11 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
               contentPadding: EdgeInsets.zero,
               title: Text(
                 'Require Approval',
-                style: TextStyle(color: Color(0xFF202124)),
+                style: TextStyle(color: context.onSurfaceColor),
               ),
               subtitle: Text(
                 'Host must approve new members',
-                style: TextStyle(color: Color(0xFF5F6368)),
+                style: TextStyle(color: context.textSecondary),
               ),
               value: _requireApproval,
               onChanged: (value) {
@@ -270,11 +271,11 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
               contentPadding: EdgeInsets.zero,
               title: Text(
                 'Allow Participant Invites',
-                style: TextStyle(color: Color(0xFF202124)),
+                style: TextStyle(color: context.onSurfaceColor),
               ),
               subtitle: Text(
                 'Members can invite others',
-                style: TextStyle(color: Color(0xFF5F6368)),
+                style: TextStyle(color: context.textSecondary),
               ),
               value: _allowParticipantInvite,
               onChanged: (value) {
@@ -287,11 +288,11 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
               contentPadding: EdgeInsets.zero,
               title: Text(
                 'Auto Accept Friends',
-                style: TextStyle(color: Color(0xFF202124)),
+                style: TextStyle(color: context.onSurfaceColor),
               ),
               subtitle: Text(
                 'Automatically accept your friends',
-                style: TextStyle(color: Color(0xFF5F6368)),
+                style: TextStyle(color: context.textSecondary),
               ),
               value: _autoAcceptFriends,
               onChanged: (value) {
@@ -304,11 +305,11 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
               contentPadding: EdgeInsets.zero,
               title: Text(
                 'Enable Voice Chat',
-                style: TextStyle(color: Color(0xFF202124)),
+                style: TextStyle(color: context.onSurfaceColor),
               ),
               subtitle: Text(
                 'Allow voice messages and calls',
-                style: TextStyle(color: Color(0xFF5F6368)),
+                style: TextStyle(color: context.textSecondary),
               ),
               value: _enableVoiceChat,
               onChanged: (value) {
@@ -321,11 +322,11 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
               contentPadding: EdgeInsets.zero,
               title: Text(
                 'Enable Video Chat',
-                style: TextStyle(color: Color(0xFF202124)),
+                style: TextStyle(color: context.onSurfaceColor),
               ),
               subtitle: Text(
                 'Allow video calls',
-                style: TextStyle(color: Color(0xFF5F6368)),
+                style: TextStyle(color: context.textSecondary),
               ),
               value: _enableVideoChat,
               onChanged: (value) {

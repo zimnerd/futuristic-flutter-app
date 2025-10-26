@@ -24,7 +24,7 @@ import '../../widgets/discovery/swipe_card.dart' as swipe_widget;
 import '../../widgets/common/empty_state_widget.dart';
 import '../../widgets/common/pulse_toast.dart';
 import '../../widgets/common/skeleton_loading.dart';
-import '../../widgets/common/sync_status_indicator.dart';
+
 import '../ai_companion/ai_companion_screen.dart';
 import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
@@ -652,7 +652,6 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
           left: 0,
           right: 0,
           child: Container(
-            height: 120,
             decoration: PulseDecorations.glassmorphism(
               color: context.surfaceColor,
             ),
@@ -660,55 +659,57 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: PulseSpacing.lg,
-                  vertical: PulseSpacing.sm,
+                  vertical: PulseSpacing.md,
                 ),
-                child: Row(
+                child: Column(
                   children: [
-                    // App title with modern typography
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Good ${_getTimeOfDay()}',
-                            style: PulseTypography.bodyMedium.copyWith(
-                              color: context.textSecondary,
-                            ),
+                    // Compact single-row header
+                    Row(
+                      children: [
+                        // Search icon + app title
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.search,
+                                color: context.textSecondary,
+                                size: 20,
+                              ),
+                              const SizedBox(width: PulseSpacing.sm),
+                              Text(
+                                'Discover',
+                                style: PulseTypography.h4.copyWith(
+                                  color: context.textPrimary,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
                           ),
-                          Text(
-                            'Ready to explore?',
-                            style: PulseTypography.h3.copyWith(
-                              color: context.textPrimary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                        ),
 
-                    // Sync status indicator
-                    const SyncStatusIndicator(),
-                    const SizedBox(width: PulseSpacing.sm),
+                        // Boost button (prominently featured)
+                        _buildBoostButton(),
+                        const SizedBox(width: PulseSpacing.sm),
 
-                    // Header action buttons
-                    _buildWhoLikedYouButton(),
-                    const SizedBox(width: PulseSpacing.sm),
-                    _buildHeaderButton(
-                      icon: PulseIcons.filters,
-                      color: PulseColors.primary,
-                      onTap: _showFiltersModal,
-                    ),
-                    const SizedBox(width: PulseSpacing.sm),
-                    _buildHeaderButton(
-                      icon: PulseIcons.ai,
-                      color: context.accentColor,
-                      onTap: _showAICompanionModal,
-                    ),
-                    const SizedBox(width: PulseSpacing.sm),
-                    _buildHeaderButton(
-                      icon: PulseIcons.notifications,
-                      color: context.outlineColor,
-                      onTap: _showNotificationsModal,
+                        // Notifications
+                        _buildHeaderButton(
+                          icon: PulseIcons.notifications,
+                          color: context.outlineColor,
+                          onTap: _showNotificationsModal,
+                        ),
+                        const SizedBox(width: PulseSpacing.sm),
+
+                        // Filters
+                        _buildHeaderButton(
+                          icon: PulseIcons.filters,
+                          color: PulseColors.primary,
+                          onTap: _showFiltersModal,
+                        ),
+                        const SizedBox(width: PulseSpacing.sm),
+
+                        // More options menu
+                        _buildMoreOptionsMenu(),
+                      ],
                     ),
                   ],
                 ),
@@ -720,104 +721,101 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
     );
   }
 
-  /// Build "Who Liked You" button with pulse animation and count badge
-  Widget _buildWhoLikedYouButton() {
-    // Mock count - in real app, this would come from a backend API or bloc state
-    const int likeCount = 12;
-
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 1.0, end: 1.1),
-      duration: const Duration(milliseconds: 800),
-      curve: Curves.easeInOut,
-      builder: (context, scale, child) {
-        return Transform.scale(
-          scale: likeCount > 0 ? scale : 1.0,
-          child: GestureDetector(
-            onTap: () {
-              HapticFeedback.mediumImpact();
-              context.push('/who-liked-you');
-            },
-            child: Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                gradient: likeCount > 0
-                    ? PulseGradients.primary
-                    : LinearGradient(
-                        colors: [
-                          context.borderColor.shade400.withValues(alpha: 0.1),
-                          context.borderColor.shade400.withValues(alpha: 0.1),
-                        ],
-                      ),
-                borderRadius: BorderRadius.circular(PulseBorderRadius.md),
-                border: Border.all(
-                  color: likeCount > 0
-                      ? PulseColors.primary.withValues(alpha: 0.3)
-                      : context.borderColor.shade400.withValues(alpha: 0.2),
-                  width: 1,
-                ),
-                boxShadow: likeCount > 0
-                    ? [
-                        BoxShadow(
-                          color: PulseColors.primary.withValues(alpha: 0.3),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ]
-                    : null,
-              ),
-              child: Stack(
-                children: [
-                  Center(
-                    child: Icon(
-                      Icons.favorite,
-                      color: likeCount > 0
-                          ? context.surfaceColor
-                          : context.borderColor.shade600,
-                      size: 20,
-                    ),
-                  ),
-                  if (likeCount > 0)
-                    Positioned(
-                      top: 6,
-                      right: 6,
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: PulseColors.success,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: context.surfaceColor,
-                            width: 1.5,
-                          ),
-                        ),
-                        constraints: const BoxConstraints(
-                          minWidth: 18,
-                          minHeight: 18,
-                        ),
-                        child: Center(
-                          child: Text(
-                            likeCount > 99 ? '99+' : '$likeCount',
-                            style: TextStyle(
-                              color: context.surfaceColor,
-                              fontSize: 9,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
+  /// Build prominent boost button for monetization
+  Widget _buildBoostButton() {
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.mediumImpact();
+        context.read<DiscoveryBloc>().add(const UseBoost());
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: PulseSpacing.md,
+          vertical: PulseSpacing.sm,
+        ),
+        decoration: BoxDecoration(
+          gradient: PulseGradients.primary,
+          borderRadius: BorderRadius.circular(PulseBorderRadius.md),
+          boxShadow: [
+            BoxShadow(
+              color: PulseColors.primary.withValues(alpha: 0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.rocket,
+              color: context.surfaceColor,
+              size: 16,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              'BOOST',
+              style: PulseTypography.labelSmall.copyWith(
+                color: context.surfaceColor,
+                fontWeight: FontWeight.w700,
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Build context menu for additional discovery options
+  Widget _buildMoreOptionsMenu() {
+    return PopupMenuButton<String>(
+      icon: Icon(Icons.more_vert, color: context.textPrimary, size: 20),
+      itemBuilder: (context) => [
+        PopupMenuItem(
+          value: 'rewind',
+          child: Row(
+            children: [
+              Icon(Icons.undo, color: PulseColors.primary, size: 18),
+              const SizedBox(width: PulseSpacing.sm),
+              const Text('Rewind'),
+            ],
           ),
-        );
-      },
-      onEnd: () {
-        // Repeat the pulse animation when it ends (for new likes)
-        if (likeCount > 0 && mounted) {
-          setState(() {});
-        }
+          onTap: () {
+            HapticFeedback.lightImpact();
+            context.read<DiscoveryBloc>().add(const UndoLastSwipe());
+          },
+        ),
+        PopupMenuItem(
+          value: 'ai',
+          child: Row(
+            children: [
+              Icon(Icons.auto_awesome, color: context.accentColor, size: 18),
+              const SizedBox(width: PulseSpacing.sm),
+              const Text('AI Assistant'),
+            ],
+          ),
+          onTap: () {
+            HapticFeedback.lightImpact();
+            _showAICompanionModal();
+          },
+        ),
+        PopupMenuItem(
+          value: 'liked',
+          child: Row(
+            children: [
+              Icon(Icons.favorite, color: PulseColors.error, size: 18),
+              const SizedBox(width: PulseSpacing.sm),
+              const Text('Who Liked You'),
+            ],
+          ),
+          onTap: () {
+            HapticFeedback.lightImpact();
+            context.push('/who-liked-you');
+          },
+        ),
+      ],
+      onSelected: (value) {
+        // Handled by onTap callbacks above
       },
     );
   }
@@ -1569,13 +1567,6 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
         ),
       ),
     );
-  }
-
-  String _getTimeOfDay() {
-    final hour = DateTime.now().hour;
-    if (hour < 12) return 'morning';
-    if (hour < 17) return 'afternoon';
-    return 'evening';
   }
 
   swipe_widget.SwipeDirection? _convertToWidgetSwipeDirection(

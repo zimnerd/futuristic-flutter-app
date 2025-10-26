@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/models/call_invitation.dart';
 import '../../../../core/services/call_invitation_service.dart';
 import '../../../../presentation/widgets/common/pulse_toast.dart';
+import '../../../../core/theme/theme_extensions.dart';
 
 /// Outgoing call screen shown when user initiates a call
 ///
@@ -174,8 +175,8 @@ class _OutgoingCallScreenState extends State<OutgoingCallScreen>
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            const Color(0xFF6E3BFF).withValues(alpha: 0.3), // Pulse primary
-            const Color(0xFF00C2FF).withValues(alpha: 0.2), // Pulse accent
+            context.primaryColor.withValues(alpha: 0.3),
+            context.accentColor.withValues(alpha: 0.2),
             Colors.black87,
           ],
           stops: const [0.0, 0.4, 1.0],
@@ -189,10 +190,10 @@ class _OutgoingCallScreenState extends State<OutgoingCallScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.1),
+        color: context.glassSurface,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.2),
+          color: context.glassBorder,
           width: 1,
         ),
         boxShadow: [
@@ -208,14 +209,14 @@ class _OutgoingCallScreenState extends State<OutgoingCallScreen>
         children: [
           Icon(
             isVideo ? Icons.videocam : Icons.phone,
-            color: Colors.white,
+            color: context.callOverlayText,
             size: 20,
           ),
           const SizedBox(width: 8),
           Text(
             widget.invitation.callTypeDisplay,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: context.callOverlayText,
               fontSize: 16,
               fontWeight: FontWeight.w600,
               letterSpacing: 0.5,
@@ -239,10 +240,10 @@ class _OutgoingCallScreenState extends State<OutgoingCallScreen>
           height: 140,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            border: Border.all(color: Colors.white, width: 4),
+            border: Border.all(color: context.callOverlayText, width: 4),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF6E3BFF).withValues(alpha: 0.5),
+                color: context.primaryColor.withValues(alpha: 0.5),
                 blurRadius: 30,
                 spreadRadius: 5,
               ),
@@ -278,9 +279,7 @@ class _OutgoingCallScreenState extends State<OutgoingCallScreen>
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: const Color(
-                  0xFF00C2FF,
-                ).withValues(alpha: 0.5 - value * 0.5),
+                color: context.accentColor.withValues(alpha: 0.5 - value * 0.5),
                 width: 2,
               ),
             ),
@@ -292,14 +291,14 @@ class _OutgoingCallScreenState extends State<OutgoingCallScreen>
 
   Widget _buildPhotoPlaceholder() {
     return Container(
-      color: const Color(0xFF6E3BFF),
+      color: context.primaryColor,
       child: Center(
         child: Text(
           widget.recipientName.isNotEmpty
               ? widget.recipientName[0].toUpperCase()
               : '?',
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: context.callOverlayText,
             fontSize: 48,
             fontWeight: FontWeight.bold,
           ),
@@ -311,8 +310,8 @@ class _OutgoingCallScreenState extends State<OutgoingCallScreen>
   Widget _buildRecipientName() {
     return Text(
       widget.recipientName,
-      style: const TextStyle(
-        color: Colors.white,
+      style: TextStyle(
+        color: context.callOverlayText,
         fontSize: 32,
         fontWeight: FontWeight.bold,
         letterSpacing: 0.5,
@@ -343,7 +342,7 @@ class _OutgoingCallScreenState extends State<OutgoingCallScreen>
                   height: 8,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.white.withValues(alpha: 0.3 + value * 0.7),
+                    color: context.callOverlayText.withValues(alpha: 0.3 + value * 0.7),
                   ),
                 ),
               );
@@ -357,7 +356,7 @@ class _OutgoingCallScreenState extends State<OutgoingCallScreen>
         Text(
           'Calling',
           style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.8),
+            color: context.callOverlayTextSecondary,
             fontSize: 18,
             fontWeight: FontWeight.w500,
           ),
@@ -376,17 +375,17 @@ class _OutgoingCallScreenState extends State<OutgoingCallScreen>
             width: 72,
             height: 72,
             decoration: BoxDecoration(
-              color: Colors.red,
+              color: context.callDecline,
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.red.withValues(alpha: 0.5),
+                  color: context.callDecline.withValues(alpha: 0.5),
                   blurRadius: 20,
                   spreadRadius: 2,
                 ),
               ],
             ),
-            child: Icon(Icons.call_end, color: Colors.white, size: 32),
+            child: Icon(Icons.call_end, color: context.callOverlayText, size: 32),
           ),
 
           const SizedBox(height: 12),
@@ -395,7 +394,7 @@ class _OutgoingCallScreenState extends State<OutgoingCallScreen>
           Text(
             'Cancel',
             style: TextStyle(
-              color: Colors.white,
+              color: context.callOverlayText,
               fontSize: 16,
               fontWeight: FontWeight.w600,
             ),
