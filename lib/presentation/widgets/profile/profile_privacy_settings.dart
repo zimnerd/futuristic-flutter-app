@@ -73,11 +73,11 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: context.onSurfaceColor,
+        color: context.surfaceColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: context.onSurfaceColor.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -107,19 +107,19 @@ class _ProfilePrivacySettingsState extends State<ProfilePrivacySettings> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Privacy Settings',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
-                          color: Colors.black87,
+                          color: context.onSurfaceColor,
                         ),
                       ),
                       Text(
                         'Control who can see your information',
                         style: TextStyle(
                           fontSize: 14,
-                          color: context.outlineColor,
+                          color: context.onSurfaceVariantColor,
                         ),
                       ),
                     ],

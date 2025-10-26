@@ -21,6 +21,8 @@ import '../../widgets/profile/profile_relationship_goals_section.dart';
 import '../../widgets/profile/profile_physical_attributes_section.dart';
 import '../../widgets/profile/profile_lifestyle_choices_section.dart';
 import '../../widgets/profile/profile_languages_section.dart';
+import '../../widgets/profile/profile_personality_traits_section.dart';
+import '../../widgets/profile/profile_prompts_section.dart';
 import '../../../domain/entities/user_profile.dart';
 import '../../../data/models/interest.dart';
 import '../../../core/services/error_handler.dart';
@@ -44,8 +46,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
   static const int _photosTab = 1;
   static const int _interestsTab = 2;
   static const int _lifestyleTab = 3;
-  static const int _privacyTab = 4;
-  static const int _totalTabs = 5;
+  static const int _personalityTab = 4;
+  static const int _privacyTab = 5;
+  static const int _totalTabs = 6;
 
   late TabController _tabController;
   final _formKey = GlobalKey<FormState>();
@@ -94,6 +97,8 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
   // New profile fields state
   String? _selectedLifestyle;
   List<String> _selectedRelationshipGoals = [];
+  List<String> _selectedPersonalityTraits = [];
+  Map<String, String> _promptAnswers = {};
   int? _selectedHeight; // No default - use real data or leave empty
   String? _selectedReligion;
   String? _selectedPolitics;
@@ -439,6 +444,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
       drugs: _selectedDrugs,
       children: _selectedChildren,
       languages: _selectedLanguages,
+      personalityTraits: _selectedPersonalityTraits,
+      promptQuestions: _promptAnswers.keys.toList(),
+      promptAnswers: _promptAnswers.values.toList(),
     );
   }
 
@@ -490,6 +498,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
       case _lifestyleTab:
         _saveLifestyleSection();
         break;
+      case _personalityTab:
+        _savePersonalitySection();
+        break;
       case _privacyTab:
         _savePrivacySection();
         break;
@@ -528,6 +539,12 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
     );
   }
 
+  void _savePersonalitySection() {
+    context.read<ProfileBloc>().add(
+      UpdateProfile(profile: _buildProfileFromFormData()),
+    );
+  }
+
   void _savePrivacySection() {
     context.read<ProfileBloc>().add(
       UpdatePrivacySettings(settings: _privacySettings),
@@ -549,14 +566,26 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
       return await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-              title: Text('Unsaved Changes'),
+              backgroundColor: context.surfaceColor,
+              surfaceTintColor: context.surfaceColor,
+              title: Text(
+                'Unsaved Changes',
+                style: TextStyle(
+                  color: context.onSurfaceColor,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
               content: Text(
                 'You have unsaved changes. Do you want to discard them?',
+                style: TextStyle(color: context.onSurfaceVariantColor),
               ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-                  child: Text('Cancel'),
+                  child: Text(
+                    'Cancel',
+                    style: TextStyle(color: context.onSurfaceColor),
+                  ),
             ),
             TextButton(
               onPressed: () => Navigator.pop(context, true),
@@ -584,22 +613,22 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
         }
       },
       child: KeyboardDismissibleScaffold(
-        backgroundColor: Colors.grey[50],
+        backgroundColor: context.surfaceColor,
         appBar: AppBar(
           backgroundColor: context.surfaceColor,
-        elevation: 0,
-        leading: IconButton(
-            icon: Icon(Icons.close, color: Colors.black87),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-          title: Text(
-          'Edit Profile',
-          style: TextStyle(
-            color: Colors.black87,
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
+          elevation: 0,
+          leading: IconButton(
+            icon: Icon(Icons.close, color: context.onSurfaceColor),
+            onPressed: () => Navigator.of(context).pop(),
           ),
-        ),
+          title: Text(
+            'Edit Profile',
+            style: TextStyle(
+              color: context.onSurfaceColor,
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         actions: [
           IconButton(
             icon: Icon(
@@ -627,10 +656,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-                color: context.onSurfaceColor,
+                color: context.surfaceColor,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
+                    color: context.onSurfaceColor.withValues(alpha: 0.1),
                   blurRadius: 4,
                   offset: const Offset(0, 2),
                 ),
@@ -677,7 +706,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
                     horizontal: 2,
                     vertical: 4,
                   ),
-                  labelColor: Colors.white,
+                    labelColor: context.surfaceColor,
                     unselectedLabelColor: context.onSurfaceVariantColor,
                   labelStyle: TextStyle(
                     fontSize: fontSize,
@@ -711,6 +740,11 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
                       text: 'Lifestyle',
                     ),
                     Tab(
+                        icon: Icon(Icons.favorite_outline, size: iconSize),
+                        iconMargin: const EdgeInsets.only(bottom: 2),
+                        text: 'Personality',
+                      ),
+                      Tab(
                       icon: Icon(Icons.lock_outline, size: iconSize),
                       iconMargin: const EdgeInsets.only(bottom: 2),
                       text: 'Privacy',
@@ -993,6 +1027,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
                     _buildRefreshablePage(_buildPhotosPage()),
                     _buildRefreshablePage(_buildInterestsPage()),
                     _buildRefreshablePage(_buildLifestylePage()),
+                      _buildRefreshablePage(_buildPersonalityPage()),
                     _buildRefreshablePage(_buildPrivacyPage()),
                   ],
                 ),
@@ -1000,7 +1035,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
 
               // Bottom navigation
               Container(
-                color: context.onSurfaceColor,
+                  color: context.surfaceColor,
                 padding: const EdgeInsets.all(16),
                 child: Row(
                   children: [
@@ -1114,11 +1149,18 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
                   builder: (context, child) {
                     return Theme(
                       data: Theme.of(context).copyWith(
-                        colorScheme: ColorScheme.light(
-                          primary: PulseColors.primary,
-                          onPrimary: Colors.white,
-                          onSurface: Colors.black,
-                        ),
+                        colorScheme:
+                            Theme.of(context).brightness == Brightness.dark
+                            ? ColorScheme.dark(
+                                primary: PulseColors.primary,
+                                surface: context.surfaceColor,
+                                onSurface: context.onSurfaceColor,
+                              )
+                            : ColorScheme.light(
+                                primary: PulseColors.primary,
+                                surface: context.surfaceColor,
+                                onSurface: context.onSurfaceColor,
+                              ),
                       ),
                       child: child!,
                     );
@@ -1136,7 +1178,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
                   vertical: 16,
                 ),
                 decoration: BoxDecoration(
-                  color: context.onSurfaceColor,
+                  color: context.surfaceColor,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: context.outlineColor.withValues(alpha: 0.3),
@@ -1164,7 +1206,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
                           style: TextStyle(
                             fontSize: 16,
                             color: _dateOfBirth != null
-                                ? Colors.black87
+                                ? context.onSurfaceColor
                                 : context.outlineColor.withValues(alpha: 0.2),
                           ),
                         ),
@@ -1295,7 +1337,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: context.onSurfaceColor,
             ),
           ),
           const SizedBox(height: 8),
@@ -1405,6 +1447,50 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
     );
   }
 
+  Widget _buildPersonalityPage() {
+    return DefaultTabController(
+      length: 2,
+      child: Column(
+        children: [
+          // Tab selector for Traits vs Prompts
+          Container(
+            color: context.surfaceColor,
+            child: TabBar(
+              labelColor: PulseColors.primary,
+              unselectedLabelColor: context.onSurfaceVariantColor,
+              indicatorColor: PulseColors.primary,
+              tabs: const [
+                Tab(text: 'Traits'),
+                Tab(text: 'Prompts'),
+              ],
+            ),
+          ),
+          // Tab content
+          Expanded(
+            child: TabBarView(
+              children: [
+                // Traits tab
+                ProfilePersonalityTraitsSection(
+                  initialTraits: _selectedPersonalityTraits,
+                  onTraitsChanged: (traits) {
+                    setState(() => _selectedPersonalityTraits = traits);
+                  },
+                ),
+                // Prompts tab
+                ProfilePromptsSection(
+                  initialPromptAnswers: _promptAnswers,
+                  onPromptsChanged: (answers) {
+                    setState(() => _promptAnswers = answers);
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildPrivacyPage() {
     return SingleChildScrollView(
       padding: EdgeInsets.only(
@@ -1433,8 +1519,6 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
     TextInputType? keyboardType,
     String? Function(String?)? validator,
   }) {
-    final textColor =
-        Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black87;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1443,7 +1527,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
-            color: textColor,
+            color: context.onSurfaceColor,
           ),
         ),
         const SizedBox(height: 8),
@@ -1504,17 +1588,21 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
-            color: Colors.black87,
+            color: context.onSurfaceColor,
           ),
         ),
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
           initialValue: value,
           onChanged: onChanged,
+          style: TextStyle(color: context.onSurfaceColor, fontSize: 16),
           decoration: InputDecoration(
             filled: true,
             fillColor: context.surfaceColor,
             hintText: value == null ? 'Select an option' : null,
+            hintStyle: TextStyle(
+              color: context.onSurfaceVariantColor.withValues(alpha: 0.6),
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
@@ -1537,7 +1625,13 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
             ),
           ),
           items: options.map((option) {
-            return DropdownMenuItem(value: option, child: Text(option));
+            return DropdownMenuItem(
+              value: option,
+              child: Text(
+                option,
+                style: TextStyle(color: context.onSurfaceColor),
+              ),
+            );
           }).toList(),
         ),
       ],
