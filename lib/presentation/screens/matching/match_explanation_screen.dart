@@ -175,35 +175,35 @@ class MatchExplanationScreen extends StatelessWidget {
       if (reasons['interestScore'] != null)
         _CompatibilityCategory(
           'Shared Interests',
-          reasons['interestScore'] as double,
+          (reasons['interestScore'] as num).toDouble(),
           Icons.favorite,
           Colors.red,
         ),
       if (reasons['locationScore'] != null)
         _CompatibilityCategory(
           'Location',
-          reasons['locationScore'] as double,
+          (reasons['locationScore'] as num).toDouble(),
           Icons.location_on,
           Colors.blue,
         ),
       if (reasons['lifestyleScore'] != null)
         _CompatibilityCategory(
           'Lifestyle',
-          reasons['lifestyleScore'] as double,
+          (reasons['lifestyleScore'] as num).toDouble(),
           Icons.wb_sunny,
           Colors.orange,
         ),
       if (reasons['activityScore'] != null)
         _CompatibilityCategory(
           'Activity Level',
-          reasons['activityScore'] as double,
+          (reasons['activityScore'] as num).toDouble(),
           Icons.directions_run,
           Colors.green,
         ),
       if (reasons['personalityScore'] != null)
         _CompatibilityCategory(
           'Personality',
-          reasons['personalityScore'] as double,
+          (reasons['personalityScore'] as num).toDouble(),
           Icons.psychology,
           Colors.purple,
         ),
@@ -329,8 +329,12 @@ class MatchExplanationScreen extends StatelessWidget {
     BuildContext context,
     Map<String, dynamic> reasons,
   ) {
-    final distance = reasons['distance'] as double?;
-    final locationScore = reasons['locationScore'] as double? ?? 0.0;
+    final distance = reasons['distance'] != null
+        ? (reasons['distance'] as num).toDouble()
+        : null;
+    final locationScore = reasons['locationScore'] != null
+        ? (reasons['locationScore'] as num).toDouble()
+        : 0.0;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -377,7 +381,9 @@ class MatchExplanationScreen extends StatelessWidget {
     BuildContext context,
     Map<String, dynamic> reasons,
   ) {
-    final lifestyleScore = reasons['lifestyleScore'] as double? ?? 0.0;
+    final lifestyleScore = reasons['lifestyleScore'] != null
+        ? (reasons['lifestyleScore'] as num).toDouble()
+        : 0.0;
     final lifestyleFactors = reasons['lifestyleFactors'] as List<dynamic>?;
 
     return Padding(
@@ -441,7 +447,9 @@ class MatchExplanationScreen extends StatelessWidget {
     BuildContext context,
     Map<String, dynamic> reasons,
   ) {
-    final activityScore = reasons['activityScore'] as double? ?? 0.0;
+    final activityScore = reasons['activityScore'] != null
+        ? (reasons['activityScore'] as num).toDouble()
+        : 0.0;
     final activityFactors = reasons['activityFactors'] as List<dynamic>?;
 
     return Padding(

@@ -302,7 +302,9 @@ class UserBloc extends Bloc<UserEvent, UserState> {
         gender: event.filters['gender'] as String?,
         interests: (event.filters['interests'] as List<dynamic>?)
             ?.cast<String>(),
-        maxDistanceKm: event.filters['maxDistanceKm'] as double?,
+        maxDistanceKm: event.filters['maxDistanceKm'] != null
+            ? ((event.filters['maxDistanceKm'] as num).toDouble())
+            : null,
         limit: event.limit,
       );
 

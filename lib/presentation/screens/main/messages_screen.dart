@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/utils/logger.dart';
 import '../../../core/constants/api_constants.dart';
-import '../../theme/pulse_colors.dart';
+import '../../../core/theme/theme_extensions.dart';
+import '../../../core/theme/pulse_design_system.dart' hide PulseColors;
+import '../../theme/pulse_colors.dart' hide PulseSpacing;
 import '../../widgets/common/robust_network_image.dart';
 import '../../widgets/common/empty_state_widget.dart';
 import '../../widgets/common/skeleton_loading.dart';
@@ -28,7 +30,6 @@ import '../../../features/group_chat/data/group_chat_service.dart';
 import '../../../features/group_chat/data/group_chat_websocket_service.dart';
 import '../../../core/network/api_client.dart';
 import 'settings_screen.dart';
-import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Enhanced messages screen with conversations list
 class MessagesScreen extends StatefulWidget {
@@ -434,7 +435,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
           child: Column(
             children: [
               // Header
-              _buildHeader(),
+              _buildHeader(context),
 
               // Search bar
               _buildSearchBar(),
@@ -606,7 +607,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                 child: _isLoading
                     ? _buildLoadingState()
                     : _error != null
-                    ? _buildErrorState()
+                    ? _buildErrorState(context)
                     : _filteredConversations.isEmpty
                     ? RefreshIndicator(
                         onRefresh: () =>
@@ -632,7 +633,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(PulseSpacing.lg),
       child: Row(
@@ -640,7 +641,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
           Text(
             'Messages',
             style: PulseTextStyles.headlineLarge.copyWith(
-              color: PulseColors.onSurface,
+              color: context.onSurfaceColor,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -676,8 +677,8 @@ class _MessagesScreenState extends State<MessagesScreen> {
             },
             icon: Icon(Icons.groups),
             style: IconButton.styleFrom(
-              backgroundColor: PulseColors.primaryContainer,
-              foregroundColor: PulseColors.primary,
+              backgroundColor: context.colorScheme.primaryContainer,
+              foregroundColor: context.primaryColor,
             ),
           ),
           const SizedBox(width: 8),
@@ -691,11 +692,11 @@ class _MessagesScreenState extends State<MessagesScreen> {
                 icon: Icon(Icons.filter_list),
                 style: IconButton.styleFrom(
                   backgroundColor: _hasActiveFilters()
-                      ? PulseColors.primary
-                      : PulseColors.surfaceVariant,
+                      ? context.primaryColor
+                      : context.surfaceVariantColor,
                   foregroundColor: _hasActiveFilters()
                       ? Colors.white
-                      : PulseColors.primary,
+                      : context.primaryColor,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(PulseRadii.md),
                   ),
@@ -711,7 +712,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                     decoration: BoxDecoration(
                       color: context.onSurfaceColor,
                       shape: BoxShape.circle,
-                      border: Border.all(color: PulseColors.primary, width: 1),
+                      border: Border.all(color: context.primaryColor, width: 1),
                     ),
                   ),
                 ),
@@ -735,12 +736,12 @@ class _MessagesScreenState extends State<MessagesScreen> {
                   leading: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: PulseColors.primary.withValues(alpha: 0.1),
+                      color: context.primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
                       Icons.mark_chat_read,
-                      color: PulseColors.primary,
+                      color: context.primaryColor,
                     ),
                   ),
                   title: Text(
@@ -756,10 +757,10 @@ class _MessagesScreenState extends State<MessagesScreen> {
                   leading: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: PulseColors.primary.withValues(alpha: 0.1),
+                      color: context.primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Icon(Icons.groups, color: PulseColors.primary),
+                    child: Icon(Icons.groups, color: context.primaryColor),
                   ),
                   title: Text(
                     'Group chats',
@@ -774,10 +775,10 @@ class _MessagesScreenState extends State<MessagesScreen> {
                   leading: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: PulseColors.primary.withValues(alpha: 0.1),
+                      color: context.primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Icon(Icons.settings, color: PulseColors.primary),
+                    child: Icon(Icons.settings, color: context.primaryColor),
                   ),
                   title: Text(
                     'Messaging settings',
@@ -855,7 +856,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
             },
             icon: Icon(Icons.search),
             style: IconButton.styleFrom(
-              backgroundColor: PulseColors.primary,
+              backgroundColor: context.primaryColor,
               foregroundColor: context.onSurfaceColor,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(PulseRadii.md),
@@ -882,7 +883,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: PulseSpacing.md),
       decoration: BoxDecoration(
-        color: PulseColors.surface,
+        color: context.surfaceColor,
         borderRadius: BorderRadius.circular(PulseRadii.lg),
         boxShadow: [
           BoxShadow(
@@ -910,7 +911,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: PulseColors.outline,
+                          color: context.outlineColor,
                           width: 2,
                         ),
                       ),
@@ -925,7 +926,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                                 height: 56,
                               )
                             : Container(
-                                color: PulseColors.primary.withValues(
+                                color: context.primaryColor.withValues(
                                   alpha: 0.1,
                                 ),
                                 child: Center(
@@ -934,7 +935,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                                         ? conversation.name[0].toUpperCase()
                                         : '?',
                                     style: TextStyle(
-                                      color: PulseColors.primary,
+                                      color: context.primaryColor,
                                       fontSize: 24,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -951,10 +952,10 @@ class _MessagesScreenState extends State<MessagesScreen> {
                           width: 16,
                           height: 16,
                           decoration: BoxDecoration(
-                            color: PulseColors.success,
+                            color: context.successColor,
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: PulseColors.surface,
+                              color: context.surfaceColor,
                               width: 2,
                             ),
                           ),
@@ -976,7 +977,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                               conversation.name,
                               style: PulseTextStyles.bodyLarge.copyWith(
                                 fontWeight: FontWeight.w600,
-                                color: PulseColors.onSurface,
+                                color: context.onSurfaceColor,
                               ),
                               overflow: TextOverflow.ellipsis,
                               maxLines: 1,
@@ -986,7 +987,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                           Text(
                             conversation.timestamp,
                             style: PulseTextStyles.labelSmall.copyWith(
-                              color: PulseColors.onSurfaceVariant,
+                              color: context.onSurfaceVariantColor,
                             ),
                           ),
                         ],
@@ -999,8 +1000,8 @@ class _MessagesScreenState extends State<MessagesScreen> {
                               conversation.lastMessage,
                               style: PulseTextStyles.bodyMedium.copyWith(
                                 color: conversation.unreadCount > 0
-                                    ? PulseColors.onSurface
-                                    : PulseColors.onSurfaceVariant,
+                                    ? context.onSurfaceColor
+                                    : context.onSurfaceVariantColor,
                                 fontWeight: conversation.unreadCount > 0
                                     ? FontWeight.w500
                                     : FontWeight.normal,
@@ -1049,17 +1050,17 @@ class _MessagesScreenState extends State<MessagesScreen> {
     );
   }
 
-  Widget _buildErrorState() {
+  Widget _buildErrorState(BuildContext context) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.error_outline, size: 64, color: PulseColors.error),
+          Icon(Icons.error_outline, size: 64, color: context.errorColor),
           const SizedBox(height: PulseSpacing.lg),
           Text(
             'Failed to load conversations',
             style: PulseTextStyles.headlineMedium.copyWith(
-              color: PulseColors.onSurface,
+              color: context.onSurfaceColor,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -1067,7 +1068,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
           Text(
             _error ?? 'Unknown error occurred',
             style: PulseTextStyles.bodyLarge.copyWith(
-              color: PulseColors.onSurfaceVariant,
+              color: context.onSurfaceVariantColor,
             ),
             textAlign: TextAlign.center,
           ),

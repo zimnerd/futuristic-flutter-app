@@ -1356,7 +1356,9 @@ extension ProfileViewersExtension on ProfileService {
             ),
             isVerified: json['verified'] as bool? ?? false,
             verified: json['verified'] as bool? ?? false,
-            distanceKm: json['distance'] as double?,
+            distanceKm: json['distance'] != null
+                ? (json['distance'] as num).toDouble()
+                : null,
           );
         }).toList();
 

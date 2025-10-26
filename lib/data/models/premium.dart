@@ -496,7 +496,7 @@ class UserSubscription extends Equatable {
       final price = json['price'];
       priceInCents = price is int
           ? price * 100
-          : ((price as double) * 100).round();
+          : ((price as num).toDouble() * 100).round();
     } else {
       priceInCents = 0;
     }

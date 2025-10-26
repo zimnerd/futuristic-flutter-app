@@ -98,7 +98,7 @@ class PremiumPlan extends Equatable {
   /// Get savings percentage for yearly plans
   double? get yearlyDiscount {
     if (interval == 'yearly' && metadata?['monthlyPrice'] != null) {
-      final monthlyPrice = metadata!['monthlyPrice'] as double;
+      final monthlyPrice = (metadata!['monthlyPrice'] as num).toDouble();
       final yearlyMonthlyEquivalent = price / 12;
       return ((monthlyPrice - yearlyMonthlyEquivalent) / monthlyPrice) * 100;
     }

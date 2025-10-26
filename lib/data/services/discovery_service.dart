@@ -374,11 +374,15 @@ class DiscoveryService {
           : user['lastActive'] != null
           ? DateTime.parse(user['lastActive'] as String)
           : null,
-      distanceKm:
-          suggestion['distanceKm'] as double? ??
-          suggestion['distance'] as double? ??
-          user['distanceKm'] as double? ??
-          user['distance'] as double?,
+      distanceKm: suggestion['distanceKm'] != null
+          ? (suggestion['distanceKm'] as num).toDouble()
+          : suggestion['distance'] != null
+          ? (suggestion['distance'] as num).toDouble()
+          : user['distanceKm'] != null
+          ? (user['distanceKm'] as num).toDouble()
+          : user['distance'] != null
+          ? (user['distance'] as num).toDouble()
+          : null,
     );
   }
 }

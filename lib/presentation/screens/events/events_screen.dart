@@ -242,7 +242,7 @@ class _EventsScreenState extends State<EventsScreen>
             'Events',
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
               fontWeight: FontWeight.bold,
-              color: PulseColors.onSurface,
+              color: context.onSurfaceColor,
             ),
           ),
           actions: [

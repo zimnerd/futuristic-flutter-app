@@ -486,7 +486,9 @@ class UserProfile extends Equatable {
       lastActiveAt: json['lastActiveAt'] != null
           ? DateTime.parse(json['lastActiveAt'] as String)
           : null,
-      distanceKm: json['distanceKm'] as double?,
+      distanceKm: json['distanceKm'] != null
+          ? (json['distanceKm'] as num).toDouble()
+          : null,
       gender: json['gender'] as String?,
       showMe: (json['showMe'] as List<dynamic>?)?.cast<String>(),
       job: json['job'] as String?,
@@ -838,8 +840,8 @@ class UserLocation extends Equatable {
   /// Create UserLocation from JSON
   factory UserLocation.fromJson(Map<String, dynamic> json) {
     return UserLocation(
-      latitude: json['latitude'] as double,
-      longitude: json['longitude'] as double,
+      latitude: (json['latitude'] as num).toDouble(),
+      longitude: (json['longitude'] as num).toDouble(),
       city: json['city'] as String?,
       country: json['country'] as String?,
       address: json['address'] as String?,

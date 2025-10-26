@@ -81,12 +81,12 @@ class _SpeedDatingEventDetailsScreenState
           title: Text(
             widget.event['title'] ?? 'Speed Dating Event',
             style: TextStyle(
-              color: Colors.black87,
+              color: context.onSurfaceColor,
               fontWeight: FontWeight.w600,
             ),
           ),
           backgroundColor: context.surfaceColor,
-          iconTheme: const IconThemeData(color: Colors.black87),
+          iconTheme: IconThemeData(color: context.onSurfaceColor),
           elevation: 1,
         ),
       body: SingleChildScrollView(

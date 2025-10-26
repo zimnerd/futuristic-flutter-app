@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/theme/pulse_design_system.dart';
 import '../../../core/utils/haptic_feedback_utils.dart';
@@ -28,8 +29,6 @@ import '../../widgets/filters/filter_preview_widget.dart';
 import '../../blocs/filters/filter_bloc.dart';
 import '../../blocs/filters/filter_event.dart';
 import '../../blocs/filters/filter_state.dart';
-
-import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Modern Discovery Screen - PulseLink's unique swipe interface
 ///

@@ -617,13 +617,15 @@ class AppRouter {
                       );
                     }).toList(),
                     location: UserLocation(
-                      latitude:
-                          remoteUserModel.coordinates?['latitude'] as double? ??
-                          0.0,
+                      latitude: remoteUserModel.coordinates?['latitude'] != null
+                          ? ((remoteUserModel.coordinates?['latitude'] as num)
+                                .toDouble())
+                          : 0.0,
                       longitude:
-                          remoteUserModel.coordinates?['longitude']
-                              as double? ??
-                          0.0,
+                          remoteUserModel.coordinates?['longitude'] != null
+                          ? ((remoteUserModel.coordinates?['longitude'] as num)
+                                .toDouble())
+                          : 0.0,
                       address: remoteUserModel.location ?? 'Unknown',
                       city: remoteUserModel.location ?? 'Unknown',
                       country: 'Unknown',
@@ -957,7 +959,9 @@ class AppRouter {
             return PaymentMethodsScreen(
               planId: extra?['planId'] as String?,
               planName: extra?['planName'] as String?,
-              amount: extra?['amount'] as double?,
+              amount: extra?['amount'] != null
+                  ? ((extra?['amount'] as num).toDouble())
+                  : null,
             );
           },
         ),
@@ -981,7 +985,9 @@ class AppRouter {
           name: 'paymentProcessing',
           builder: (context, state) {
             final extra = state.extra as Map<String, dynamic>?;
-            final amount = extra?['amount'] as double? ?? 0.0;
+            final amount = extra?['amount'] != null
+                ? ((extra?['amount'] as num).toDouble())
+                : 0.0;
             final typeString = extra?['type'] as String? ?? 'premium';
             // Convert String to PaymentType enum
             final paymentType = PaymentType.values.firstWhere(
@@ -1064,7 +1070,8 @@ class AppRouter {
             final extra = state.extra as Map<String, dynamic>;
             return MatchExplanationScreen(
               profile: extra['profile'] as UserProfile,
-              compatibilityScore: extra['compatibilityScore'] as double,
+              compatibilityScore: (extra['compatibilityScore'] as num)
+                  .toDouble(),
               matchReasons: extra['matchReasons'] as Map<String, dynamic>?,
             );
           },

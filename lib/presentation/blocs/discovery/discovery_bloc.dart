@@ -86,6 +86,8 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
         currentIndex: 0, // Start prefetching from the first profile
       );
     } catch (error) {
+
+      print('Discovery error: $error.toString()');
       AppLogger.error('Error loading discoverable users: $error');
       emit(DiscoveryError(message: _extractUserFriendlyErrorMessage(error)));
     }

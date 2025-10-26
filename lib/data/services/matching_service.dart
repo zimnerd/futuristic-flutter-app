@@ -345,10 +345,13 @@ class MatchingService {
       'preferences': <String, dynamic>{},
       'lastActiveAt':
           user['lastActiveAt'] ?? user['lastActive'] ?? user['updatedAt'],
-      'distanceKm':
-          matchJson['distance'] as double? ??
-          user['distanceKm'] as double? ??
-          user['distance'] as double?,
+      'distanceKm': matchJson['distance'] != null
+          ? (matchJson['distance'] as num).toDouble()
+          : user['distanceKm'] != null
+          ? (user['distanceKm'] as num).toDouble()
+          : user['distance'] != null
+          ? (user['distance'] as num).toDouble()
+          : null,
     };
 
     return _userProfileFromJson(combinedUser);

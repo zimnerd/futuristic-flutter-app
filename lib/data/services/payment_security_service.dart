@@ -543,7 +543,9 @@ class SecurityEvent {
         orElse: () => RiskLevel.low,
       ),
       deviceFingerprint: json['deviceFingerprint'] as String,
-      amount: json['amount'] as double?,
+      amount: json['amount'] != null
+          ? (json['amount'] as num).toDouble()
+          : null,
       issues:
           (json['issues'] as List?)
               ?.map(

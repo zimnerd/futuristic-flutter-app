@@ -10,10 +10,11 @@ import '../../blocs/discovery/discovery_bloc.dart';
 import '../../blocs/discovery/discovery_event.dart';
 import '../../../domain/entities/filter_preferences.dart';
 import '../../../domain/entities/discovery_types.dart';
-import '../../theme/pulse_colors.dart';
+import '../../../core/theme/theme_extensions.dart';
+import '../../../core/theme/pulse_design_system.dart' hide PulseColors;
+import '../../theme/pulse_colors.dart' hide PulseSpacing;
 import '../../widgets/common/pulse_button.dart';
 import '../../widgets/common/pulse_toast.dart';
-import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Screen for managing dating filter preferences
 class FiltersScreen extends StatefulWidget {
@@ -35,7 +36,7 @@ class _FiltersScreenState extends State<FiltersScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Filter Preferences', style: PulseTextStyles.titleLarge),
-        backgroundColor: PulseColors.primary,
+        backgroundColor: context.primaryColor,
         foregroundColor: context.onSurfaceColor,
         actions: [
           TextButton(
