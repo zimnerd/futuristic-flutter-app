@@ -631,7 +631,8 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                       _buildFloatingBoostButton(),
 
                     // Match celebration
-                    if (state is DiscoveryMatchFound) _buildMatchDialog(state),
+                    if (state is DiscoveryMatchFound)
+                      _buildMatchDialog(context, state),
                   ],
                 ); // Stack
               }, // BlocBuilder builder
@@ -653,7 +654,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
           child: Container(
             height: 120,
             decoration: PulseDecorations.glassmorphism(
-              color: PulseColors.white,
+              color: context.backgroundColor,
             ),
             child: SafeArea(
               child: Padding(
@@ -995,7 +996,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
           vertical: PulseSpacing.md,
         ),
         decoration: BoxDecoration(
-          color: PulseColors.white.withValues(alpha: 0.9),
+          color: context.surfaceColor.withValues(alpha: 0.9),
           borderRadius: BorderRadius.circular(PulseBorderRadius.xl),
           border: Border.all(
             color: PulseColors.primary.withValues(alpha: 0.1),
@@ -1003,7 +1004,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
+              color: context.onSurfaceColor.withValues(alpha: 0.1),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -1353,7 +1354,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
+                  color: context.onSurfaceColor.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -1387,7 +1388,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
+                  color: context.onSurfaceColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
@@ -1422,7 +1423,9 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                 child: LinearProgressIndicator(
                   value: progress,
                   backgroundColor: context.surfaceColor.withValues(alpha: 0.3),
-                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    context.onSurfaceColor,
+                  ),
                   minHeight: 8,
                 ),
               ),
@@ -1432,7 +1435,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
+                    color: context.onSurfaceColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
@@ -1440,7 +1443,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                     children: [
                       Icon(
                         Icons.warning_amber_rounded,
-                        color: Colors.white.withValues(alpha: 0.9),
+                        color: context.onSurfaceColor,
                         size: 20,
                       ),
                       const SizedBox(width: 8),
@@ -1488,10 +1491,10 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
     );
   }
 
-  Widget _buildMatchDialog(DiscoveryMatchFound state) {
+  Widget _buildMatchDialog(BuildContext context, DiscoveryMatchFound state) {
     return Positioned.fill(
       child: Container(
-        color: PulseColors.black.withValues(alpha: 0.8),
+        color: context.onSurfaceColor.withValues(alpha: 0.8),
         child: Center(
           child: Container(
             margin: const EdgeInsets.all(PulseSpacing.xl),
