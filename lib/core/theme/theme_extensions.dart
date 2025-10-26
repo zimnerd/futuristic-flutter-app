@@ -122,8 +122,8 @@ extension BuildContextThemeExtension on BuildContext {
   /// Divider color - Used in lists and separators
   Color get dividerColor =>
       isDarkMode
-          ? AppColors.border.withOpacity(0.2)
-          : AppColors.borderLight.withOpacity(0.3);
+      ? AppColors.border.withValues(alpha: 0.2)
+      : AppColors.borderLight.withValues(alpha: 0.3);
 
   // ============= INTERACTIVE ELEMENT COLORS =============
 
@@ -148,7 +148,7 @@ extension BuildContextThemeExtension on BuildContext {
   /// Disabled text color
   Color get disabledTextColor =>
       isDarkMode
-          ? const Color(0xFF8C8CA1).withOpacity(0.6)
+      ? const Color(0xFF8C8CA1).withValues(alpha: 0.6)
           : const Color(0xFF8C8CA1);
 
   // ============= FORM FIELD COLORS =============
@@ -171,7 +171,9 @@ extension BuildContextThemeExtension on BuildContext {
 
   /// Form field filled state (checked, selected)
   Color get formFieldFilled =>
-      isDarkMode ? primaryColor.withOpacity(0.12) : primaryColor.withOpacity(0.08);
+      isDarkMode
+      ? primaryColor.withValues(alpha: 0.12)
+      : primaryColor.withValues(alpha: 0.08);
 
   // ============= CHIP & BADGE COLORS =============
 
@@ -204,13 +206,13 @@ extension BuildContextThemeExtension on BuildContext {
   /// Dark: White with less opacity
   Color get glassSurface =>
       isDarkMode
-          ? AppColors.glassSurface.withOpacity(0.08)
+      ? AppColors.glassSurface.withValues(alpha: 0.08)
           : AppColors.glassSurface;
 
   /// Glass morphism border
   Color get glassBorder =>
       isDarkMode
-          ? AppColors.glassBorder.withOpacity(0.15)
+      ? AppColors.glassBorder.withValues(alpha: 0.15)
           : AppColors.glassBorder;
 
   // ============= SHADOW COLORS =============
@@ -218,14 +220,16 @@ extension BuildContextThemeExtension on BuildContext {
   /// Shadow color for elevation
   /// Adapts based on background brightness
   Color get shadowColor =>
-      isDarkMode ? Colors.black.withOpacity(0.3) : Colors.black.withOpacity(0.1);
+      isDarkMode
+      ? Colors.black.withValues(alpha: 0.3)
+      : Colors.black.withValues(alpha: 0.1);
 
   // ============= UTILITY METHODS =============
 
   /// Get color with theme-aware opacity
   /// Useful for: disabled states, overlays
   Color withThemeOpacity(Color color, double opacity) {
-    return color.withOpacity(isDarkMode ? opacity * 0.8 : opacity);
+    return color.withValues(alpha: isDarkMode ? opacity * 0.8 : opacity);
   }
 
   /// Blend two colors based on theme
@@ -531,9 +535,9 @@ extension AccessibilityHelper on BuildContext {
   }
 
   double _calculateLuminance(Color color) {
-    final r = _relativeLuminance(color.red);
-    final g = _relativeLuminance(color.green);
-    final b = _relativeLuminance(color.blue);
+    final r = _relativeLuminance((color.r * 255).round());
+    final g = _relativeLuminance((color.g * 255).round());
+    final b = _relativeLuminance((color.b * 255).round());
     
     return 0.2126 * r + 0.7152 * g + 0.0722 * b;
   }

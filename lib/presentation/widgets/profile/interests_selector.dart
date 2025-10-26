@@ -434,7 +434,7 @@ class _InterestsSelectorState extends State<InterestsSelector>
                             debugPrint(
                               '  ✅ MATCHED! This interest IS in _selectedInterests',
                             );
-                          } else if (_selectedInterests.length > 0) {
+                          } else if (_selectedInterests.isNotEmpty) {
                             // Check if we can find it by name instead
                             final byName = _selectedInterests
                                 .where((i) => i.name == interest.name)

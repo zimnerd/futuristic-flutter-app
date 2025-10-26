@@ -1,9 +1,3 @@
-/// Profile Screen Color Palette
-/// Based on PulseLink Profile Redesign Wireframe
-/// Dark mode optimized, WCAG AA compliant
-/// 
-/// Design Source: PROFILE_REDESIGN_WIREFRAME.md
-
 import 'package:flutter/material.dart';
 
 class PulseProfileColors {

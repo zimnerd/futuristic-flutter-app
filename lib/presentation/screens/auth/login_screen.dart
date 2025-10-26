@@ -144,10 +144,10 @@ class _LoginScreenState extends State<LoginScreen> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: dialogContext.primaryColor.withOpacity(0.1),
+                  color: dialogContext.primaryColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: dialogContext.primaryColor.withOpacity(0.3),
+                    color: dialogContext.primaryColor.withValues(alpha: 0.3),
                   ),
                 ),
                 child: Row(
@@ -186,7 +186,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       'The OTP will be sent via WhatsApp',
                       style: TextStyle(
                         fontSize: 12,
-                        color: dialogContext.textSecondary.withOpacity(0.8),
+                        color: dialogContext.textSecondary.withValues(
+                          alpha: 0.8,
+                        ),
                         fontStyle: FontStyle.italic,
                       ),
                     ),
@@ -358,10 +360,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: context.successColor.withOpacity(0.1),
+                      color: context.successColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: context.successColor.withOpacity(0.3),
+                        color: context.successColor.withValues(alpha: 0.3),
                         width: 1,
                       ),
                     ),
@@ -390,8 +392,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 _registrationSuccessMessage!,
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color: context.onSurfaceColor.withOpacity(
-                                    0.8,
+                                  color: context.onSurfaceColor.withValues(
+                                    alpha: 0.8,
                                   ),
                                 ),
                               ),

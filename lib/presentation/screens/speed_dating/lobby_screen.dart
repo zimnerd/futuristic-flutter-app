@@ -334,10 +334,12 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        context.goNamed('speedDating');
-        return false;
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          context.goNamed('speedDating');
+        }
       },
       child: Scaffold(
         appBar: AppBar(

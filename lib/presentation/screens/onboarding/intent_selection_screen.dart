@@ -27,7 +27,7 @@ class IntentSelectionScreen extends StatefulWidget {
 
 class _IntentSelectionScreenState extends State<IntentSelectionScreen> {
   // ✅ REUSING ProfileRelationshipGoalsSection - stores as list of selected goals
-  List<String> _selectedIntents = [];
+  final List<String> _selectedIntents = [];
   late Future<List<Map<String, dynamic>>> _goalsFuture;
 
   @override

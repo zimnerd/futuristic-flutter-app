@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../domain/entities/user_profile.dart';
 import '../../../domain/entities/discovery_types.dart';
@@ -87,7 +85,6 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
       );
     } catch (error) {
 
-      print('Discovery error: $error.toString()');
       AppLogger.error('Error loading discoverable users: $error');
       emit(DiscoveryError(message: _extractUserFriendlyErrorMessage(error)));
     }
@@ -558,12 +555,8 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
   /// Prevents technical DioException details from showing to users
   String _extractUserFriendlyErrorMessage(dynamic error) {
     final errorString = error.toString().toLowerCase();
-    // print stack trace for debugging
-    print(errorString);
-
     // Log the full error for debugging
     AppLogger.error('Discovery error: $errorString');
-    print('Discovery error: $errorString');
     // Check for authentication/session errors
     if (errorString.contains('401') ||
         errorString.contains('session has expired') ||

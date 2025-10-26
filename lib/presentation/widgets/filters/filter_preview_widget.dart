@@ -93,7 +93,7 @@ class _FilterPreviewWidgetState extends State<FilterPreviewWidget> {
                               min: 18,
                               max: 99,
                               divisions: 81,
-                              labels: RangeLabels('${_minAge}', '${_maxAge}'),
+                              labels: RangeLabels('$_minAge', '$_maxAge'),
                               onChanged: (RangeValues values) {
                                 setState(() {
                                   _minAge = values.start.toInt();

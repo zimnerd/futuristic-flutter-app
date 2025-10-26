@@ -1972,7 +1972,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
                   ),
                 ),
               );
-            }).toList(),
+            }),
           ],
         );
       },
@@ -2451,7 +2451,7 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
 
         final allValid = hasGoals && hasPhotos && hasInterests;
         debugPrint(
-          '${allValid ? '✅ All sections have minimal data!' : '⚠️ Some sections missing minimal data'}',
+          allValid ? '✅ All sections have minimal data!' : '⚠️ Some sections missing minimal data',
         );
 
         return allValid;
@@ -2631,11 +2631,6 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
       ),
     );
   }
-
-  /// Fetch raw user data from API to get full Interest objects with IDs
-  /// UserProfile entity only has interest names (List<String>), but we need
-  /// the full nested objects: [{id, interest: {id, name}}, ...]
-  /// to properly initialize the InterestsSelector with pre-selected interests
   Future<void> _loadRawInterestsFromAPI() async {
     try {
       final apiClient = ServiceLocator.instance.apiClient;
