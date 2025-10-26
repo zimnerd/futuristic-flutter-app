@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../../data/models/premium.dart';
-import '../../theme/pulse_colors.dart';
 import '../common/pulse_button.dart';
 import '../common/pulse_toast.dart';
 import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
@@ -93,8 +92,8 @@ class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
                 gradient: widget.isSelected
-                    ? const LinearGradient(
-                        colors: [PulseColors.primary, PulseColors.secondary],
+                    ? LinearGradient(
+                        colors: [context.primaryColor, context.accentColor],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       )
@@ -104,14 +103,14 @@ class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
                   color: widget.isSelected
                       ? Colors.transparent
                       : widget.plan.isPopular
-                      ? PulseColors.primary
+                      ? context.primaryColor
                       : context.outlineColor.shade300,
                   width: widget.plan.isPopular ? 2 : 1,
                 ),
                 boxShadow: [
                   BoxShadow(
                     color: widget.isSelected
-                        ? PulseColors.primary.withValues(alpha: 0.3)
+                        ? context.primaryColor.withValues(alpha: 0.3)
                         : Colors.black.withValues(alpha: 0.1),
                     blurRadius: widget.isSelected ? 20 : 10,
                     offset: const Offset(0, 5),
@@ -170,7 +169,7 @@ class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
                                 decoration: BoxDecoration(
                                   color: widget.isSelected
                                       ? Colors.white
-                                      : PulseColors.primary,
+                                      : context.primaryColor,
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: Text(
@@ -179,7 +178,7 @@ class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
                                     fontSize: 10,
                                     fontWeight: FontWeight.bold,
                                     color: widget.isSelected
-                                        ? PulseColors.primary
+                                        ? context.primaryColor
                                         : Colors.white,
                                   ),
                                 ),
@@ -283,7 +282,7 @@ class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
                         padding: const EdgeInsets.all(4),
                         child: Icon(
                           Icons.check,
-                          color: PulseColors.primary,
+                          color: context.primaryColor,
                           size: 16,
                         ),
                       ),
@@ -309,7 +308,7 @@ class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
                 gradient: LinearGradient(
                   colors: [
                     Colors.transparent,
-                    PulseColors.primary.withValues(alpha: 0.1),
+                    context.primaryColor.withValues(alpha: 0.1),
                     Colors.transparent,
                   ],
                   stops: [
@@ -336,7 +335,7 @@ class _PremiumSubscriptionCardState extends State<PremiumSubscriptionCard>
           Icon(
             Icons.check_circle,
             size: 20,
-            color: widget.isSelected ? Colors.white : PulseColors.primary,
+            color: widget.isSelected ? Colors.white : context.primaryColor,
           ),
           const SizedBox(width: 12),
           Expanded(

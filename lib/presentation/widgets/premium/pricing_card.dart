@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../../data/models/premium.dart';
-import '../../theme/pulse_colors.dart';
 import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Pricing card widget for displaying subscription plans
@@ -43,7 +42,7 @@ class PricingCard extends StatelessWidget {
     final ribbonText = isBestValue ? 'BEST VALUE' : 'MOST POPULAR';
     final ribbonColor = isBestValue
         ? const Color(0xFF00D95F) // Success green
-        : PulseColors.primary;
+        : context.primaryColor;
 
     return GestureDetector(
       onTap: onSelect,
@@ -52,21 +51,21 @@ class PricingCard extends StatelessWidget {
         curve: Curves.easeOut,
         decoration: BoxDecoration(
           color: isSelected
-              ? PulseColors.primary.withValues(alpha: 0.05)
+              ? context.primaryColor.withValues(alpha: 0.05)
               : Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected
-                ? PulseColors.primary
+                ? context.primaryColor
                 : isMostPopular
-                ? PulseColors.primary.withValues(alpha: 0.3)
-                : PulseColors.outline.withValues(alpha: 0.3),
+                ? context.primaryColor.withValues(alpha: 0.3)
+                : context.outlineColor.withValues(alpha: 0.3),
             width: isSelected ? 2.5 : 1.5,
           ),
           boxShadow: [
             if (isSelected || isMostPopular)
               BoxShadow(
-                color: (isSelected ? PulseColors.primary : PulseColors.primary)
+                color: (isSelected ? context.primaryColor : context.primaryColor)
                     .withValues(alpha: 0.15),
                 blurRadius: 16,
                 offset: const Offset(0, 4),
@@ -139,8 +138,8 @@ class PricingCard extends StatelessWidget {
                                 fontSize: 22,
                                 fontWeight: FontWeight.bold,
                                 color: isSelected
-                                    ? PulseColors.primary
-                                    : PulseColors.onSurface,
+                                    ? context.primaryColor
+                                    : context.onSurfaceColor,
                               ),
                             ),
 
@@ -156,8 +155,8 @@ class PricingCard extends StatelessWidget {
                                     fontSize: 32,
                                     fontWeight: FontWeight.bold,
                                     color: isSelected
-                                        ? PulseColors.primary
-                                        : PulseColors.onSurface,
+                                        ? context.primaryColor
+                                        : context.onSurfaceColor,
                                     height: 1.0,
                                   ),
                                 ),
@@ -168,7 +167,7 @@ class PricingCard extends StatelessWidget {
                                     '/${plan.interval}',
                                     style: TextStyle(
                                       fontSize: 16,
-                                      color: PulseColors.onSurfaceVariant,
+                                      color: context.onSurfaceVariantColor,
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),
@@ -183,7 +182,7 @@ class PricingCard extends StatelessWidget {
                                 _getMonthlyBreakdown(plan),
                                 style: TextStyle(
                                   fontSize: 13,
-                                  color: PulseColors.onSurfaceVariant,
+                                  color: context.onSurfaceVariantColor,
                                 ),
                               ),
                             ],
@@ -231,12 +230,12 @@ class PricingCard extends StatelessWidget {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: isSelected
-                              ? PulseColors.primary
+                              ? context.primaryColor
                               : Colors.transparent,
                           border: Border.all(
                             color: isSelected
-                                ? PulseColors.primary
-                                : PulseColors.outline,
+                                ? context.primaryColor
+                                : context.outlineColor,
                             width: 2,
                           ),
                         ),
@@ -256,7 +255,7 @@ class PricingCard extends StatelessWidget {
                   // Divider
                   Divider(
                     height: 1,
-                    color: PulseColors.outline.withValues(alpha: 0.3),
+                    color: context.outlineColor.withValues(alpha: 0.3),
                   ),
 
                   const SizedBox(height: 16),
@@ -267,7 +266,7 @@ class PricingCard extends StatelessWidget {
                       plan.description,
                       style: TextStyle(
                         fontSize: 14,
-                        color: PulseColors.onSurfaceVariant,
+                        color: context.onSurfaceVariantColor,
                         height: 1.4,
                       ),
                     ),
@@ -280,7 +279,7 @@ class PricingCard extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: PulseColors.onSurfaceVariant,
+                      color: context.onSurfaceVariantColor,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -298,8 +297,8 @@ class PricingCard extends StatelessWidget {
                                 padding: const EdgeInsets.all(2),
                                 decoration: BoxDecoration(
                                   color: isSelected
-                                      ? PulseColors.primary
-                                      : PulseColors.success,
+                                      ? context.primaryColor
+                                      : context.successColor,
                                   shape: BoxShape.circle,
                                 ),
                                 child: Icon(
@@ -330,7 +329,7 @@ class PricingCard extends StatelessWidget {
                       '+ ${plan.features.length - 5} more features',
                       style: TextStyle(
                         fontSize: 13,
-                        color: PulseColors.primary,
+                        color: context.primaryColor,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -345,13 +344,13 @@ class PricingCard extends StatelessWidget {
                       onPressed: onSelect,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: isSelected
-                            ? PulseColors.primary
+                            ? context.primaryColor
                             : Colors.white,
                         foregroundColor: isSelected
                             ? Colors.white
-                            : PulseColors.primary,
+                            : context.primaryColor,
                         side: BorderSide(
-                          color: PulseColors.primary,
+                          color: context.primaryColor,
                           width: isSelected ? 0 : 1.5,
                         ),
                         padding: const EdgeInsets.symmetric(vertical: 14),
@@ -367,7 +366,7 @@ class PricingCard extends StatelessWidget {
                           fontWeight: FontWeight.w600,
                           color: isSelected
                               ? Colors.white
-                              : PulseColors.primary,
+                              : context.primaryColor,
                         ),
                       ),
                     ),
@@ -381,7 +380,7 @@ class PricingCard extends StatelessWidget {
                         '7-day free trial included',
                         style: TextStyle(
                           fontSize: 12,
-                          color: PulseColors.success,
+                          color: context.successColor,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -454,11 +453,11 @@ class CompactPricingCard extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isSelected
-              ? PulseColors.primary.withValues(alpha: 0.1)
-              : PulseColors.surfaceVariant,
+              ? context.primaryColor.withValues(alpha: 0.1)
+              : context.surfaceVariantColor,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? PulseColors.primary : Colors.transparent,
+            color: isSelected ? context.primaryColor : Colors.transparent,
             width: 2,
           ),
         ),
@@ -480,7 +479,7 @@ class CompactPricingCard extends StatelessWidget {
                     '${_formatPrice(plan.priceInCents)}/${plan.interval}',
                     style: TextStyle(
                       fontSize: 14,
-                      color: PulseColors.onSurfaceVariant,
+                      color: context.onSurfaceVariantColor,
                     ),
                   ),
                 ],
@@ -491,9 +490,9 @@ class CompactPricingCard extends StatelessWidget {
               height: 24,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: isSelected ? PulseColors.primary : Colors.transparent,
+                color: isSelected ? context.primaryColor : Colors.transparent,
                 border: Border.all(
-                  color: isSelected ? PulseColors.primary : PulseColors.outline,
+                  color: isSelected ? context.primaryColor : context.outlineColor,
                   width: 2,
                 ),
               ),

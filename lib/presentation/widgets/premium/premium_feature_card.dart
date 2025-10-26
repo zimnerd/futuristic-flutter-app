@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../theme/pulse_colors.dart';
 import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Reusable card widget for displaying premium features
@@ -44,19 +43,19 @@ class PremiumFeatureCard extends StatelessWidget {
         curve: Curves.easeOut,
         decoration: BoxDecoration(
           color: isHighlighted
-              ? PulseColors.primary.withValues(alpha: 0.1)
-              : PulseColors.surfaceVariant,
+              ? context.primaryColor.withValues(alpha: 0.1)
+              : context.surfaceVariantColor,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isHighlighted
-                ? PulseColors.primary
-                : PulseColors.outline.withValues(alpha: 0.2),
+                ? context.primaryColor
+                : context.outlineColor.withValues(alpha: 0.2),
             width: isHighlighted ? 2 : 1,
           ),
           boxShadow: isHighlighted
               ? [
                   BoxShadow(
-                    color: PulseColors.primary.withValues(alpha: 0.2),
+                    color: context.primaryColor.withValues(alpha: 0.2),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -76,10 +75,10 @@ class PremiumFeatureCard extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: isPremium
-                        ? [PulseColors.primary, PulseColors.primaryLight]
+                        ? [context.primaryColor, context.primaryColor.withValues(alpha: 0.7)]
                         : [
-                            PulseColors.onSurfaceVariant,
-                            PulseColors.onSurfaceVariant,
+                            context.onSurfaceVariantColor,
+                            context.onSurfaceVariantColor,
                           ],
                   ),
                   borderRadius: BorderRadius.circular(12),
@@ -146,7 +145,7 @@ class PremiumFeatureCard extends StatelessWidget {
                       description,
                       style: TextStyle(
                         fontSize: 14,
-                        color: PulseColors.onSurfaceVariant,
+                        color: context.onSurfaceVariantColor,
                         height: 1.4,
                       ),
                     ),
@@ -160,7 +159,7 @@ class PremiumFeatureCard extends StatelessWidget {
                 Icon(
                   Icons.arrow_forward_ios,
                   size: 16,
-                  color: PulseColors.onSurfaceVariant.withValues(alpha: 0.5),
+                  color: context.onSurfaceVariantColor.withValues(alpha: 0.5),
                 ),
               ],
             ],
@@ -190,13 +189,13 @@ class CompactPremiumFeatureCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: isPremium
-            ? PulseColors.primary.withValues(alpha: 0.08)
-            : PulseColors.surfaceVariant,
+            ? context.primaryColor.withValues(alpha: 0.08)
+            : context.surfaceVariantColor,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
           color: isPremium
-              ? PulseColors.primary.withValues(alpha: 0.2)
-              : PulseColors.outline.withValues(alpha: 0.2),
+              ? context.primaryColor.withValues(alpha: 0.2)
+              : context.outlineColor.withValues(alpha: 0.2),
         ),
       ),
       child: Row(
@@ -206,8 +205,8 @@ class CompactPremiumFeatureCard extends StatelessWidget {
             icon,
             size: 16,
             color: isPremium
-                ? PulseColors.primary
-                : PulseColors.onSurfaceVariant,
+                ? context.primaryColor
+                : context.onSurfaceVariantColor,
           ),
           const SizedBox(width: 8),
           Flexible(
@@ -216,7 +215,7 @@ class CompactPremiumFeatureCard extends StatelessWidget {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
-                color: isPremium ? PulseColors.primary : PulseColors.onSurface,
+                color: isPremium ? context.primaryColor : context.onSurfaceColor,
               ),
               overflow: TextOverflow.ellipsis,
             ),
@@ -250,7 +249,7 @@ class FeatureComparisonRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: Row(
         children: [
-          Icon(icon, size: 20, color: PulseColors.onSurfaceVariant),
+          Icon(icon, size: 20, color: context.onSurfaceVariantColor),
           const SizedBox(width: 12),
           Expanded(
             flex: 2,
@@ -259,21 +258,21 @@ class FeatureComparisonRow extends StatelessWidget {
               style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
             ),
           ),
-          Expanded(child: _buildValue(freeValue, false)),
-          Expanded(child: _buildValue(premiumValue, true)),
+          Expanded(child: _buildValue(context, freeValue, false)),
+          Expanded(child: _buildValue(context, premiumValue, true)),
         ],
       ),
     );
   }
 
-  Widget _buildValue(String value, bool isPremium) {
+  Widget _buildValue(BuildContext context, String value, bool isPremium) {
     if (showCheckmark) {
       final hasFeature = value.toLowerCase() == 'yes' || value == '✓';
       return Icon(
         hasFeature ? Icons.check_circle : Icons.cancel,
         color: hasFeature
-            ? (isPremium ? PulseColors.success : PulseColors.onSurfaceVariant)
-            : PulseColors.onSurfaceVariant.withValues(alpha: 0.3),
+            ? (isPremium ? context.successColor : context.onSurfaceVariantColor)
+            : context.onSurfaceVariantColor.withValues(alpha: 0.3),
         size: 20,
       );
     }
@@ -282,7 +281,7 @@ class FeatureComparisonRow extends StatelessWidget {
       value,
       style: TextStyle(
         fontSize: 13,
-        color: isPremium ? PulseColors.primary : PulseColors.onSurfaceVariant,
+        color: isPremium ? context.primaryColor : context.onSurfaceVariantColor,
         fontWeight: isPremium ? FontWeight.w600 : FontWeight.normal,
       ),
       textAlign: TextAlign.center,
