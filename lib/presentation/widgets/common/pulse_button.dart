@@ -37,7 +37,7 @@ class PulseButton extends StatelessWidget {
             width: _getIconSize(),
             child: CircularProgressIndicator(
               strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation<Color>(_getTextColor(theme)),
+              valueColor: AlwaysStoppedAnimation<Color>(_getTextColor(context)),
             ),
           )
         : Row(
@@ -71,7 +71,7 @@ class PulseButton extends StatelessWidget {
         return ElevatedButton(
           onPressed: isDisabled || isLoading ? null : onPressed,
           style: ElevatedButton.styleFrom(
-            backgroundColor: PulseColors.primary,
+            backgroundColor: context.primaryColor,
             foregroundColor: context.onSurfaceColor,
             padding: _getPadding(),
             minimumSize: _getMinimumSize(),
@@ -86,8 +86,8 @@ class PulseButton extends StatelessWidget {
         return OutlinedButton(
           onPressed: isDisabled || isLoading ? null : onPressed,
           style: OutlinedButton.styleFrom(
-            foregroundColor: PulseColors.primary,
-            side: const BorderSide(color: PulseColors.primary),
+            foregroundColor: context.primaryColor,
+            side: BorderSide(color: context.primaryColor),
             padding: _getPadding(),
             minimumSize: _getMinimumSize(),
             shape: RoundedRectangleBorder(
@@ -101,7 +101,7 @@ class PulseButton extends StatelessWidget {
         return TextButton(
           onPressed: isDisabled || isLoading ? null : onPressed,
           style: TextButton.styleFrom(
-            foregroundColor: PulseColors.primary,
+            foregroundColor: context.primaryColor,
             padding: _getPadding(),
             minimumSize: _getMinimumSize(),
             shape: RoundedRectangleBorder(
@@ -115,7 +115,7 @@ class PulseButton extends StatelessWidget {
         return ElevatedButton(
           onPressed: isDisabled || isLoading ? null : onPressed,
           style: ElevatedButton.styleFrom(
-            backgroundColor: PulseColors.error,
+            backgroundColor: context.errorColor,
             foregroundColor: context.onSurfaceColor,
             padding: _getPadding(),
             minimumSize: _getMinimumSize(),
@@ -181,14 +181,14 @@ class PulseButton extends StatelessWidget {
     }
   }
 
-  Color _getTextColor(ThemeData theme) {
+  Color _getTextColor(BuildContext context) {
     switch (variant) {
       case PulseButtonVariant.primary:
       case PulseButtonVariant.danger:
         return Colors.white;
       case PulseButtonVariant.secondary:
       case PulseButtonVariant.tertiary:
-        return PulseColors.primary;
+        return context.primaryColor;
     }
   }
 }

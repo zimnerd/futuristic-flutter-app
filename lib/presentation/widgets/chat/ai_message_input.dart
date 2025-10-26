@@ -411,10 +411,10 @@ class _AiMessageInputState extends State<AiMessageInput>
               child: Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.7),
+                  color: context.backgroundColor,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: context.outlineColor.withValues(alpha: 0.2),
+                    color: context.borderColor.withValues(alpha: 0.3),
                   ),
                 ),
                 child: Row(
@@ -424,7 +424,7 @@ class _AiMessageInputState extends State<AiMessageInput>
                         suggestion,
                         style: TextStyle(
                           fontSize: 14,
-                          color: Colors.black87,
+                          color: context.onSurfaceColor,
                         ),
                       ),
                     ),
@@ -450,14 +450,14 @@ class _AiMessageInputState extends State<AiMessageInput>
       decoration: BoxDecoration(
         color: _showAttachments
             ? PulseColors.primary.withValues(alpha: 0.1)
-            : Colors.grey[100],
+            : context.surfaceColor,
         shape: BoxShape.circle,
         border: _showAttachments
             ? Border.all(
                 color: PulseColors.primary.withValues(alpha: 0.3),
                 width: 1.5,
               )
-            : null,
+            : Border.all(color: context.borderColor, width: 1),
       ),
       child: IconButton(
         icon: AnimatedRotation(

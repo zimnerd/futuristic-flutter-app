@@ -615,9 +615,7 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
     }
 
     // Check for API endpoint issues
-    if (errorString.contains('failed to fetch') ||
-        errorString.contains('endpoint') ||
-        errorString.contains('api')) {
+    if (errorString.contains('failed to fetch')) {
       return 'Server connection issue. Please try again.';
     }
 
