@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/models/call_invitation.dart';
 import '../../../../core/services/call_invitation_service.dart';
+import '../../../../core/theme/theme_extensions.dart';
 
 /// Full-screen incoming call UI with glassmorphism design
 ///
@@ -139,7 +140,7 @@ class _IncomingCallScreenState extends State<IncomingCallScreen>
       body: Stack(
         children: [
           // Gradient background
-          _buildGradientBackground(),
+          _buildGradientBackground(context),
 
           // Content
           SafeArea(
@@ -148,32 +149,32 @@ class _IncomingCallScreenState extends State<IncomingCallScreen>
                 const SizedBox(height: 60),
 
                 // Call type badge
-                _buildCallTypeBadge(),
+                _buildCallTypeBadge(context),
 
                 const SizedBox(height: 40),
 
                 // Caller photo with pulsing rings
-                _buildCallerPhoto(),
+                _buildCallerPhoto(context),
 
                 const SizedBox(height: 32),
 
                 // Caller name
-                _buildCallerName(),
+                _buildCallerName(context),
 
                 const SizedBox(height: 8),
 
                 // Call status
-                _buildCallStatus(),
+                _buildCallStatus(context),
 
                 const Spacer(),
 
                 // Timeout countdown
-                _buildTimeoutCountdown(),
+                _buildTimeoutCountdown(context),
 
                 const SizedBox(height: 40),
 
                 // Action buttons
-                _buildActionButtons(),
+                _buildActionButtons(context),
 
                 const SizedBox(height: 60),
               ],
@@ -184,15 +185,15 @@ class _IncomingCallScreenState extends State<IncomingCallScreen>
     );
   }
 
-  Widget _buildGradientBackground() {
+  Widget _buildGradientBackground(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            const Color(0xFF6E3BFF).withValues(alpha: 0.3), // Pulse primary
-            const Color(0xFF00C2FF).withValues(alpha: 0.2), // Pulse accent
+            context.primaryColor.withValues(alpha: 0.3),
+            context.accentColor.withValues(alpha: 0.2),
             Colors.black87,
           ],
           stops: const [0.0, 0.4, 1.0],
@@ -201,15 +202,15 @@ class _IncomingCallScreenState extends State<IncomingCallScreen>
     );
   }
 
-  Widget _buildCallTypeBadge() {
+  Widget _buildCallTypeBadge(BuildContext context) {
     final isVideo = widget.invitation.callType == CallType.video;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.1),
+        color: context.glassSurface,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.2),
+          color: context.glassBorder,
           width: 1,
         ),
         // Glassmorphism
@@ -229,14 +230,14 @@ class _IncomingCallScreenState extends State<IncomingCallScreen>
           children: [
             Icon(
               isVideo ? Icons.videocam : Icons.phone,
-              color: Colors.white,
+              color: context.callOverlayText,
               size: 20,
             ),
             const SizedBox(width: 8),
             Text(
               widget.invitation.callTypeDisplay,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: context.callOverlayText,
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
                 letterSpacing: 0.5,
@@ -248,12 +249,12 @@ class _IncomingCallScreenState extends State<IncomingCallScreen>
     );
   }
 
-  Widget _buildCallerPhoto() {
+  Widget _buildCallerPhoto(BuildContext context) {
     return Stack(
       alignment: Alignment.center,
       children: [
         // Animated pulsing rings
-        ..._buildPulsingRings(),
+        ..._buildPulsingRings(context),
 
         // Caller photo
         Container(
@@ -261,10 +262,10 @@ class _IncomingCallScreenState extends State<IncomingCallScreen>
           height: 140,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            border: Border.all(color: Colors.white, width: 4),
+            border: Border.all(color: context.callOverlayText, width: 4),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF6E3BFF).withValues(alpha: 0.5),
+                color: context.primaryColor.withValues(alpha: 0.5),
                 blurRadius: 30,
                 spreadRadius: 5,
               ),
@@ -275,18 +276,18 @@ class _IncomingCallScreenState extends State<IncomingCallScreen>
                 ? CachedNetworkImage(
                     imageUrl: widget.invitation.callerPhoto!,
                     fit: BoxFit.cover,
-                    placeholder: (context, url) => _buildPhotoPlaceholder(),
+                    placeholder: (context, url) => _buildPhotoPlaceholder(context),
                     errorWidget: (context, url, error) =>
-                        _buildPhotoPlaceholder(),
+                        _buildPhotoPlaceholder(context),
                   )
-                : _buildPhotoPlaceholder(),
+                : _buildPhotoPlaceholder(context),
           ),
         ),
       ],
     );
   }
 
-  List<Widget> _buildPulsingRings() {
+  List<Widget> _buildPulsingRings(BuildContext context) {
     return List.generate(3, (index) {
       return AnimatedBuilder(
         animation: _pulseAnimation,
@@ -300,9 +301,7 @@ class _IncomingCallScreenState extends State<IncomingCallScreen>
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: const Color(
-                  0xFF6E3BFF,
-                ).withValues(alpha: 0.5 - value * 0.5),
+                color: context.primaryColor.withValues(alpha: 0.5 - value * 0.5),
                 width: 2,
               ),
             ),
@@ -312,16 +311,16 @@ class _IncomingCallScreenState extends State<IncomingCallScreen>
     });
   }
 
-  Widget _buildPhotoPlaceholder() {
+  Widget _buildPhotoPlaceholder(BuildContext context) {
     return Container(
-      color: const Color(0xFF6E3BFF),
+      color: context.primaryColor,
       child: Center(
         child: Text(
           widget.invitation.callerName.isNotEmpty
               ? widget.invitation.callerName[0].toUpperCase()
               : '?',
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: context.callOverlayText,
             fontSize: 48,
             fontWeight: FontWeight.bold,
           ),
@@ -330,11 +329,11 @@ class _IncomingCallScreenState extends State<IncomingCallScreen>
     );
   }
 
-  Widget _buildCallerName() {
+  Widget _buildCallerName(BuildContext context) {
     return Text(
       widget.invitation.callerName,
-      style: const TextStyle(
-        color: Colors.white,
+      style: TextStyle(
+        color: context.callOverlayText,
         fontSize: 32,
         fontWeight: FontWeight.bold,
         letterSpacing: 0.5,
@@ -343,11 +342,11 @@ class _IncomingCallScreenState extends State<IncomingCallScreen>
     );
   }
 
-  Widget _buildCallStatus() {
+  Widget _buildCallStatus(BuildContext context) {
     return Text(
       'Incoming ${widget.invitation.callTypeEmoji}',
       style: TextStyle(
-        color: Colors.white.withValues(alpha: 0.8),
+        color: context.callOverlayTextSecondary,
         fontSize: 18,
         fontWeight: FontWeight.w500,
       ),
@@ -355,18 +354,18 @@ class _IncomingCallScreenState extends State<IncomingCallScreen>
     );
   }
 
-  Widget _buildTimeoutCountdown() {
+  Widget _buildTimeoutCountdown(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       decoration: BoxDecoration(
         color: _remainingSeconds <= 10
-            ? Colors.red.withValues(alpha: 0.2)
-            : Colors.white.withValues(alpha: 0.1),
+            ? context.callDecline.withValues(alpha: 0.2)
+            : context.glassSurface,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: _remainingSeconds <= 10
-              ? Colors.red.withValues(alpha: 0.5)
-              : Colors.white.withValues(alpha: 0.2),
+              ? context.callDecline.withValues(alpha: 0.5)
+              : context.glassBorder,
           width: 1,
         ),
       ),
@@ -375,14 +374,14 @@ class _IncomingCallScreenState extends State<IncomingCallScreen>
         children: [
           Icon(
             Icons.timer_outlined,
-            color: _remainingSeconds <= 10 ? Colors.red : Colors.white70,
+            color: _remainingSeconds <= 10 ? context.callDecline : context.callOverlayTextSecondary,
             size: 20,
           ),
           const SizedBox(width: 8),
           Text(
             '${_remainingSeconds}s',
             style: TextStyle(
-              color: _remainingSeconds <= 10 ? Colors.red : Colors.white70,
+              color: _remainingSeconds <= 10 ? context.callDecline : context.callOverlayTextSecondary,
               fontSize: 16,
               fontWeight: FontWeight.w600,
             ),
@@ -392,7 +391,7 @@ class _IncomingCallScreenState extends State<IncomingCallScreen>
     );
   }
 
-  Widget _buildActionButtons() {
+  Widget _buildActionButtons(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 40),
       child: Row(
@@ -400,19 +399,21 @@ class _IncomingCallScreenState extends State<IncomingCallScreen>
         children: [
           // Decline button
           _buildActionButton(
+            context: context,
             icon: Icons.call_end,
             label: 'Decline',
-            color: Colors.red,
+            color: context.callDecline,
             onTap: _onDecline,
           ),
 
           // Accept button
           _buildActionButton(
+            context: context,
             icon: widget.invitation.callType == CallType.video
                 ? Icons.videocam
                 : Icons.phone,
             label: 'Accept',
-            color: Colors.green,
+            color: context.callAccept,
             onTap: _onAccept,
           ),
         ],
@@ -421,6 +422,7 @@ class _IncomingCallScreenState extends State<IncomingCallScreen>
   }
 
   Widget _buildActionButton({
+    required BuildContext context,
     required IconData icon,
     required String label,
     required Color color,
@@ -445,7 +447,7 @@ class _IncomingCallScreenState extends State<IncomingCallScreen>
                 ),
               ],
             ),
-            child: Icon(icon, color: Colors.white, size: 32),
+            child: Icon(icon, color: context.callOverlayText, size: 32),
           ),
 
           const SizedBox(height: 12),
@@ -453,8 +455,8 @@ class _IncomingCallScreenState extends State<IncomingCallScreen>
           // Label
           Text(
             label,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: context.callOverlayText,
               fontSize: 16,
               fontWeight: FontWeight.w600,
             ),

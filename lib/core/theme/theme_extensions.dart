@@ -243,6 +243,234 @@ extension BuildContextThemeExtension on BuildContext {
   /// Get overlay color for bottom sheets and dialogs
   Color get overlayColor =>
       isDarkMode ? Colors.black45 : Colors.black26;
+
+  // ============= STATUS COLORS =============
+  // Used for upload/sync/processing states
+
+  /// Info status color (processing, in progress)
+  /// Light: Bright Blue
+  /// Dark: Lighter Blue for visibility
+  Color get statusInfo =>
+      isDarkMode ? const Color(0xFF42A5F5) : const Color(0xFF2196F3);
+
+  /// Warning status color (paused, attention needed)
+  /// Light: Orange
+  /// Dark: Lighter Orange for visibility
+  Color get statusWarning =>
+      isDarkMode ? const Color(0xFFFFA726) : AppColors.warning;
+
+  /// Cancelled/stopped status color
+  /// Light: Deep Orange
+  /// Dark: Lighter Orange-Red for visibility
+  Color get statusCancelled =>
+      isDarkMode ? const Color(0xFFFF7043) : const Color(0xFFFF5722);
+
+  // ============= PRIORITY COLORS =============
+  // Used for safety tips, notifications, importance indicators
+
+  /// High priority/danger indicator
+  /// Light: Error Red
+  /// Dark: Lighter Red for visibility
+  Color get priorityHigh =>
+      isDarkMode ? const Color(0xFFEF5350) : AppColors.error;
+
+  /// Medium priority/warning indicator
+  /// Light: Warning Orange
+  /// Dark: Lighter Orange for visibility
+  Color get priorityMedium =>
+      isDarkMode ? const Color(0xFFFFA726) : AppColors.warning;
+
+  /// Low priority/success indicator
+  /// Light: Success Green
+  /// Dark: Lighter Green for visibility
+  Color get priorityLow =>
+      isDarkMode ? const Color(0xFF66BB6A) : AppColors.success;
+
+  // ============= CATEGORY COLORS =============
+  // Used for categorization, tagging, grouping
+
+  /// Neutral/general category
+  /// Light: Blue
+  /// Dark: Lighter Blue for visibility
+  Color get categoryNeutral =>
+      isDarkMode ? const Color(0xFF42A5F5) : const Color(0xFF2196F3);
+
+  /// Danger/critical category
+  /// Light: Red
+  /// Dark: Lighter Red for visibility
+  Color get categoryDanger =>
+      isDarkMode ? const Color(0xFFEF5350) : const Color(0xFFF44336);
+
+  /// General/misc category
+  /// Light: Purple
+  /// Dark: Lighter Purple for visibility
+  Color get categoryGeneral =>
+      isDarkMode ? const Color(0xFFAB47BC) : const Color(0xFF9C27B0);
+
+  // ============= RECORDING/MEDIA STATE COLORS =============
+  // Used for voice recorder, video recording, live streaming
+
+  /// Active recording state
+  /// Light: Bright Red
+  /// Dark: Lighter Red for visibility
+  Color get recordingActive =>
+      isDarkMode ? const Color(0xFFEF5350) : const Color(0xFFFF3B5C);
+
+  /// Paused recording state
+  /// Light: Orange
+  /// Dark: Lighter Orange for visibility
+  Color get recordingPaused =>
+      isDarkMode ? const Color(0xFFFFA726) : const Color(0xFFFF9800);
+
+  /// Ready/stopped recording state (safe to proceed)
+  /// Light: Green
+  /// Dark: Lighter Green for visibility
+  Color get recordingReady =>
+      isDarkMode ? const Color(0xFF66BB6A) : AppColors.success;
+
+  // ============= SWIPE/INTERACTION COLORS =============
+  // Used for swipe cards, gestures, quick actions
+
+  /// Like/accept action color
+  /// Light: Green
+  /// Dark: Lighter Green for visibility
+  Color get swipeLike =>
+      isDarkMode ? const Color(0xFF66BB6A) : const Color(0xFF4CAF50);
+
+  /// Dislike/reject action color
+  /// Light: Red-Orange
+  /// Dark: Lighter Red-Orange for visibility
+  Color get swipeNope =>
+      isDarkMode ? const Color(0xFFFF7043) : const Color(0xFFFF5722);
+
+  /// Super like/special action color
+  /// Light: Blue
+  /// Dark: Lighter Blue for visibility
+  Color get swipeSuperLike =>
+      isDarkMode ? const Color(0xFF42A5F5) : const Color(0xFF2196F3);
+
+  // ============= ANALYTICS/PERFORMANCE COLORS =============
+  // Used for metrics, charts, performance indicators
+
+  /// Excellent performance indicator
+  /// Light: Bright Green
+  /// Dark: Lighter Green for visibility
+  Color get performanceExcellent =>
+      isDarkMode ? const Color(0xFF66BB6A) : const Color(0xFF4CAF50);
+
+  /// Good performance indicator
+  /// Light: Light Green
+  /// Dark: Lighter variant for visibility
+  Color get performanceGood =>
+      isDarkMode ? const Color(0xFF9CCC65) : const Color(0xFF8BC34A);
+
+  /// Moderate performance indicator
+  /// Light: Orange
+  /// Dark: Lighter Orange for visibility
+  Color get performanceModerate =>
+      isDarkMode ? const Color(0xFFFFA726) : const Color(0xFFFF9800);
+
+  /// Poor performance indicator
+  /// Light: Red
+  /// Dark: Lighter Red for visibility
+  Color get performancePoor =>
+      isDarkMode ? const Color(0xFFEF5350) : const Color(0xFFF44336);
+
+  /// Neutral performance indicator (no data/baseline)
+  /// Light: Grey
+  /// Dark: Lighter Grey for visibility
+  Color get performanceNeutral =>
+      isDarkMode ? const Color(0xFFBDBDBD) : const Color(0xFF9E9E9E);
+
+  // ============= PREMIUM/SPECIAL FEATURE COLORS =============
+  // Used for premium badges, boost features, special highlights
+
+  /// Premium/gold color
+  /// Light: Gold
+  /// Dark: Lighter Gold for visibility
+  Color get premiumGold =>
+      isDarkMode ? const Color(0xFFFFD54F) : AppColors.premium;
+
+  /// Premium gradient start color
+  /// Light: Gold
+  /// Dark: Lighter Gold for visibility
+  Color get premiumGradientStart =>
+      isDarkMode ? const Color(0xFFFFD54F) : const Color(0xFFFFD700);
+
+  /// Premium gradient end color
+  /// Light: Orange
+  /// Dark: Lighter Orange for visibility
+  Color get premiumGradientEnd =>
+      isDarkMode ? const Color(0xFFFFA726) : const Color(0xFFFF9900);
+
+  // ============= MEDIA VIEWER COLORS =============
+  // Used for photo/video viewers, full-screen media
+
+  /// Media viewer background (dark in both modes for immersion)
+  Color get mediaViewerBackground => Colors.black;
+
+  /// Media viewer controls background (semi-transparent)
+  Color get mediaViewerControls =>
+      Colors.white.withValues(alpha: isDarkMode ? 0.5 : 0.6);
+
+  /// Media viewer overlay (for headers/footers)
+  Color get mediaViewerOverlay =>
+      Colors.black.withValues(alpha: isDarkMode ? 0.6 : 0.7);
+
+  /// Media viewer text (always white for contrast on dark bg)
+  Color get mediaViewerText => Colors.white;
+
+  /// Media viewer secondary text (slightly dimmed)
+  Color get mediaViewerTextSecondary =>
+      Colors.white.withValues(alpha: 0.7);
+
+  // ============= CALL SCREEN COLORS =============
+  // Used for incoming/outgoing calls with glassmorphism
+
+  /// Call accept action color
+  /// Light: Green
+  /// Dark: Lighter Green for visibility
+  Color get callAccept =>
+      isDarkMode ? const Color(0xFF66BB6A) : const Color(0xFF4CAF50);
+
+  /// Call decline/end action color
+  /// Light: Red
+  /// Dark: Lighter Red for visibility
+  Color get callDecline =>
+      isDarkMode ? const Color(0xFFEF5350) : const Color(0xFFF44336);
+
+  /// Call screen overlay text (always white for glassmorphism)
+  Color get callOverlayText => Colors.white;
+
+  /// Call screen secondary text (slightly dimmed white)
+  Color get callOverlayTextSecondary =>
+      Colors.white.withValues(alpha: 0.7);
+
+  // ============= GRADIENT HELPERS =============
+  // Pre-defined gradients for common use cases
+
+  /// Brand gradient (primary to accent)
+  LinearGradient get brandGradient => AppColors.brandGradient;
+
+  /// Success gradient (success to accent)
+  LinearGradient get successGradient => AppColors.successGradient;
+
+  /// Premium gradient (gold to orange)
+  LinearGradient get premiumGradient => LinearGradient(
+        colors: [premiumGradientStart, premiumGradientEnd],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      );
+
+  /// Danger gradient (for warnings/errors)
+  LinearGradient get dangerGradient => LinearGradient(
+        colors: [
+          isDarkMode ? const Color(0xFFEF5350) : const Color(0xFFF44336),
+          isDarkMode ? const Color(0xFFFF7043) : const Color(0xFFFF5722),
+        ],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      );
 }
 
 /// Material 3 specific extensions (if using Material Design 3)
