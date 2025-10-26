@@ -18,7 +18,10 @@ class LocationCoordinates extends Equatable {
   factory LocationCoordinates.fromJson(Map<String, dynamic> json) {
     return LocationCoordinates(
       latitude: (json['latitude'] as num).toDouble(),
-      longitude: (json['longitude'] as num).toDouble(),
+      longitude:
+          (json['long'] as num?)?.toDouble() ??
+          (json['longitude'] as num?)?.toDouble() ??
+          0.0,
     );
   }
 

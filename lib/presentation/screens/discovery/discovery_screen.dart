@@ -465,7 +465,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [PulseColors.primary, context.accentColor],
+                  colors: [context.primaryColor, context.accentColor],
                 ),
                 shape: BoxShape.circle,
               ),
@@ -496,14 +496,14 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: PulseColors.primary.withValues(alpha: 0.1),
+                color: context.primaryColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
                 children: [
                   Icon(
                     Icons.check_circle,
-                    color: PulseColors.primary,
+                    color: context.primaryColor,
                     size: 20,
                   ),
                   const SizedBox(width: 8),
@@ -529,7 +529,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
               context.push('/premium');
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: PulseColors.primary,
+              backgroundColor: context.primaryColor,
               foregroundColor: context.onSurfaceColor,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -694,15 +694,15 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
                                   colors: [
-                                    PulseColors.primary.withValues(alpha: 0.2),
-                                    PulseColors.primary.withValues(alpha: 0.1),
+                                    context.primaryColor.withValues(alpha: 0.2),
+                                    context.primaryColor.withValues(alpha: 0.1),
                                   ],
                                 ),
                                 borderRadius: BorderRadius.circular(
                                   PulseBorderRadius.md,
                                 ),
                                 border: Border.all(
-                                  color: PulseColors.primary.withValues(
+                                  color: context.primaryColor.withValues(
                                     alpha: 0.3,
                                   ),
                                   width: 1,
@@ -713,14 +713,14 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                                 children: [
                                   Icon(
                                     Icons.bolt,
-                                    color: PulseColors.primary,
+                                    color: context.primaryColor,
                                     size: 16,
                                   ),
                                   const SizedBox(width: 6),
                                   Text(
                                     '🚀 BOOST Active',
                                     style: PulseTypography.labelSmall.copyWith(
-                                      color: PulseColors.primary,
+                                      color: context.primaryColor,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
@@ -751,7 +751,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                         // Rewind button (quick access)
                         _buildModernHeaderButton(
                           icon: Icons.undo,
-                          color: PulseColors.warning,
+                          color: context.statusWarning,
                           onTap: () {
                             HapticFeedback.mediumImpact();
                             context.read<DiscoveryBloc>().add(
@@ -765,7 +765,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                         // Who Liked You button
                         _buildModernHeaderButton(
                           icon: Icons.favorite,
-                          color: PulseColors.error,
+                          color: context.errorColor,
                           onTap: () {
                             HapticFeedback.mediumImpact();
                             context.push('/who-liked-you');
@@ -777,7 +777,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                         // Notifications button
                         _buildModernHeaderButton(
                           icon: PulseIcons.notifications,
-                          color: PulseColors.warning,
+                          color: context.statusWarning,
                           onTap: _showNotificationsModal,
                           tooltip: 'Notifications',
                         ),
@@ -786,7 +786,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                         // Filters button
                         _buildModernHeaderButton(
                           icon: PulseIcons.filters,
-                          color: PulseColors.primary,
+                          color: context.primaryColor,
                           onTap: _showFiltersModal,
                           tooltip: 'Filters',
                         ),
@@ -987,7 +987,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
           color: context.surfaceColor.withValues(alpha: 0.9),
           borderRadius: BorderRadius.circular(PulseBorderRadius.xl),
           border: Border.all(
-            color: PulseColors.primary.withValues(alpha: 0.1),
+            color: context.primaryColor.withValues(alpha: 0.1),
             width: 1,
           ),
           boxShadow: [
@@ -1122,13 +1122,13 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: PulseColors.error.withValues(alpha: 0.1),
+                color: context.errorColor.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.error_outline,
                 size: 40,
-                color: PulseColors.error,
+                color: context.errorColor,
               ),
             ),
             const SizedBox(height: PulseSpacing.lg),
@@ -1156,7 +1156,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                 );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: PulseColors.primary,
+                backgroundColor: context.primaryColor,
                 foregroundColor: context.surfaceColor,
               ),
               child: Text('Try Again'),
@@ -1211,8 +1211,8 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                       ),
                       valueColor: AlwaysStoppedAnimation<Color>(
                         remainingMinutes <= 5
-                            ? PulseColors.warning
-                            : PulseColors.primary,
+                            ? context.statusWarning
+                            : context.primaryColor,
                       ),
                     ),
                   ),
@@ -1223,8 +1223,8 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: remainingMinutes <= 5
-                            ? [PulseColors.warning, PulseColors.warningDark]
-                            : [PulseColors.primary, context.accentColor],
+                            ? [context.statusWarning, context.statusWarning]
+                            : [context.primaryColor, context.accentColor],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
@@ -1233,8 +1233,8 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                         BoxShadow(
                           color:
                               (remainingMinutes <= 5
-                                      ? PulseColors.warning
-                                      : PulseColors.primary)
+                                      ? context.statusWarning
+                                      : context.primaryColor)
                                   .withValues(alpha: 0.4),
                           blurRadius: 16,
                           offset: const Offset(0, 8),
@@ -1279,14 +1279,14 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
               height: 60,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [PulseColors.primary, context.accentColor],
+                  colors: [context.primaryColor, context.accentColor],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: PulseColors.primary.withValues(alpha: 0.4),
+                    color: context.primaryColor.withValues(alpha: 0.4),
                     blurRadius: 16,
                     offset: const Offset(0, 8),
                   ),
@@ -1328,8 +1328,8 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: isExpiringSoon
-                  ? [PulseColors.warning, PulseColors.warningDark]
-                  : [PulseColors.primary, context.accentColor],
+                  ? [context.statusWarning, context.statusWarning]
+                  : [context.primaryColor, context.accentColor],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -1508,7 +1508,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                 Text(
                   'It\'s a Match!',
                   style: PulseTypography.h2.copyWith(
-                    color: PulseColors.primary,
+                    color: context.primaryColor,
                   ),
                 ),
                 const SizedBox(height: PulseSpacing.sm),
@@ -1545,7 +1545,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                           context.go('/chat/${state.matchedUser.id}');
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: PulseColors.primary,
+                          backgroundColor: context.primaryColor,
                           foregroundColor: context.surfaceColor,
                         ),
                         child: Text('Say Hi'),
@@ -1638,7 +1638,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                     if (state is FilterLoading) {
                       return Center(
                         child: CircularProgressIndicator(
-                          color: PulseColors.primary,
+                          color: context.primaryColor,
                         ),
                       );
                     }
@@ -1799,12 +1799,12 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
       margin: const EdgeInsets.only(bottom: PulseSpacing.sm),
       decoration: BoxDecoration(
         color: isUnread
-            ? PulseColors.primary.withValues(alpha: 0.05)
+            ? context.primaryColor.withValues(alpha: 0.05)
             : Colors.transparent,
         borderRadius: BorderRadius.circular(PulseSpacing.sm),
         border: Border.all(
           color: isUnread
-              ? PulseColors.primary.withValues(alpha: 0.2)
+              ? context.primaryColor.withValues(alpha: 0.2)
               : context.borderColor.shade200,
         ),
       ),
@@ -1815,7 +1815,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
               width: 8,
               height: 8,
               decoration: BoxDecoration(
-                color: PulseColors.primary,
+                color: context.primaryColor,
                 shape: BoxShape.circle,
               ),
             ),

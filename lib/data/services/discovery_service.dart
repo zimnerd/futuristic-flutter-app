@@ -338,8 +338,14 @@ class DiscoveryService {
           [],
       location: user['coordinates'] != null
           ? UserLocation(
-              latitude: (user['coordinates']['latitude'] as num).toDouble(),
-              longitude: (user['coordinates']['longitude'] as num).toDouble(),
+              latitude:
+                  (user['coordinates']['latitude'] as num?)?.toDouble() ??
+                  (user['coordinates']['lat'] as num?)?.toDouble() ??
+                  0.0,
+              longitude:
+                  (user['coordinates']['long'] as num?)?.toDouble() ??
+                  (user['coordinates']['longitude'] as num?)?.toDouble() ??
+                  0.0,
               city: user['location']?.split(',').first?.trim(),
               country: user['location']?.split(',').last?.trim(),
               address: user['location'] as String?,
