@@ -447,7 +447,7 @@ class _UserInfoOverlay extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 user.bio,
-                style: TextStyle(color: Colors.white70, fontSize: 14),
+                style: TextStyle(color: context.textSecondary, fontSize: 14),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -482,13 +482,16 @@ class _UserInfoOverlay extends StatelessWidget {
                 children: [
                   Icon(
                     Icons.location_on,
-                    color: Colors.white70,
+                    color: context.textSecondary,
                     size: 14,
                   ),
                   const SizedBox(width: 4),
                   Text(
                     user.distanceString,
-                    style: TextStyle(color: Colors.white70, fontSize: 12),
+                    style: TextStyle(
+                      color: context.textSecondary,
+                      fontSize: 12,
+                    ),
                   ),
                 ],
               ),
@@ -518,10 +521,10 @@ class _UserInfoOverlay extends StatelessWidget {
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.15),
+                    color: context.onSurfaceColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.3),
+                      color: context.onSurfaceColor.withValues(alpha: 0.2),
                       width: 1,
                     ),
                   ),
@@ -562,15 +565,15 @@ class _UserInfoOverlay extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.2),
+        color: context.onSurfaceColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.3),
+          color: context.onSurfaceColor.withValues(alpha: 0.2),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
+            color: context.onSurfaceColor.withValues(alpha: 0.1),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -589,8 +592,8 @@ class _UserInfoOverlay extends StatelessWidget {
               color: context.onSurfaceColor,
               shadows: [
                 Shadow(
-                  color: Colors.black45,
-                  offset: Offset(0, 1),
+                  color: context.onSurfaceColor.withValues(alpha: 0.2),
+                  offset: const Offset(0, 1),
                   blurRadius: 2,
                 ),
               ],
@@ -646,10 +649,10 @@ class _PhotoIndicators extends StatelessWidget {
               ),
               decoration: BoxDecoration(
                 color: index == currentIndex
-                    ? Colors.white.withValues(
+                    ? context.onSurfaceColor.withValues(
                         alpha: _SwipeCardConstants.indicatorActiveOpacity,
                       )
-                    : Colors.white.withValues(
+                    : context.onSurfaceColor.withValues(
                         alpha: _SwipeCardConstants.indicatorInactiveOpacity,
                       ),
                 borderRadius: BorderRadius.circular(

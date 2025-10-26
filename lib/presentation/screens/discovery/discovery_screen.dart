@@ -396,8 +396,8 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                   gradient: isPremium
                       ? LinearGradient(
                           colors: [
-                            PulseColors.accent,
-                            PulseColors.accent.withValues(alpha: 0.8),
+                            context.accentColor,
+                            context.accentColor.withValues(alpha: 0.8),
                           ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
@@ -415,7 +415,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                     BoxShadow(
                       color:
                           (isPremium
-                                  ? PulseColors.accent
+                                  ? context.accentColor
                                   : context.borderColor.shade500)
                               .withValues(alpha: 0.3),
                       blurRadius: 12,
@@ -462,7 +462,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [PulseColors.primary, PulseColors.accent],
+                  colors: [PulseColors.primary, context.accentColor],
                 ),
                 shape: BoxShape.circle,
               ),
@@ -673,15 +673,13 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                           Text(
                             'Good ${_getTimeOfDay()}',
                             style: PulseTypography.bodyMedium.copyWith(
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.onSurfaceVariant,
+                              color: context.textSecondary,
                             ),
                           ),
                           Text(
                             'Ready to explore?',
                             style: PulseTypography.h3.copyWith(
-                              color: Theme.of(context).colorScheme.onSurface,
+                              color: context.textPrimary,
                             ),
                           ),
                         ],
@@ -703,13 +701,13 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                     const SizedBox(width: PulseSpacing.sm),
                     _buildHeaderButton(
                       icon: PulseIcons.ai,
-                      color: PulseColors.accent,
+                      color: context.accentColor,
                       onTap: _showAICompanionModal,
                     ),
                     const SizedBox(width: PulseSpacing.sm),
                     _buildHeaderButton(
                       icon: PulseIcons.notifications,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      color: context.outlineColor,
                       onTap: _showNotificationsModal,
                     ),
                   ],
@@ -774,7 +772,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                     child: Icon(
                       Icons.favorite,
                       color: likeCount > 0
-                          ? PulseColors.white
+                          ? context.surfaceColor
                           : context.borderColor.shade600,
                       size: 20,
                     ),
@@ -789,7 +787,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                           color: PulseColors.success,
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: Theme.of(context).colorScheme.surface,
+                            color: context.surfaceColor,
                             width: 1.5,
                           ),
                         ),
@@ -801,7 +799,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                           child: Text(
                             likeCount > 99 ? '99+' : '$likeCount',
                             style: TextStyle(
-                              color: Theme.of(context).colorScheme.surface,
+                              color: context.surfaceColor,
                               fontSize: 9,
                               fontWeight: FontWeight.bold,
                             ),
@@ -1134,13 +1132,13 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: PulseColors.reject.withValues(alpha: 0.1),
+                color: PulseColors.error.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.error_outline,
                 size: 40,
-                color: PulseColors.reject,
+                color: PulseColors.error,
               ),
             ),
             const SizedBox(height: PulseSpacing.lg),
@@ -1154,7 +1152,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
             Text(
               state.message,
               style: PulseTypography.bodyMedium.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                color: context.textSecondary,
               ),
               textAlign: TextAlign.center,
               maxLines: 2,
@@ -1169,7 +1167,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: PulseColors.primary,
-                foregroundColor: PulseColors.white,
+                foregroundColor: context.surfaceColor,
               ),
               child: Text('Try Again'),
             ),
@@ -1236,7 +1234,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                       gradient: LinearGradient(
                         colors: remainingMinutes <= 5
                             ? [PulseColors.warning, PulseColors.warningDark]
-                            : [PulseColors.primary, PulseColors.accent],
+                            : [PulseColors.primary, context.accentColor],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
@@ -1527,7 +1525,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                 Text(
                   'You and ${state.matchedUser.name} liked each other',
                   style: PulseTypography.bodyMedium.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    color: context.textSecondary,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -1634,7 +1632,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                     Text(
                       'Filters',
                       style: PulseTypography.h3.copyWith(
-                        color: Theme.of(context).colorScheme.onSurface,
+                        color: context.textPrimary,
                       ),
                     ),
                     IconButton(
@@ -1753,7 +1751,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                     Text(
                       'AI Companion',
                       style: PulseTypography.h3.copyWith(
-                        color: Theme.of(context).colorScheme.onSurface,
+                        color: context.textPrimary,
                       ),
                     ),
                     IconButton(
@@ -1796,7 +1794,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                             Text(
                               'Get personalized advice, conversation starters, and dating insights powered by AI.',
                               style: PulseTypography.bodyMedium.copyWith(
-                                color: Theme.of(context).colorScheme.onSurface,
+                                color: context.textPrimary,
                               ),
                             ),
                           ],
@@ -1886,7 +1884,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
         maxChildSize: 0.95,
         builder: (context, scrollController) => Container(
           decoration: BoxDecoration(
-            color: PulseColors.white,
+            color: context.backgroundColor,
             borderRadius: BorderRadius.only(
               topLeft: Radius.circular(PulseSpacing.xl),
               topRight: Radius.circular(PulseSpacing.xl),
@@ -1913,7 +1911,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                     Text(
                       'Notifications',
                       style: PulseTypography.h3.copyWith(
-                        color: Theme.of(context).colorScheme.onSurface,
+                        color: context.textPrimary,
                       ),
                     ),
                     IconButton(
@@ -1998,7 +1996,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
           Text(
             title,
             style: PulseTypography.bodyMedium.copyWith(
-              color: Theme.of(context).colorScheme.onSurface,
+              color: context.textPrimary,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -2027,14 +2025,14 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                 Text(
                   title,
                   style: PulseTypography.bodyMedium.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface,
+                    color: context.textPrimary,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 Text(
                   description,
                   style: PulseTypography.labelMedium.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    color: context.textSecondary,
                   ),
                 ),
               ],
@@ -2084,7 +2082,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                 Text(
                   title,
                   style: PulseTypography.bodyMedium.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface,
+                    color: context.textPrimary,
                     fontWeight: isUnread ? FontWeight.w600 : FontWeight.normal,
                   ),
                 ),
@@ -2092,7 +2090,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                 Text(
                   message,
                   style: PulseTypography.labelMedium.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    color: context.textSecondary,
                   ),
                 ),
                 const SizedBox(height: 4),

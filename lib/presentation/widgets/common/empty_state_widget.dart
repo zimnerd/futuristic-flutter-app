@@ -54,7 +54,7 @@ class EmptyStateWidget extends StatelessWidget {
             Text(
               title,
               style: PulseTextStyles.headlineSmall.copyWith(
-                color: PulseColors.onSurface,
+                color: context.textPrimary,
                 fontWeight: FontWeight.bold,
               ),
               textAlign: TextAlign.center,
@@ -65,7 +65,7 @@ class EmptyStateWidget extends StatelessWidget {
             Text(
               message,
               style: PulseTextStyles.bodyLarge.copyWith(
-                color: PulseColors.onSurfaceVariant,
+                color: context.textSecondary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -77,7 +77,7 @@ class EmptyStateWidget extends StatelessWidget {
                 onPressed: onAction,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: PulseColors.primary,
-                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                  foregroundColor: context.textOnPrimary,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 32,
                     vertical: 16,
@@ -89,7 +89,7 @@ class EmptyStateWidget extends StatelessWidget {
                 child: Text(
                   actionLabel!,
                   style: PulseTextStyles.labelLarge.copyWith(
-                    color: Theme.of(context).colorScheme.onPrimary,
+                    color: context.textOnPrimary,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -122,7 +122,7 @@ class EmptyStates {
         'Keep swiping to find your perfect match!\nYour mutual likes will appear here.',
     actionLabel: 'Start Swiping',
     onAction: onDiscover,
-    iconColor: const Color(0xFFFF6B9D),
+    iconColor: PulseColors.error,
   );
 
   // Discovery
@@ -135,7 +135,7 @@ class EmptyStates {
         'You\'ve seen everyone nearby.\nTry adjusting your filters or check back later!',
     actionLabel: 'Adjust Filters',
     onAction: onAdjustFilters,
-    iconColor: const Color(0xFF9C27B0),
+    iconColor: PulseColors.primary,
   );
 
   // Events
@@ -145,7 +145,7 @@ class EmptyStates {
     message: 'No events match your criteria.\nBe the first to create an event!',
     actionLabel: 'Create Event',
     onAction: onCreate,
-    iconColor: const Color(0xFFFFA726),
+    iconColor: PulseColors.warning,
   );
 
   // Search Results
@@ -163,7 +163,7 @@ class EmptyStates {
     title: 'No Blocked Users',
     message:
         'You haven\'t blocked anyone yet.\nBlocked users will appear here.',
-    iconColor: Colors.red,
+    iconColor: PulseColors.error,
   );
 
   // Statistics
@@ -172,7 +172,7 @@ class EmptyStates {
     title: 'No Statistics Yet',
     message:
         'Start interacting with others to see your stats.\nYour activity will be tracked here.',
-    iconColor: const Color(0xFF4ECDC4),
+    iconColor: PulseColors.secondary,
   );
 
   // Call History
@@ -183,7 +183,7 @@ class EmptyStates {
         'You haven\'t made or received any calls yet.\nStart a call with your matches!',
     actionLabel: 'View Matches',
     onAction: onStartCall,
-    iconColor: const Color(0xFF66BB6A),
+    iconColor: PulseColors.success,
   );
 
   // Notifications
@@ -191,7 +191,7 @@ class EmptyStates {
     icon: Icons.notifications_off,
     title: 'No Notifications',
     message: 'You\'re all caught up!\nNew notifications will appear here.',
-    iconColor: const Color(0xFF7E57C2),
+    iconColor: PulseColors.primary,
   );
 
   // Favorites/Likes
@@ -200,6 +200,6 @@ class EmptyStates {
     title: 'No Likes Yet',
     message:
         'Keep swiping right on profiles you like!\nYour likes will be saved here.',
-    iconColor: const Color(0xFFFF6B9D),
+    iconColor: PulseColors.error,
   );
 }
