@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../theme/pulse_colors.dart';
 import '../common/pulse_button.dart';
 import '../common/pulse_toast.dart';
 import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
@@ -591,10 +590,10 @@ class _BoostSuperLikeWidgetState extends State<BoostSuperLikeWidget>
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: PulseColors.primary.withValues(alpha: 0.1),
+              color: context.primaryColor.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: PulseColors.primary, size: 20),
+            child: Icon(icon, color: context.primaryColor, size: 20),
           ),
           const SizedBox(width: 16),
           Expanded(

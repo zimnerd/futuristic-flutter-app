@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../theme/pulse_colors.dart';
 import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Reusable empty state widget for consistent UX across the app
@@ -37,7 +36,7 @@ class EmptyStateWidget extends StatelessWidget {
               width: iconSize + 40,
               height: iconSize + 40,
               decoration: BoxDecoration(
-                color: (iconColor ?? PulseColors.primary).withValues(
+                color: (iconColor ?? context.primaryColor).withValues(
                   alpha: 0.1,
                 ),
                 shape: BoxShape.circle,
@@ -45,7 +44,7 @@ class EmptyStateWidget extends StatelessWidget {
               child: Icon(
                 icon,
                 size: iconSize,
-                color: iconColor ?? PulseColors.primary,
+                color: iconColor ?? context.primaryColor,
               ),
             ),
             const SizedBox(height: 24),
@@ -53,7 +52,8 @@ class EmptyStateWidget extends StatelessWidget {
             // Title
             Text(
               title,
-              style: PulseTextStyles.headlineSmall.copyWith(
+              style: TextStyle(
+                fontSize: 24,
                 color: context.textPrimary,
                 fontWeight: FontWeight.bold,
               ),
@@ -64,7 +64,8 @@ class EmptyStateWidget extends StatelessWidget {
             // Message
             Text(
               message,
-              style: PulseTextStyles.bodyLarge.copyWith(
+              style: TextStyle(
+                fontSize: 16,
                 color: context.textSecondary,
               ),
               textAlign: TextAlign.center,
@@ -76,19 +77,20 @@ class EmptyStateWidget extends StatelessWidget {
               ElevatedButton(
                 onPressed: onAction,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: PulseColors.primary,
+                  backgroundColor: context.primaryColor,
                   foregroundColor: context.textOnPrimary,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 32,
                     vertical: 16,
                   ),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(PulseRadii.lg),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
                 child: Text(
                   actionLabel!,
-                  style: PulseTextStyles.labelLarge.copyWith(
+                  style: TextStyle(
+                    fontSize: 14,
                     color: context.textOnPrimary,
                     fontWeight: FontWeight.w600,
                   ),
@@ -114,7 +116,7 @@ class EmptyStates {
     onAction: onExplore,
   );
 
-  // Matches
+  // Matches - Note: iconColor will use primary color from context as default
   static Widget noMatches({VoidCallback? onDiscover}) => EmptyStateWidget(
     icon: Icons.favorite_border,
     title: 'No Matches Yet',
@@ -122,7 +124,6 @@ class EmptyStates {
         'Keep swiping to find your perfect match!\nYour mutual likes will appear here.',
     actionLabel: 'Start Swiping',
     onAction: onDiscover,
-    iconColor: PulseColors.error,
   );
 
   // Discovery
@@ -135,7 +136,6 @@ class EmptyStates {
         'You\'ve seen everyone nearby.\nTry adjusting your filters or check back later!',
     actionLabel: 'Adjust Filters',
     onAction: onAdjustFilters,
-    iconColor: PulseColors.primary,
   );
 
   // Events
@@ -145,7 +145,6 @@ class EmptyStates {
     message: 'No events match your criteria.\nBe the first to create an event!',
     actionLabel: 'Create Event',
     onAction: onCreate,
-    iconColor: PulseColors.warning,
   );
 
   // Search Results
@@ -163,7 +162,6 @@ class EmptyStates {
     title: 'No Blocked Users',
     message:
         'You haven\'t blocked anyone yet.\nBlocked users will appear here.',
-    iconColor: PulseColors.error,
   );
 
   // Statistics
@@ -172,7 +170,6 @@ class EmptyStates {
     title: 'No Statistics Yet',
     message:
         'Start interacting with others to see your stats.\nYour activity will be tracked here.',
-    iconColor: PulseColors.secondary,
   );
 
   // Call History
@@ -183,7 +180,6 @@ class EmptyStates {
         'You haven\'t made or received any calls yet.\nStart a call with your matches!',
     actionLabel: 'View Matches',
     onAction: onStartCall,
-    iconColor: PulseColors.success,
   );
 
   // Notifications
@@ -191,7 +187,6 @@ class EmptyStates {
     icon: Icons.notifications_off,
     title: 'No Notifications',
     message: 'You\'re all caught up!\nNew notifications will appear here.',
-    iconColor: PulseColors.primary,
   );
 
   // Favorites/Likes
@@ -200,6 +195,5 @@ class EmptyStates {
     title: 'No Likes Yet',
     message:
         'Keep swiping right on profiles you like!\nYour likes will be saved here.',
-    iconColor: PulseColors.error,
   );
 }

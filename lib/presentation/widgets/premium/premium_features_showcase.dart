@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../../data/models/premium.dart';
-import '../../theme/pulse_colors.dart';
 import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Showcase widget for premium features with interactive demonstrations
@@ -78,8 +77,8 @@ class _PremiumFeaturesShowcaseState extends State<PremiumFeaturesShowcase>
     return Container(
       height: 280,
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [PulseColors.primary, PulseColors.secondary],
+        gradient: LinearGradient(
+          colors: [context.primaryColor, context.accentColor],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -284,7 +283,7 @@ class PremiumFeaturesGrid extends StatelessWidget {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: PulseColors.primary.withValues(alpha: 0.1),
+                color: context.primaryColor.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Center(
@@ -353,7 +352,7 @@ class PremiumFeaturesList extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: PulseColors.primary.withValues(alpha: 0.1),
+                color: context.primaryColor.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Center(

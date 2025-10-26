@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../data/models/premium.dart';
 import '../../blocs/premium/premium_bloc.dart';
 import '../../blocs/premium/premium_event.dart';
-import '../../theme/pulse_colors.dart';
 import '../common/pulse_button.dart';
 import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
@@ -94,8 +93,8 @@ class _PremiumTierCardState extends State<PremiumTierCard>
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
                 gradient: widget.isSelected
-                    ? const LinearGradient(
-                        colors: [PulseColors.primary, PulseColors.secondary],
+                    ? LinearGradient(
+                        colors: [context.primaryColor, context.accentColor],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       )
@@ -105,15 +104,15 @@ class _PremiumTierCardState extends State<PremiumTierCard>
                   color: widget.isSelected
                       ? Colors.transparent
                       : widget.tier == PremiumTier.premium
-                      ? PulseColors.primary
+                      ? context.primaryColor
                       : context.outlineColor.shade300,
                   width: widget.tier == PremiumTier.premium ? 2 : 1,
                 ),
                 boxShadow: [
                   BoxShadow(
                     color: widget.isSelected
-                        ? PulseColors.primary.withValues(alpha: 0.3)
-                        : PulseColors.outline.withValues(alpha: 0.2),
+                        ? context.primaryColor.withValues(alpha: 0.3)
+                        : context.outlineColor.withValues(alpha: 0.2),
                     blurRadius: widget.isSelected ? 20 : 10,
                     offset: const Offset(0, 5),
                     spreadRadius: widget.isSelected ? 2 : 0,
@@ -146,7 +145,7 @@ class _PremiumTierCardState extends State<PremiumTierCard>
                                       fontWeight: FontWeight.bold,
                                       color: widget.isSelected
                                           ? Colors.white
-                                          : PulseColors.onSurface,
+                                          : context.onSurfaceColor,
                                     ),
                                   ),
                                   Text(
@@ -170,7 +169,7 @@ class _PremiumTierCardState extends State<PremiumTierCard>
                                 decoration: BoxDecoration(
                                   color: widget.isSelected
                                       ? Colors.white
-                                      : PulseColors.primary,
+                                      : context.primaryColor,
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: Text(
@@ -179,7 +178,7 @@ class _PremiumTierCardState extends State<PremiumTierCard>
                                     fontSize: 10,
                                     fontWeight: FontWeight.bold,
                                     color: widget.isSelected
-                                        ? PulseColors.primary
+                                        ? context.primaryColor
                                         : Colors.white,
                                   ),
                                 ),
@@ -260,7 +259,7 @@ class _PremiumTierCardState extends State<PremiumTierCard>
                         padding: const EdgeInsets.all(4),
                         child: Icon(
                           Icons.check,
-                          color: PulseColors.primary,
+                          color: context.primaryColor,
                           size: 16,
                         ),
                       ),
@@ -286,7 +285,7 @@ class _PremiumTierCardState extends State<PremiumTierCard>
                 gradient: LinearGradient(
                   colors: [
                     Colors.transparent,
-                    PulseColors.primary.withValues(alpha: 0.1),
+                    context.primaryColor.withValues(alpha: 0.1),
                     Colors.transparent,
                   ],
                   stops: [

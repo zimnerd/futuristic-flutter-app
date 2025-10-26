@@ -762,6 +762,18 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                         ),
                         const SizedBox(width: PulseSpacing.sm),
 
+                        // Who Liked You button
+                        _buildModernHeaderButton(
+                          icon: Icons.favorite,
+                          color: PulseColors.error,
+                          onTap: () {
+                            HapticFeedback.mediumImpact();
+                            context.push('/who-liked-you');
+                          },
+                          tooltip: 'Who Liked You',
+                        ),
+                        const SizedBox(width: PulseSpacing.sm),
+
                         // Notifications button
                         _buildModernHeaderButton(
                           icon: PulseIcons.notifications,

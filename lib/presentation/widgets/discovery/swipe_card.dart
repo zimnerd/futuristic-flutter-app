@@ -48,47 +48,48 @@ class _SwipeCardConstants {
   static const double indicatorActiveOpacity = 1.0;
   static const double indicatorInactiveOpacity = 0.3;
 
-  // Swipe colors
-  static const Color likeColor = Color(0xFF4CAF50);
-  static const Color nopeColor = Color(0xFFFF5722);
-  static const Color superLikeColor = Color(0xFF2196F3);
+  // Swipe colors - removed hardcoded values, use context extensions instead
 }
 
 /// Swipe direction configuration
 class _SwipeConfig {
   const _SwipeConfig({
-    required this.color,
     required this.icon,
     required this.label,
   });
 
-  final Color color;
   final IconData icon;
   final String label;
 
   static const Map<SwipeDirection, _SwipeConfig> configs = {
     SwipeDirection.right: _SwipeConfig(
-      color: _SwipeCardConstants.likeColor,
       icon: Icons.favorite,
       label: 'LIKE',
     ),
     SwipeDirection.left: _SwipeConfig(
-      color: _SwipeCardConstants.nopeColor,
       icon: Icons.close,
       label: 'NOPE',
     ),
     SwipeDirection.up: _SwipeConfig(
-      color: _SwipeCardConstants.superLikeColor,
       icon: Icons.star,
       label: 'SUPER LIKE',
     ),
   };
 
-  static const _SwipeConfig? Function(SwipeDirection?) getConfig =
-      _getConfigImpl;
-
-  static _SwipeConfig? _getConfigImpl(SwipeDirection? direction) {
+  static _SwipeConfig? getConfig(SwipeDirection? direction) {
     return direction != null ? configs[direction] : null;
+  }
+
+  // Get color from context based on direction
+  static Color getColor(BuildContext context, SwipeDirection direction) {
+    switch (direction) {
+      case SwipeDirection.right:
+        return context.swipeLike;
+      case SwipeDirection.left:
+        return context.swipeNope;
+      case SwipeDirection.up:
+        return context.swipeSuperLike;
+    }
   }
 }
 
@@ -366,7 +367,10 @@ class _UserInfoOverlay extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color.fromRGBO(0, 0, 0, 0), Color.fromRGBO(0, 0, 0, 0.8)],
+            colors: [
+              Colors.transparent,
+              Colors.black.withValues(alpha: 0.8),
+            ],
           ),
           borderRadius: BorderRadius.only(
             bottomLeft: Radius.circular(_SwipeCardConstants.cardBorderRadius),
@@ -398,18 +402,16 @@ class _UserInfoOverlay extends StatelessWidget {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          _getCompatibilityColor(compatibilityScore!),
-                          _getCompatibilityColor(
-                            compatibilityScore!,
-                          ).withValues(alpha: 0.8),
+                          _getCompatibilityColor(context, compatibilityScore!),
+                          _getCompatibilityColor(context, compatibilityScore!)
+                              .withValues(alpha: 0.8),
                         ],
                       ),
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: _getCompatibilityColor(
-                            compatibilityScore!,
-                          ).withValues(alpha: 0.4),
+                          color: _getCompatibilityColor(context, compatibilityScore!)
+                              .withValues(alpha: 0.4),
                           blurRadius: 8,
                           spreadRadius: 1,
                         ),
@@ -605,15 +607,15 @@ class _UserInfoOverlay extends StatelessWidget {
   }
 
   /// Get color based on compatibility score
-  Color _getCompatibilityColor(double score) {
+  Color _getCompatibilityColor(BuildContext context, double score) {
     if (score >= 80) {
-      return const Color(0xFF4CAF50); // Green for high compatibility
+      return context.performanceExcellent; // Green for high compatibility
     } else if (score >= 60) {
-      return const Color(0xFFFFC107); // Amber for medium-high compatibility
+      return context.performanceGood; // Amber for medium-high compatibility
     } else if (score >= 40) {
-      return const Color(0xFFFF9800); // Orange for medium compatibility
+      return context.performanceModerate; // Orange for medium compatibility
     } else {
-      return const Color(0xFFFF5722); // Red for low compatibility
+      return context.performancePoor; // Red for low compatibility
     }
   }
 }
@@ -685,12 +687,14 @@ class _SwipeOverlay extends StatelessWidget {
     }
 
     final config = _SwipeConfig.getConfig(swipeDirection);
-    if (config == null) return const SizedBox.shrink();
+    if (config == null || swipeDirection == null) return const SizedBox.shrink();
+
+    final swipeColor = _SwipeConfig.getColor(context, swipeDirection!);
 
     return Positioned.fill(
       child: Container(
         decoration: BoxDecoration(
-          color: config.color.withValues(
+          color: swipeColor.withValues(
             alpha: swipeProgress.abs() * _SwipeCardConstants.overlayMaxOpacity,
           ),
           borderRadius: BorderRadius.circular(
@@ -704,7 +708,7 @@ class _SwipeOverlay extends StatelessWidget {
               vertical: _SwipeCardConstants.swipeOverlayVerticalPadding,
             ),
             decoration: BoxDecoration(
-              color: config.color,
+              color: swipeColor,
               borderRadius: BorderRadius.circular(
                 _SwipeCardConstants.swipeOverlayBorderRadius,
               ),
@@ -759,21 +763,21 @@ class _PerformanceOptimizedCard extends StatelessWidget {
   final Widget swipeOverlay;
   final bool showDetails;
 
-  // Pre-calculated decorations for better performance
-  static const _cardDecoration = BoxDecoration(
+  // Card decoration with shadows
+  static BoxDecoration get _cardDecoration => BoxDecoration(
     borderRadius: BorderRadius.all(
       Radius.circular(_SwipeCardConstants.cardBorderRadius),
     ),
     boxShadow: [
       BoxShadow(
-        color: Color.fromRGBO(0, 0, 0, 0.15),
-        offset: Offset(0, 8),
+        color: Colors.black.withValues(alpha: 0.15),
+        offset: const Offset(0, 8),
         blurRadius: 24,
         spreadRadius: 0,
       ),
       BoxShadow(
-        color: Color.fromRGBO(0, 0, 0, 0.08),
-        offset: Offset(0, 2),
+        color: Colors.black.withValues(alpha: 0.08),
+        offset: const Offset(0, 2),
         blurRadius: 8,
         spreadRadius: 0,
       ),

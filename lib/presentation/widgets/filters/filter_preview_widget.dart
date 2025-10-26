@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/theme/theme_extensions.dart';
-import '../../theme/pulse_colors.dart';
 import '../../../domain/entities/filter_preferences.dart';
 import '../../blocs/filters/filter_bloc.dart';
 import '../../blocs/filters/filter_event.dart';
 
-/// Reusable filter preview widget showing current filter summary
-/// Used in discovery screen and other places that need quick filter overview
-class FilterPreviewWidget extends StatelessWidget {
+/// Compact filter modal - single column, minimal space, maximum efficiency
+/// Like Bumble but even better - instant inline editing without modals
+class FilterPreviewWidget extends StatefulWidget {
   final FilterPreferences preferences;
   final VoidCallback? onAdvancedTap;
 
@@ -19,236 +18,434 @@ class FilterPreviewWidget extends StatelessWidget {
   });
 
   @override
+  State<FilterPreviewWidget> createState() => _FilterPreviewWidgetState();
+}
+
+class _FilterPreviewWidgetState extends State<FilterPreviewWidget> {
+  late int _minAge;
+  late int _maxAge;
+  late double _distance;
+
+  @override
+  void initState() {
+    super.initState();
+    _minAge = widget.preferences.minAge;
+    _maxAge = widget.preferences.maxAge;
+    _distance = widget.preferences.maxDistance;
+  }
+
+  @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Filter sections grid - 2 columns
-          _buildFilterGrid(context),
-          const SizedBox(height: 24),
-          // Action buttons
-          _buildActionButtons(context),
-          SizedBox(height: MediaQuery.of(context).padding.bottom + 16),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFilterGrid(BuildContext context) {
-    return GridView.count(
-      crossAxisCount: 2,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisSpacing: 12,
-      mainAxisSpacing: 12,
-      children: [
-        _buildFilterChip(
-          context,
-          icon: Icons.cake_outlined,
-          label: 'Age',
-          value: '${preferences.minAge} - ${preferences.maxAge}',
-          onTap: () => _showAgeEditor(context),
-        ),
-        _buildFilterChip(
-          context,
-          icon: Icons.location_on_outlined,
-          label: 'Distance',
-          value: '${preferences.maxDistance.toInt()} km',
-          onTap: () => _showDistanceEditor(context),
-        ),
-        _buildFilterChip(
-          context,
-          icon: Icons.school_outlined,
-          label: 'Education',
-          value: preferences.education ?? 'Any',
-          onTap: () => _showEducationEditor(context),
-        ),
-        _buildFilterChip(
-          context,
-          icon: Icons.favorite_outline,
-          label: 'Looking for',
-          value: preferences.relationshipType ?? 'Any',
-          onTap: () => _showRelationshipEditor(context),
-        ),
-        _buildFilterChip(
-          context,
-          icon: Icons.star_outline,
-          label: 'Verified',
-          value: preferences.showOnlyVerified ? 'Yes' : 'No',
-          onTap: () => _toggleVerified(context),
-        ),
-        _buildFilterChip(
-          context,
-          icon: Icons.image_outlined,
-          label: 'Photos',
-          value: preferences.showOnlyWithPhotos ? 'Yes' : 'No',
-          onTap: () => _togglePhotos(context),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildFilterChip(
-    BuildContext context, {
-    required IconData icon,
-    required String label,
-    required String value,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
       child: Container(
-        decoration: BoxDecoration(
-          color: context.backgroundColor,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: context.borderColor.shade300,
-            width: 1,
-          ),
-        ),
-        padding: const EdgeInsets.all(12),
+        color: context.surfaceColor,
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              children: [
-                Icon(
-                  icon,
-                  size: 16,
-                  color: PulseColors.primary,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    label,
+            // Header
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Quick Filters',
                     style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: context.textSecondary,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: context.textPrimary,
                     ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Expanded(
-              child: Text(
-                value,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: context.textPrimary,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Icon(
+                      Icons.close,
+                      color: context.textSecondary,
+                      size: 24,
+                    ),
+                  ),
+                ],
               ),
             ),
+
+            // Single column filter list - compact!
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                children: [
+                  // Age - single range slider
+                  _buildFilterRow(
+                    context,
+                    icon: Icons.cake_outlined,
+                    label: 'Age',
+                    value: '$_minAge - $_maxAge',
+                    child: SizedBox(
+                      height: 48,
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: RangeSlider(
+                              values: RangeValues(
+                                _minAge.toDouble(),
+                                _maxAge.toDouble(),
+                              ),
+                              min: 18,
+                              max: 99,
+                              divisions: 81,
+                              labels: RangeLabels('${_minAge}', '${_maxAge}'),
+                              onChanged: (RangeValues values) {
+                                setState(() {
+                                  _minAge = values.start.toInt();
+                                  _maxAge = values.end.toInt();
+                                });
+                                context.read<FilterBLoC>().add(
+                                  UpdateAgeRange(
+                                    values.start.toInt(),
+                                    values.end.toInt(),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // Distance
+                  _buildFilterRow(
+                    context,
+                    icon: Icons.location_on_outlined,
+                    label: 'Distance',
+                    value: '${_distance.toInt()} km',
+                    child: SizedBox(
+                      height: 48,
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Slider(
+                              value: _distance,
+                              min: 1,
+                              max: 500,
+                              divisions: 99,
+                              onChanged: (val) {
+                                setState(() => _distance = val);
+                                context.read<FilterBLoC>().add(
+                                  UpdateMaxDistance(val),
+                                );
+                              },
+                            ),
+                          ),
+                          SizedBox(
+                            width: 36,
+                            child: Text(
+                              '${_distance.toInt()}',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: context.primaryColor,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // Education
+                  _buildCompactFilterRow(
+                    context,
+                    icon: Icons.school_outlined,
+                    label: 'Education',
+                    options: [
+                      'Any',
+                      'High School',
+                      'Bachelor',
+                      'Master',
+                      'PhD',
+                    ],
+                    selected: widget.preferences.education ?? 'Any',
+                    onSelect: (edu) {
+                      context.read<FilterBLoC>().add(
+                        UpdateEducation(edu == 'Any' ? null : edu),
+                      );
+                    },
+                  ),
+
+                  // Looking for
+                  _buildCompactFilterRow(
+                    context,
+                    icon: Icons.favorite_outline,
+                    label: 'Looking for',
+                    options: ['Any', 'Dating', 'Relationship', 'Casual'],
+                    selected: widget.preferences.relationshipType ?? 'Any',
+                    onSelect: (type) {
+                      context.read<FilterBLoC>().add(
+                        UpdateRelationshipType(type == 'Any' ? null : type),
+                      );
+                    },
+                  ),
+
+                  // Toggles - inline
+                  _buildToggleRow(
+                    context,
+                    icon: Icons.star_outline,
+                    label: 'Verified Only',
+                    value: widget.preferences.showOnlyVerified,
+                    onToggle: () {
+                      context.read<FilterBLoC>().add(
+                        UpdateVerificationPreference(
+                          !widget.preferences.showOnlyVerified,
+                        ),
+                      );
+                    },
+                  ),
+                  _buildToggleRow(
+                    context,
+                    icon: Icons.image_outlined,
+                    label: 'Has Photos',
+                    value: widget.preferences.showOnlyWithPhotos,
+                    onToggle: () {
+                      context.read<FilterBLoC>().add(
+                        UpdatePhotosPreference(
+                          !widget.preferences.showOnlyWithPhotos,
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+
+            // Action buttons
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => _showResetConfirm(context),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: context.textPrimary,
+                        side: BorderSide(color: context.borderColor.shade400),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: Text(
+                        'Reset',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: context.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: widget.onAdvancedTap,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: context.primaryColor,
+                        foregroundColor: context.surfaceColor,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: Text(
+                        'Advanced',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: context.surfaceColor,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: MediaQuery.of(context).padding.bottom + 8),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildActionButtons(BuildContext context) {
-    return Row(
+  Widget _buildFilterRow(
+    BuildContext context, {
+    IconData? icon,
+    required String label,
+    required String value,
+    required Widget child,
+  }) {
+    return Column(
       children: [
-        Expanded(
-          child: OutlinedButton(
-            onPressed: () => _showResetConfirm(context),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: context.textPrimary,
-              side: BorderSide(color: context.borderColor.shade400),
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Row(
+            children: [
+              if (icon != null) ...[
+                Icon(icon, size: 18, color: context.primaryColor),
+                const SizedBox(width: 10),
+              ] else ...[
+                const SizedBox(width: 28),
+              ],
+              Expanded(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: context.textPrimary,
+                  ),
+                ),
               ),
-            ),
-            child: Text(
-              'Reset',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: context.textSecondary,
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: context.primaryColor,
+                ),
               ),
-            ),
+            ],
           ),
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: ElevatedButton(
-            onPressed: onAdvancedTap,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: PulseColors.primary,
-              foregroundColor: context.surfaceColor,
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            child: Text(
-              'Advanced',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: context.surfaceColor,
-              ),
-            ),
-          ),
-        ),
+        child,
+        const SizedBox(height: 4),
       ],
     );
   }
 
-  void _showAgeEditor(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => _AgeEditorSheet(preferences: preferences),
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
+  Widget _buildCompactFilterRow(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required List<String> options,
+    required String selected,
+    required Function(String) onSelect,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 18, color: context.primaryColor),
+              const SizedBox(width: 10),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: context.textPrimary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 6,
+            children: options.map((opt) {
+              final isSelected = opt == selected;
+              return GestureDetector(
+                onTap: () => onSelect(opt),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? context.primaryColor
+                        : context.backgroundColor,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: isSelected
+                          ? context.primaryColor
+                          : context.borderColor.shade300,
+                      width: 0.5,
+                    ),
+                  ),
+                  child: Text(
+                    opt,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: isSelected
+                          ? context.surfaceColor
+                          : context.textSecondary,
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
     );
   }
 
-  void _showDistanceEditor(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => _DistanceEditorSheet(preferences: preferences),
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
+  Widget _buildToggleRow(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required bool value,
+    required VoidCallback onToggle,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: context.primaryColor),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: context.textPrimary,
+              ),
+            ),
+          ),
+          GestureDetector(
+            onTap: onToggle,
+            child: Container(
+              width: 44,
+              height: 24,
+              decoration: BoxDecoration(
+                color: value ? context.primaryColor : context.backgroundColor,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: value
+                      ? context.primaryColor
+                      : context.borderColor.shade300,
+                  width: 0.5,
+                ),
+              ),
+              child: Center(
+                child: Text(
+                  value ? 'Yes' : 'No',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: value ? context.surfaceColor : context.textSecondary,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
-  }
-
-  void _showEducationEditor(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => _EducationEditorSheet(preferences: preferences),
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-    );
-  }
-
-  void _showRelationshipEditor(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => _RelationshipEditorSheet(preferences: preferences),
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-    );
-  }
-
-  void _toggleVerified(BuildContext context) {
-    context.read<FilterBLoC>().add(
-          UpdateVerificationPreference(!preferences.showOnlyVerified),
-        );
-  }
-
-  void _togglePhotos(BuildContext context) {
-    context.read<FilterBLoC>().add(
-          UpdatePhotosPreference(!preferences.showOnlyWithPhotos),
-        );
   }
 
   void _showResetConfirm(BuildContext context) {
@@ -277,518 +474,11 @@ class FilterPreviewWidget extends StatelessWidget {
               context.read<FilterBLoC>().add(ResetFilterPreferences());
               Navigator.pop(context);
             },
-            child: const Text(
+            child: Text(
               'Reset',
-              style: TextStyle(color: Colors.red),
+              style: TextStyle(color: context.errorColor),
             ),
           ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Age range quick editor
-class _AgeEditorSheet extends StatefulWidget {
-  final FilterPreferences preferences;
-
-  const _AgeEditorSheet({required this.preferences});
-
-  @override
-  State<_AgeEditorSheet> createState() => _AgeEditorSheetState();
-}
-
-class _AgeEditorSheetState extends State<_AgeEditorSheet> {
-  late RangeValues _ageRange;
-
-  @override
-  void initState() {
-    super.initState();
-    _ageRange = RangeValues(
-      widget.preferences.minAge.toDouble(),
-      widget.preferences.maxAge.toDouble(),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: context.surfaceColor,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
-      ),
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Age Range',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: context.textPrimary,
-                  ),
-                ),
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: Icon(Icons.close, color: context.textSecondary),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Column(
-              children: [
-                Text(
-                  '${_ageRange.start.toInt()} - ${_ageRange.end.toInt()} years',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: PulseColors.primary,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                RangeSlider(
-                  values: _ageRange,
-                  min: 18,
-                  max: 99,
-                  divisions: 81,
-                  onChanged: (RangeValues values) {
-                    setState(() => _ageRange = values);
-                  },
-                ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      context.read<FilterBLoC>().add(
-                            UpdateAgeRange(
-                              _ageRange.start.toInt(),
-                              _ageRange.end.toInt(),
-                            ),
-                          );
-                      Navigator.pop(context);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: PulseColors.primary,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: const Text(
-                      'Apply',
-                      style: TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-        ],
-      ),
-    );
-  }
-}
-
-/// Distance quick editor
-class _DistanceEditorSheet extends StatefulWidget {
-  final FilterPreferences preferences;
-
-  const _DistanceEditorSheet({required this.preferences});
-
-  @override
-  State<_DistanceEditorSheet> createState() => _DistanceEditorSheetState();
-}
-
-class _DistanceEditorSheetState extends State<_DistanceEditorSheet> {
-  late double _distance;
-
-  @override
-  void initState() {
-    super.initState();
-    _distance = widget.preferences.maxDistance;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: context.surfaceColor,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
-      ),
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Maximum Distance',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: context.textPrimary,
-                  ),
-                ),
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: Icon(Icons.close, color: context.textSecondary),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Column(
-              children: [
-                Text(
-                  '${_distance.toInt()} km',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: PulseColors.primary,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Slider(
-                  value: _distance,
-                  min: 1,
-                  max: 200,
-                  divisions: 199,
-                  onChanged: (value) {
-                    setState(() => _distance = value);
-                  },
-                ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      context.read<FilterBLoC>().add(
-                            UpdateMaxDistance(_distance),
-                          );
-                      Navigator.pop(context);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: PulseColors.primary,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: const Text(
-                      'Apply',
-                      style: TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-        ],
-      ),
-    );
-  }
-}
-
-/// Education quick editor
-class _EducationEditorSheet extends StatefulWidget {
-  final FilterPreferences preferences;
-
-  const _EducationEditorSheet({required this.preferences});
-
-  @override
-  State<_EducationEditorSheet> createState() => _EducationEditorSheetState();
-}
-
-class _EducationEditorSheetState extends State<_EducationEditorSheet> {
-  late String? _education;
-  late List<String> _educationOptions;
-
-  @override
-  void initState() {
-    super.initState();
-    _education = widget.preferences.education;
-    _educationOptions = [
-      'Any',
-      'High School',
-      'Bachelor',
-      'Master',
-      'PhD',
-      'Vocational',
-    ];
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: context.surfaceColor,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
-      ),
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Education Level',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: context.textPrimary,
-                  ),
-                ),
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: Icon(Icons.close, color: context.textSecondary),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ..._educationOptions.map(
-                  (option) => GestureDetector(
-                    onTap: () {
-                      setState(() => _education = option == 'Any' ? null : option);
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(
-                            color: context.borderColor.shade200,
-                            width: 0.5,
-                          ),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            option,
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: context.textPrimary,
-                            ),
-                          ),
-                          if ((_education == null && option == 'Any') ||
-                              (_education == option))
-                            Icon(
-                              Icons.check_circle,
-                              color: PulseColors.primary,
-                              size: 24,
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      context.read<FilterBLoC>().add(
-                            UpdateEducation(_education),
-                          );
-                      Navigator.pop(context);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: PulseColors.primary,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: const Text(
-                      'Apply',
-                      style: TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-        ],
-      ),
-    );
-  }
-}
-
-/// Relationship type quick editor
-class _RelationshipEditorSheet extends StatefulWidget {
-  final FilterPreferences preferences;
-
-  const _RelationshipEditorSheet({required this.preferences});
-
-  @override
-  State<_RelationshipEditorSheet> createState() =>
-      _RelationshipEditorSheetState();
-}
-
-class _RelationshipEditorSheetState extends State<_RelationshipEditorSheet> {
-  late String? _relationshipType;
-  late List<String> _options;
-
-  @override
-  void initState() {
-    super.initState();
-    _relationshipType = widget.preferences.relationshipType;
-    _options = [
-      'Any',
-      'Casual dating',
-      'Long-term relationship',
-      'Friendship',
-      'Not sure yet',
-    ];
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: context.surfaceColor,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
-      ),
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Looking For',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: context.textPrimary,
-                  ),
-                ),
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: Icon(Icons.close, color: context.textSecondary),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ..._options.map(
-                  (option) => GestureDetector(
-                    onTap: () {
-                      setState(
-                        () => _relationshipType =
-                            option == 'Any' ? null : option,
-                      );
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(
-                            color: context.borderColor.shade200,
-                            width: 0.5,
-                          ),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            option,
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: context.textPrimary,
-                            ),
-                          ),
-                          if ((_relationshipType == null && option == 'Any') ||
-                              (_relationshipType == option))
-                            Icon(
-                              Icons.check_circle,
-                              color: PulseColors.primary,
-                              size: 24,
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      context.read<FilterBLoC>().add(
-                            UpdateRelationshipType(_relationshipType),
-                          );
-                      Navigator.pop(context);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: PulseColors.primary,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: const Text(
-                      'Apply',
-                      style: TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
         ],
       ),
     );

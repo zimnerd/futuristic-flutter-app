@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../data/models/premium.dart';
 import '../../blocs/premium/premium_bloc.dart';
 import '../../blocs/premium/premium_event.dart';
-import '../../theme/pulse_colors.dart';
 import '../common/pulse_toast.dart';
 import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
@@ -112,7 +111,7 @@ class CoinBalanceWidget extends StatelessWidget {
                 ElevatedButton(
                   onPressed: onBuyCoins,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: PulseColors.primary,
+                    backgroundColor: context.primaryColor,
                     foregroundColor: context.onSurfaceColor,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 20,
@@ -207,7 +206,7 @@ class CoinBalanceWidget extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Icon(icon, color: PulseColors.primary, size: 20),
+            Icon(icon, color: context.primaryColor, size: 20),
             const SizedBox(height: 4),
             Text(
               title,

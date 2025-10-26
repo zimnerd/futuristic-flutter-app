@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../../data/models/premium.dart';
-import '../../theme/pulse_colors.dart';
 import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Widget for displaying available subscription plans
@@ -40,15 +39,15 @@ class SubscriptionPlansWidget extends StatelessWidget {
           color: isCurrentPlan
               ? Colors.green
               : isPopular
-              ? PulseColors.primary
+              ? context.primaryColor
               : context.outlineColor.withValues(alpha: 0.3),
           width: isCurrentPlan || isPopular ? 2 : 1,
         ),
         gradient: isPopular
             ? LinearGradient(
                 colors: [
-                  PulseColors.primary.withValues(alpha: 0.1),
-                  PulseColors.primary.withValues(alpha: 0.05),
+                  context.primaryColor.withValues(alpha: 0.1),
+                  context.primaryColor.withValues(alpha: 0.05),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -68,7 +67,7 @@ class SubscriptionPlansWidget extends StatelessWidget {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: PulseColors.primary,
+                  color: context.primaryColor,
                   borderRadius: const BorderRadius.only(
                     topRight: Radius.circular(16),
                     bottomLeft: Radius.circular(16),
@@ -123,7 +122,7 @@ class SubscriptionPlansWidget extends StatelessWidget {
                             style: Theme.of(context).textTheme.titleLarge
                                 ?.copyWith(
                                   fontWeight: FontWeight.bold,
-                                  color: isPopular ? PulseColors.primary : null,
+                                  color: isPopular ? context.primaryColor : null,
                                 ),
                           ),
                           const SizedBox(height: 4),
@@ -135,7 +134,7 @@ class SubscriptionPlansWidget extends StatelessWidget {
                                     ?.copyWith(
                                       fontWeight: FontWeight.bold,
                                       color: isPopular
-                                          ? PulseColors.primary
+                                          ? context.primaryColor
                                           : Colors.grey[800],
                                     ),
                               ),
@@ -179,7 +178,7 @@ class SubscriptionPlansWidget extends StatelessWidget {
                       _getPlanIcon(plan.name),
                       size: 32,
                       color: isPopular
-                          ? PulseColors.primary
+                          ? context.primaryColor
                           : context.onSurfaceVariantColor,
                     ),
                   ],
@@ -209,7 +208,7 @@ class SubscriptionPlansWidget extends StatelessWidget {
                           Icons.check_circle,
                           size: 18,
                           color: isPopular
-                              ? PulseColors.primary
+                              ? context.primaryColor
                               : Colors.green[600],
                         ),
                         const SizedBox(width: 12),
@@ -237,7 +236,7 @@ class SubscriptionPlansWidget extends StatelessWidget {
                       backgroundColor: isCurrentPlan
                           ? context.outlineColor.withValues(alpha: 0.2)
                           : isPopular
-                          ? PulseColors.primary
+                          ? context.primaryColor
                           : Colors.grey[800],
                       foregroundColor: context.onSurfaceColor,
                       padding: const EdgeInsets.symmetric(vertical: 16),

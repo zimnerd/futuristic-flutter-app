@@ -4,7 +4,6 @@ import 'package:video_player/video_player.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-import '../../theme/pulse_colors.dart';
 import '../../../domain/entities/message.dart';
 import '../../../core/network/api_client.dart';
 import '../common/robust_network_image.dart';
@@ -84,7 +83,7 @@ class _MediaViewerState extends State<MediaViewer>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: context.mediaViewerBackground,
       body: Stack(
         children: [
           // Main media content
@@ -277,7 +276,7 @@ class _MediaViewerState extends State<MediaViewer>
                                     borderRadius: BorderRadius.circular(8),
                                     border: isSelected
                                         ? Border.all(
-                                            color: PulseColors.primary,
+                                            color: context.primaryColor,
                                             width: 2,
                                           )
                                         : null,
@@ -522,7 +521,7 @@ class _VideoPlayerWidgetState extends State<_VideoPlayerWidget> {
     if (!_isInitialized) {
       return Center(
         child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(PulseColors.primary),
+          valueColor: AlwaysStoppedAnimation<Color>(context.primaryColor),
         ),
       );
     }
@@ -572,7 +571,7 @@ class _VideoPlayerWidgetState extends State<_VideoPlayerWidget> {
                     _controller,
                     allowScrubbing: true,
                     colors: VideoProgressColors(
-                      playedColor: PulseColors.primary,
+                      playedColor: context.primaryColor,
                       bufferedColor: Colors.white.withValues(alpha: 0.3),
                       backgroundColor: context.surfaceColor.withValues(
                         alpha: 0.1,

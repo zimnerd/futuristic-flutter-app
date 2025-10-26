@@ -3,6 +3,7 @@ import '../../../domain/entities/user_profile.dart';
 import '../../../domain/entities/discovery_types.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/constants/api_constants.dart';
+import '../../../core/utils/logger.dart';
 
 /// Service for handling user discovery and swipe operations
 ///
@@ -217,15 +218,39 @@ class DiscoveryService {
         queryParameters: queryParams,
       );
 
-      final Map<String, dynamic> data = response.data as Map<String, dynamic>;
-      final List<dynamic> usersJson = data['data'] ?? [];
+      try {
+        final Map<String, dynamic> data = response.data as Map<String, dynamic>;
+        AppLogger.debug('Response data keys: ${data.keys.toString()}');
+        
+        final List<dynamic> usersJson = data['data'] ?? [];
+        AppLogger.debug('Found ${usersJson.length} user suggestions to parse');
 
-      return usersJson
-          .map(
-            (user) => _userProfileFromSuggestion(user as Map<String, dynamic>),
-          )
-          .toList();
+        final profiles = <UserProfile>[];
+        for (int i = 0; i < usersJson.length; i++) {
+          try {
+            final profile = _userProfileFromSuggestion(
+              usersJson[i] as Map<String, dynamic>,
+            );
+            profiles.add(profile);
+            AppLogger.debug('✅ Parsed profile $i: ${profile.name}');
+          } catch (itemError) {
+            AppLogger.error('❌ Failed to parse profile $i: $itemError');
+            // Continue parsing other profiles
+          }
+        }
+        
+        AppLogger.debug(
+          '✅ Successfully loaded ${profiles.length} who liked you profiles',
+        );
+        return profiles;
+      } catch (parseError) {
+        AppLogger.error(
+          '❌ Failed to parse who liked you response: $parseError',
+        );
+        throw Exception('Failed to fetch who liked you: $parseError');
+      }
     } catch (error) {
+      AppLogger.error('❌ Network error in getWhoLikedYou: $error');
       throw Exception('Failed to fetch who liked you: $error');
     }
   }

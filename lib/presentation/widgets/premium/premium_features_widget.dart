@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../../data/models/premium.dart';
-import '../../theme/pulse_colors.dart';
 import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 class PremiumFeaturesWidget extends StatelessWidget {
@@ -21,7 +20,7 @@ class PremiumFeaturesWidget extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.star, color: PulseColors.primary, size: 28),
+                Icon(Icons.star, color: context.primaryColor, size: 28),
                 const SizedBox(width: 12),
                 Text(
                   'Premium Features',
@@ -57,11 +56,11 @@ class PremiumFeaturesWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isUnlocked
-              ? PulseColors.primary.withValues(alpha: 0.3)
+              ? context.primaryColor.withValues(alpha: 0.3)
               : context.outlineColor.withValues(alpha: 0.3),
         ),
         color: isUnlocked
-            ? PulseColors.primary.withValues(alpha: 0.05)
+            ? context.primaryColor.withValues(alpha: 0.05)
             : Colors.grey[50],
       ),
       child: Row(
@@ -70,14 +69,14 @@ class PremiumFeaturesWidget extends StatelessWidget {
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: isUnlocked
-                  ? PulseColors.primary.withValues(alpha: 0.1)
+                  ? context.primaryColor.withValues(alpha: 0.1)
                   : context.outlineColor.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
               featureInfo.icon,
               color: isUnlocked
-                  ? PulseColors.primary
+                  ? context.primaryColor
                   : context.onSurfaceVariantColor,
               size: 20,
             ),

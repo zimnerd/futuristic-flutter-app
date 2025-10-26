@@ -84,6 +84,7 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
         currentIndex: 0, // Start prefetching from the first profile
       );
     } catch (error) {
+      AppLogger.error('Error loading discoverable users: $error');
       emit(
         DiscoveryError(message: _extractUserFriendlyErrorMessage(error)),
       );
@@ -136,6 +137,7 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
     } catch (error) {
       // Fallback to loading without filters if preferences fail
       AppLogger.debug('Error loading with preferences, falling back: $error');
+      AppLogger.error('Full error details: ${error.toString()}');
       add(const LoadDiscoverableUsers());
     }
   }
@@ -509,13 +511,17 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
   ) async {
     try {
       emit(const DiscoveryLoading());
+      AppLogger.debug('Loading who liked you...');
 
       final users = await _discoveryService.getWhoLikedYou(
         filters: event.filters,
         limit: 20,
       );
+      
+      AppLogger.debug('Got ${users.length} users who liked you');
 
       if (users.isEmpty) {
+        AppLogger.debug('Empty list - emitting DiscoveryEmpty');
         emit(
           DiscoveryEmpty(
             currentFilters: event.filters ?? const DiscoveryFilters(),
@@ -524,6 +530,7 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
         return;
       }
 
+      AppLogger.debug('Emitting DiscoveryLoaded with ${users.length} users');
       emit(
         DiscoveryLoaded(
           userStack: users,
@@ -537,6 +544,7 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
       _prefetchService.prefetchProfiles(profiles: users, currentIndex: 0);
     } catch (error) {
       AppLogger.debug('Failed to load who liked you: $error');
+      AppLogger.error('Full error: ${error.toString()}');
       emit(
         DiscoveryError(
           message: _extractUserFriendlyErrorMessage(error),
@@ -548,26 +556,29 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
   /// Extract user-friendly error message from error object
   /// Prevents technical DioException details from showing to users
   String _extractUserFriendlyErrorMessage(dynamic error) {
-    final errorString = error.toString();
+    final errorString = error.toString().toLowerCase();
+
+    // Log the full error for debugging
+    AppLogger.error('Discovery error: $errorString');
 
     // Check for authentication/session errors
     if (errorString.contains('401') ||
         errorString.contains('session has expired') ||
-        errorString.contains('Unauthorized')) {
+        errorString.contains('unauthorized')) {
       return 'Your session has expired. Please log in again.';
     }
 
     // Check for network errors
-    if (errorString.contains('SocketException') ||
-        errorString.contains('Connection refused') ||
-        errorString.contains('Failed host lookup') ||
-        errorString.contains('Network is unreachable')) {
+    if (errorString.contains('sockexception') ||
+        errorString.contains('connection refused') ||
+        errorString.contains('failed host lookup') ||
+        errorString.contains('network is unreachable')) {
       return 'Connection problem. Please check your internet.';
     }
 
     // Check for timeout errors
     if (errorString.contains('timeout') ||
-        errorString.contains('TimeoutException')) {
+        errorString.contains('timeoutexception')) {
       return 'Request timed out. Please try again.';
     }
 
@@ -580,17 +591,35 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
     }
 
     // Check for permission errors
-    if (errorString.contains('403') || errorString.contains('Forbidden')) {
+    if (errorString.contains('403') || errorString.contains('forbidden')) {
       return 'You don\'t have permission to do that.';
     }
 
     // Check for not found errors
-    if (errorString.contains('404') || errorString.contains('Not Found')) {
+    if (errorString.contains('404') || errorString.contains('not found')) {
       return 'Content not found. Please try again.';
     }
 
-    // Generic fallback for unknown errors
-    return 'Something went wrong. Please try again.';
+    // Check for rate limiting
+    if (errorString.contains('429') ||
+        errorString.contains('too many requests')) {
+      return 'You\'re swiping too fast. Take a breather!';
+    }
+
+    // Check for bad requests
+    if (errorString.contains('400') || errorString.contains('bad request')) {
+      return 'Invalid request. Please try again.';
+    }
+
+    // Check for API endpoint issues
+    if (errorString.contains('failed to fetch') ||
+        errorString.contains('endpoint') ||
+        errorString.contains('api')) {
+      return 'Server connection issue. Please try again.';
+    }
+
+    // Generic fallback with helpful suggestion
+    return 'Oops! Try refreshing or check your connection.';
   }
 }
 

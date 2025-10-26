@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../data/models/premium.dart';
-import '../../theme/pulse_colors.dart';
 import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 class CurrentSubscriptionWidget extends StatelessWidget {
@@ -27,7 +26,7 @@ class CurrentSubscriptionWidget extends StatelessWidget {
               children: [
                 Icon(
                   Icons.workspace_premium,
-                  color: PulseColors.primary,
+                  color: context.primaryColor,
                   size: 28,
                 ),
                 const SizedBox(width: 12),
@@ -105,7 +104,7 @@ class CurrentSubscriptionWidget extends StatelessWidget {
           child: ElevatedButton(
             onPressed: onManageSubscription,
             style: ElevatedButton.styleFrom(
-              backgroundColor: PulseColors.primary,
+              backgroundColor: context.primaryColor,
               foregroundColor: context.onSurfaceColor,
               padding: const EdgeInsets.symmetric(vertical: 12),
               shape: RoundedRectangleBorder(
@@ -221,7 +220,7 @@ class CurrentSubscriptionWidget extends StatelessWidget {
             Switch(
               value: subscription.autoRenew,
               onChanged: null, // Would be handled by parent
-              activeThumbColor: PulseColors.primary,
+              activeThumbColor: context.primaryColor,
             ),
           ],
         ),

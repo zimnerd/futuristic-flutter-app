@@ -79,21 +79,26 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
     final isSmallScreen = screenWidth < 400;
 
     return Scaffold(
-      backgroundColor: PulseColors.backgroundLight,
+      backgroundColor: context.backgroundColor,
       appBar: AppBar(
         title: Text(
           'Who Liked You',
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: context.textPrimary,
+          ),
         ),
-        backgroundColor: PulseColors.white,
+        backgroundColor: context.surfaceColor,
         elevation: 0,
         centerTitle: false,
+        iconTheme: IconThemeData(color: context.textPrimary),
         actions: [
           IconButton(
             icon: Badge(
               isLabelVisible: _currentFilter != WhoLikedYouFilter.all,
               label: Text('!'),
-              child: Icon(Icons.filter_list),
+              child: Icon(Icons.filter_list, color: context.textPrimary),
             ),
             onPressed: _showFilters,
             tooltip: 'Filter',
@@ -194,7 +199,7 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
         margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
-          color: context.borderColor.shade100,
+          color: context.borderColor,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -232,58 +237,56 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
   }) {
     final isSelected = _currentFilter == filter;
 
-    return Expanded(
-      child: GestureDetector(
-        onTap: () {
-          setState(() {
-            _currentFilter = filter;
-            _verifiedOnly = filter == WhoLikedYouFilter.verifiedOnly;
-            _superLikesOnly = filter == WhoLikedYouFilter.superLikes;
-          });
-          _loadWhoLikedYou();
-        },
-        child: AnimatedContainer(
-          duration: PulseAnimations.fast,
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-          margin: const EdgeInsets.symmetric(horizontal: 2),
-          decoration: BoxDecoration(
-            color: isSelected ? PulseColors.white : Colors.transparent,
-            borderRadius: BorderRadius.circular(8),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: PulseColors.primary.withValues(alpha: 0.1),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ]
-                : null,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (icon != null)
-                Icon(
-                  icon,
-                  size: 16,
-                  color: isSelected
-                      ? PulseColors.primary
-                      : context.borderColor.shade600,
-                ),
-              if (icon != null) const SizedBox(height: 2),
-              Text(
-                label,
-                textAlign: TextAlign.center,
-                style: PulseTypography.labelSmall.copyWith(
-                  color: isSelected
-                      ? PulseColors.primary
-                      : context.borderColor.shade600,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                ),
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _currentFilter = filter;
+          _verifiedOnly = filter == WhoLikedYouFilter.verifiedOnly;
+          _superLikesOnly = filter == WhoLikedYouFilter.superLikes;
+        });
+        _loadWhoLikedYou();
+      },
+      child: AnimatedContainer(
+        duration: PulseAnimations.fast,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        decoration: BoxDecoration(
+          color: isSelected ? context.surfaceColor : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: PulseColors.primary.withValues(alpha: 0.1),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (icon != null)
+              Icon(
+                icon,
+                size: 16,
+                color: isSelected
+                    ? PulseColors.primary
+                    : context.textSecondary,
               ),
-            ],
-          ),
+            if (icon != null) const SizedBox(width: 6),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: PulseTypography.labelSmall.copyWith(
+                color: isSelected
+                    ? PulseColors.primary
+                    : context.textSecondary,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -327,7 +330,7 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
               child: Icon(
                 Icons.favorite_border,
                 size: 60,
-                color: context.borderColor.shade400,
+                color: context.onSurfaceVariantColor,
               ),
             ),
             const SizedBox(height: 24),
@@ -335,7 +338,7 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
               'No one has liked you yet',
               style: PulseTypography.h3.copyWith(
                 fontWeight: FontWeight.bold,
-                color: context.borderColor.shade900,
+                color: context.textPrimary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -343,7 +346,7 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
             Text(
               'Keep swiping and someone will like you soon!',
               style: PulseTypography.bodyLarge.copyWith(
-                color: context.borderColor.shade600,
+                color: context.textSecondary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -385,7 +388,7 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
               'Something went wrong',
               style: PulseTypography.h3.copyWith(
                 fontWeight: FontWeight.bold,
-                color: context.borderColor.shade900,
+                color: context.textPrimary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -393,7 +396,7 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
             Text(
               message,
               style: PulseTypography.bodyLarge.copyWith(
-                color: context.borderColor.shade600,
+                color: context.textSecondary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -454,9 +457,9 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (context) => Container(
-        decoration: const BoxDecoration(
-          color: PulseColors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        decoration: BoxDecoration(
+          color: context.surfaceColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
         padding: const EdgeInsets.all(24),
         child: SafeArea(
@@ -484,7 +487,7 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
                 'Unlock Who Liked You',
                 style: PulseTypography.h2.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: context.borderColor.shade900,
+                  color: context.textPrimary,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -494,7 +497,7 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
               Text(
                 'Upgrade to Premium to see who liked you and match instantly!',
                 style: PulseTypography.bodyLarge.copyWith(
-                  color: context.borderColor.shade600,
+                  color: context.textSecondary,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -581,14 +584,14 @@ class _WhoLikedYouScreenState extends State<WhoLikedYouScreen> {
                 title,
                 style: PulseTypography.bodyLarge.copyWith(
                   fontWeight: FontWeight.w600,
-                  color:context.borderColor.shade900,
+                  color: context.textPrimary,
                 ),
               ),
               const SizedBox(height: 4),
               Text(
                 description,
                 style: PulseTypography.bodyMedium.copyWith(
-                  color: context.borderColor.shade600,
+                  color: context.textSecondary,
                 ),
               ),
             ],
@@ -970,7 +973,7 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
                     'Filters',
                     style: PulseTypography.h3.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: context.borderColor.shade900,
+                      color: context.textPrimary,
                     ),
                   ),
                   const Spacer(),
@@ -1007,7 +1010,7 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
               subtitle: Text(
                 'Show only verified users',
                 style: PulseTypography.bodySmall.copyWith(
-                  color: context.borderColor.shade600,
+                  color: context.textSecondary,
                 ),
               ),
               value: _verifiedOnly,
@@ -1023,14 +1026,14 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
               title: Text(
                 'Super Likes only',
                 style: PulseTypography.bodyMedium.copyWith(
-                  color: context.borderColor.shade900,
+                  color: context.textPrimary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
               subtitle: Text(
                 'Show only users who super liked you',
                 style: PulseTypography.bodySmall.copyWith(
-                  color: context.borderColor.shade600,
+                  color: context.textSecondary,
                 ),
               ),
               value: _superLikesOnly,

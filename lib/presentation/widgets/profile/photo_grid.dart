@@ -4,7 +4,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:logger/logger.dart';
 import 'dart:io';
 
-import '../../theme/pulse_colors.dart';
 import '../../../domain/entities/user_profile.dart';
 import '../../blocs/profile/profile_bloc.dart';
 import '../common/robust_network_image.dart';
@@ -391,7 +390,7 @@ class _PhotoGridState extends State<PhotoGrid> {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: PulseColors.primary,
+                    color: context.primaryColor,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -460,7 +459,7 @@ class _PhotoGridState extends State<PhotoGrid> {
                       _buildActionButton(
                         icon: Icons.star,
                         onTap: () => _setAsPrimary(index),
-                        backgroundColor: PulseColors.primary,
+                        backgroundColor: context.primaryColor,
                       ),
                   ],
                 ),
@@ -599,7 +598,7 @@ class _PhotoGridState extends State<PhotoGrid> {
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: PulseColors.success.withValues(alpha: 0.9),
+                  color: context.successColor.withValues(alpha: 0.9),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
@@ -624,7 +623,7 @@ class _PhotoGridState extends State<PhotoGrid> {
                   children: [
                     Icon(
                       Icons.error_outline,
-                      color: PulseColors.error,
+                      color: context.errorColor,
                       size: 32,
                     ),
                     const SizedBox(height: 8),
@@ -651,7 +650,7 @@ class _PhotoGridState extends State<PhotoGrid> {
                             icon: Icon(Icons.refresh, size: 16),
                             label: Text('Retry'),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: PulseColors.primary,
+                              backgroundColor: context.primaryColor,
                               foregroundColor: context.onSurfaceColor,
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 12,
@@ -702,7 +701,7 @@ class _PhotoGridState extends State<PhotoGrid> {
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: _isUploading
-                ? PulseColors.primary
+                ? context.primaryColor
                 : context.outlineColor.withValues(alpha: 0.3),
             width: 2,
             style: BorderStyle.solid,
@@ -712,9 +711,9 @@ class _PhotoGridState extends State<PhotoGrid> {
             ? Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const CircularProgressIndicator(
+                  CircularProgressIndicator(
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      PulseColors.primary,
+                      context.primaryColor,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -734,12 +733,12 @@ class _PhotoGridState extends State<PhotoGrid> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: PulseColors.primary.withValues(alpha: 0.1),
+                      color: context.primaryColor.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       Icons.add_a_photo,
-                      color: PulseColors.primary,
+                      color: context.primaryColor,
                       size: 24,
                     ),
                   ),
@@ -1205,7 +1204,7 @@ class _PhotoDetailsSheetState extends State<_PhotoDetailsSheet> {
                 child: ElevatedButton(
                   onPressed: () => Navigator.pop(context),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: PulseColors.primary,
+                    backgroundColor: context.primaryColor,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -1355,7 +1354,7 @@ class _ReorderableGridViewState extends State<ReorderableGridView> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
                   border: isHovered
-                      ? Border.all(color: PulseColors.primary, width: 2)
+                      ? Border.all(color: context.primaryColor, width: 2)
                       : null,
                 ),
                 child: child,
