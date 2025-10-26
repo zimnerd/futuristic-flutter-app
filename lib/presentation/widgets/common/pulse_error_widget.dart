@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Common error widget with retry functionality
 class PulseErrorWidget extends StatelessWidget {
@@ -59,8 +59,8 @@ class PulseErrorWidget extends StatelessWidget {
                 icon: Icon(Icons.refresh),
                 label: Text('Try Again'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: PulseColors.primary,
-                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                  backgroundColor: context.primaryColor,
+                  foregroundColor: context.colorScheme.onPrimary,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 24,
                     vertical: 12,

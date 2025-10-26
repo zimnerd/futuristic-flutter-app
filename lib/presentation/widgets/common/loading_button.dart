@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../core/theme/pulse_design_system.dart';
 import '../../../core/utils/haptic_feedback_utils.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Loading Button with automatic state management
 ///
@@ -167,14 +167,14 @@ class _LoadingButtonState extends State<LoadingButton>
     switch (_state) {
       case LoadingButtonState.success:
         return baseStyle?.copyWith(
-              backgroundColor: WidgetStateProperty.all(PulseColors.success),
+              backgroundColor: WidgetStateProperty.all(context.successColor),
             ) ??
-            ElevatedButton.styleFrom(backgroundColor: PulseColors.success);
+            ElevatedButton.styleFrom(backgroundColor: context.successColor);
       case LoadingButtonState.error:
         return baseStyle?.copyWith(
-              backgroundColor: WidgetStateProperty.all(PulseColors.reject),
+              backgroundColor: WidgetStateProperty.all(context.errorColor),
             ) ??
-            ElevatedButton.styleFrom(backgroundColor: PulseColors.reject);
+            ElevatedButton.styleFrom(backgroundColor: context.errorColor);
       default:
         return baseStyle;
     }

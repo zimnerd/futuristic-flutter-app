@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
-import '../../theme/pulse_colors.dart';
+import '../../theme/pulse_colors.dart'; // For PulseSpacing, PulseTextStyles
 
 /// Loading indicator with Pulse branding
 class PulseLoadingIndicator extends StatelessWidget {
@@ -21,7 +21,9 @@ class PulseLoadingIndicator extends StatelessWidget {
       width: _getSize(),
       child: CircularProgressIndicator(
         strokeWidth: _getStrokeWidth(),
-        valueColor: AlwaysStoppedAnimation<Color>(color ?? PulseColors.primary),
+        valueColor: AlwaysStoppedAnimation<Color>(
+          color ?? context.primaryColor,
+        ),
       ),
     );
   }
@@ -110,12 +112,12 @@ class PulseEmptyState extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 64, color: PulseColors.onSurfaceVariant),
+            Icon(icon, size: 64, color: context.onSurfaceVariantColor),
             const SizedBox(height: PulseSpacing.lg),
             Text(
               title,
               style: PulseTextStyles.headlineSmall.copyWith(
-                color: PulseColors.onSurfaceVariant,
+                color: context.onSurfaceVariantColor,
               ),
               textAlign: TextAlign.center,
             ),
@@ -124,7 +126,7 @@ class PulseEmptyState extends StatelessWidget {
               Text(
                 subtitle!,
                 style: PulseTextStyles.bodyMedium.copyWith(
-                  color: PulseColors.onSurfaceVariant,
+                  color: context.onSurfaceVariantColor,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -163,12 +165,12 @@ class PulseErrorState extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.error_outline, size: 64, color: PulseColors.error),
+            Icon(Icons.error_outline, size: 64, color: context.errorColor),
             const SizedBox(height: PulseSpacing.lg),
             Text(
               title,
               style: PulseTextStyles.headlineSmall.copyWith(
-                color: PulseColors.error,
+                color: context.errorColor,
               ),
               textAlign: TextAlign.center,
             ),
@@ -177,7 +179,7 @@ class PulseErrorState extends StatelessWidget {
               Text(
                 subtitle!,
                 style: PulseTextStyles.bodyMedium.copyWith(
-                  color: PulseColors.onSurfaceVariant,
+                  color: context.onSurfaceVariantColor,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -187,7 +189,7 @@ class PulseErrorState extends StatelessWidget {
               ElevatedButton(
                 onPressed: onRetry,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: PulseColors.error,
+                  backgroundColor: context.errorColor,
                   foregroundColor: context.onSurfaceColor,
                 ),
                 child: Text(retryText),

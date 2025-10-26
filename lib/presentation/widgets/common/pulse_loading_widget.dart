@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../theme/pulse_colors.dart';
 import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Common loading widget with Pulse branding
@@ -73,8 +72,8 @@ class _PulseLoadingWidgetState extends State<PulseLoadingWidget>
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          PulseColors.primary,
-                          PulseColors.primary.withValues(alpha: 0.3),
+                          context.primaryColor,
+                          context.primaryColor.withValues(alpha: 0.3),
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
@@ -82,7 +81,7 @@ class _PulseLoadingWidgetState extends State<PulseLoadingWidget>
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: PulseColors.primary.withValues(alpha: 0.3),
+                          color: context.primaryColor.withValues(alpha: 0.3),
                           blurRadius: 10,
                           spreadRadius: 2,
                         ),

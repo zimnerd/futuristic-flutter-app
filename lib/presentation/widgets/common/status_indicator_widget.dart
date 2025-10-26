@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../theme/pulse_colors.dart';
 import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Real-time status indicators for online presence, typing, etc.
@@ -275,7 +274,7 @@ class _StatusIndicatorWidgetState extends State<StatusIndicatorWidget>
       case UserStatus.online:
         return StatusConfig(color: Colors.green, label: 'Online');
       case UserStatus.typing:
-        return StatusConfig(color: PulseColors.primary, label: 'Typing...');
+        return StatusConfig(color: context.primaryColor, label: 'Typing...');
       case UserStatus.away:
         return StatusConfig(color: Colors.orange, label: 'Away');
       case UserStatus.busy:

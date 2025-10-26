@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../theme/pulse_colors.dart';
+import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
+import '../../theme/pulse_colors.dart'; // For PulseRadii, PulseTextStyles
 
 /// Reusable text input widget with Pulse branding
 /// Supports various input types and validation states
@@ -101,35 +102,35 @@ class _PulseTextFieldState extends State<PulseTextField> {
           onTap: widget.onTap,
           style: PulseTextStyles.bodyMedium.copyWith(
             color: widget.enabled
-                ? PulseColors.onSurface
-                : PulseColors.onSurfaceVariant,
+                ? context.onSurfaceColor
+                : context.onSurfaceVariantColor,
           ),
           decoration: InputDecoration(
             // Use Material Design's OutlineInputBorder for proper rounded corners
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(PulseRadii.input),
-              borderSide: BorderSide(color: PulseColors.outline, width: 1),
+              borderSide: BorderSide(color: context.outlineColor, width: 1),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(PulseRadii.input),
-              borderSide: BorderSide(color: _getBorderColor(), width: 1),
+              borderSide: BorderSide(color: _getBorderColor(context), width: 1),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(PulseRadii.input),
-              borderSide: BorderSide(color: PulseColors.primary, width: 2),
+              borderSide: BorderSide(color: context.primaryColor, width: 2),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(PulseRadii.input),
-              borderSide: BorderSide(color: PulseColors.error, width: 1),
+              borderSide: BorderSide(color: context.errorColor, width: 1),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(PulseRadii.input),
-              borderSide: BorderSide(color: PulseColors.error, width: 2),
+              borderSide: BorderSide(color: context.errorColor, width: 2),
             ),
             disabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(PulseRadii.input),
               borderSide: BorderSide(
-                color: PulseColors.outlineVariant,
+                color: context.borderLight,
                 width: 1,
               ),
             ),
@@ -142,17 +143,17 @@ class _PulseTextFieldState extends State<PulseTextField> {
             // Proper padding for Material Design
             contentPadding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
             labelStyle: PulseTextStyles.bodyMedium.copyWith(
-              color: _getLabelColor(),
+              color: _getLabelColor(context),
             ),
             hintStyle: PulseTextStyles.bodyMedium.copyWith(
-              color: PulseColors.onSurfaceVariant,
+              color: context.onSurfaceVariantColor,
             ),
             // Material Design floating label behavior
             floatingLabelBehavior: FloatingLabelBehavior.auto,
             filled: true,
             fillColor: widget.enabled
-                ? PulseColors.surfaceVariant
-                : PulseColors.outlineVariant.withValues(alpha: 0.1),
+                ? context.surfaceVariantColor
+                : context.borderLight.withValues(alpha: 0.1),
           ),
         ),
         if (widget.helperText != null || widget.errorText != null) ...[
@@ -163,8 +164,8 @@ class _PulseTextFieldState extends State<PulseTextField> {
               widget.errorText ?? widget.helperText!,
               style: PulseTextStyles.labelSmall.copyWith(
                 color: widget.errorText != null
-                    ? PulseColors.error
-                    : PulseColors.onSurfaceVariant,
+                    ? context.errorColor
+                    : context.onSurfaceVariantColor,
               ),
             ),
           ),
@@ -173,24 +174,24 @@ class _PulseTextFieldState extends State<PulseTextField> {
     );
   }
 
-  Color _getBorderColor() {
+  Color _getBorderColor(BuildContext context) {
     if (widget.errorText != null) {
-      return PulseColors.error;
+      return context.errorColor;
     }
     if (_isFocused) {
-      return PulseColors.primary;
+      return context.primaryColor;
     }
-    return PulseColors.outline;
+    return context.outlineColor;
   }
 
-  Color _getLabelColor() {
+  Color _getLabelColor(BuildContext context) {
     if (widget.errorText != null) {
-      return PulseColors.error;
+      return context.errorColor;
     }
     if (_isFocused) {
-      return PulseColors.primary;
+      return context.primaryColor;
     }
-    return PulseColors.onSurfaceVariant;
+    return context.onSurfaceVariantColor;
   }
 }
 
@@ -249,7 +250,7 @@ class _PulsePasswordFieldState extends State<PulsePasswordField> {
       suffixIcon: IconButton(
         icon: Icon(
           _obscureText ? Icons.visibility : Icons.visibility_off,
-          color: PulseColors.onSurfaceVariant,
+          color: context.onSurfaceVariantColor,
         ),
         onPressed: () {
           setState(() {

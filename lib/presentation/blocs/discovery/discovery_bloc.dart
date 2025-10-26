@@ -563,7 +563,7 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
 
     // Log the full error for debugging
     AppLogger.error('Discovery error: $errorString');
-
+    print('Discovery error: $errorString');  
     // Check for authentication/session errors
     if (errorString.contains('401') ||
         errorString.contains('session has expired') ||

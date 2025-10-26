@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../theme/pulse_colors.dart';
+import '../../theme/pulse_colors.dart'; // For PulseElevations, PulseSpacing, PulseRadii, PulseTextStyles
 import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 import 'pulse_toast.dart';
 
@@ -86,7 +86,7 @@ class PulseBottomSheet {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: PulseColors.onSurfaceVariant.withValues(alpha: 0.4),
+                  color: context.onSurfaceVariantColor.withValues(alpha: 0.4),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -127,7 +127,7 @@ class PulseSnackBar {
     _show(
       context,
       message,
-      backgroundColor: PulseColors.success,
+      backgroundColor: context.successColor,
       iconData: Icons.check_circle,
       duration: duration,
     );
@@ -141,7 +141,7 @@ class PulseSnackBar {
     _show(
       context,
       message,
-      backgroundColor: PulseColors.error,
+      backgroundColor: context.errorColor,
       iconData: Icons.error,
       duration: duration,
     );
@@ -155,7 +155,7 @@ class PulseSnackBar {
     _show(
       context,
       message,
-      backgroundColor: PulseColors.primary,
+      backgroundColor: context.primaryColor,
       iconData: Icons.info,
       duration: duration,
     );
@@ -169,7 +169,7 @@ class PulseSnackBar {
     _show(
       context,
       message,
-      backgroundColor: PulseColors.secondary,
+      backgroundColor: context.accentColor,
       iconData: Icons.warning,
       duration: duration,
     );
@@ -183,9 +183,9 @@ class PulseSnackBar {
     Duration duration = const Duration(seconds: 3),
   }) {
     // Use PulseToast based on background color
-    if (backgroundColor == PulseColors.success) {
+    if (backgroundColor == context.successColor) {
       PulseToast.success(context, message: message);
-    } else if (backgroundColor == PulseColors.error) {
+    } else if (backgroundColor == context.errorColor) {
       PulseToast.error(context, message: message);
     } else {
       PulseToast.info(context, message: message);
@@ -217,7 +217,7 @@ class PulseDialog {
             onPressed: () => Navigator.of(context).pop(true),
             style: isDestructive
                 ? ElevatedButton.styleFrom(
-                    backgroundColor: PulseColors.error,
+                    backgroundColor: context.errorColor,
                     foregroundColor: context.onSurfaceColor,
                   )
                 : null,

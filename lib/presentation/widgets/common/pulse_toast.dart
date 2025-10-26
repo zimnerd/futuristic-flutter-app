@@ -55,7 +55,7 @@ class PulseToast {
       context,
       message: message,
       icon: Icons.check_circle,
-      backgroundColor: PulseColors.success,
+      backgroundColor: context.successColor,
       action: action,
       duration: duration,
     );
@@ -73,7 +73,7 @@ class PulseToast {
       context,
       message: message,
       icon: Icons.error,
-      backgroundColor: PulseColors.reject,
+      backgroundColor: context.errorColor,
       action: action,
       duration: duration,
     );
@@ -91,7 +91,7 @@ class PulseToast {
       context,
       message: message,
       icon: Icons.info,
-      backgroundColor: PulseColors.primary,
+      backgroundColor: context.primaryColor,
       action: action,
       duration: duration,
     );
@@ -109,7 +109,7 @@ class PulseToast {
       context,
       message: message,
       icon: Icons.warning,
-      backgroundColor: PulseColors.rewind,
+      backgroundColor: context.statusWarning,
       action: action,
       duration: duration,
     );
