@@ -967,11 +967,11 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: Icon(Icons.photo_library, color: Colors.black87),
+              leading: Icon(Icons.photo_library, color: context.onSurfaceColor),
               title: Text(
                 'Choose from gallery',
                 style: TextStyle(
-                  color: Colors.black87,
+                  color: context.onSurfaceColor,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -981,11 +981,11 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
               },
             ),
             ListTile(
-              leading: Icon(Icons.camera_alt, color: Colors.black87),
+              leading: Icon(Icons.camera_alt, color: context.onSurfaceColor),
               title: Text(
                 'Take a photo',
                 style: TextStyle(
-                  color: Colors.black87,
+                  color: context.onSurfaceColor,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -2595,11 +2595,14 @@ class _ProfileSectionEditScreenState extends State<ProfileSectionEditScreen> {
       builder: (context) => AlertDialog(
         title: Text(
           'Exit Setup?',
-          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: context.onSurfaceColor,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         content: Text(
           'Your progress will be saved. You can resume setup later.',
-          style: TextStyle(color: Colors.black87),
+          style: TextStyle(color: context.onSurfaceColor),
         ),
         actions: [
           TextButton(

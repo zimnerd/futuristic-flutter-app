@@ -99,7 +99,7 @@ class _PremiumTierCardState extends State<PremiumTierCard>
                         end: Alignment.bottomRight,
                       )
                     : null,
-                color: widget.isSelected ? null : Colors.white,
+                color: widget.isSelected ? null : context.surfaceColor,
                 border: Border.all(
                   color: widget.isSelected
                       ? Colors.transparent

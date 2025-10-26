@@ -210,11 +210,11 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
         backgroundColor: context.surfaceColor,
         title: Text(
           'Leave Event',
-          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
+          style: TextStyle(color: context.onSurfaceColor, fontWeight: FontWeight.bold),
         ),
         content: Text(
           'Are you sure you want to leave this event?',
-          style: TextStyle(color: Colors.black87, fontSize: 16),
+          style: TextStyle(color: context.onSurfaceColor, fontSize: 16),
         ),
         actions: [
           TextButton(
@@ -286,12 +286,12 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
         backgroundColor: context.surfaceColor,
         title: Text(
           'Start Event',
-          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
+          style: TextStyle(color: context.onSurfaceColor, fontWeight: FontWeight.bold),
         ),
         content: Text(
           'Are you sure you want to start the speed dating event? '
           'All participants will begin their first round.',
-          style: TextStyle(color: Colors.black87),
+          style: TextStyle(color: context.onSurfaceColor),
         ),
         actions: [
           TextButton(
@@ -520,19 +520,19 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
 
     switch (status.toLowerCase()) {
       case 'active':
-        color = Colors.green;
+        color = context.successColor;
         label = 'Active';
         break;
       case 'completed':
-        color = Colors.blue;
+        color = context.primaryColor;
         label = 'Completed';
         break;
       case 'cancelled':
-        color = Colors.red;
+        color = context.errorColor;
         label = 'Cancelled';
         break;
       default:
-        color = Colors.orange;
+        color = context.statusWarning;
         label = 'Upcoming';
     }
 
@@ -682,7 +682,7 @@ class _SpeedDatingLobbyScreenState extends State<SpeedDatingLobbyScreen> {
             ElevatedButton(
               onPressed: _isJoining ? null : _leaveEvent,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
+                backgroundColor: context.errorColor,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
