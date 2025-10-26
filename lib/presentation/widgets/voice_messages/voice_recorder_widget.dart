@@ -4,7 +4,6 @@ import 'dart:async';
 import 'dart:io';
 
 import '../../../data/models/voice_message.dart';
-import '../../theme/pulse_colors.dart';
 import '../common/pulse_toast.dart';
 import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
@@ -218,8 +217,8 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget>
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: _isRecording
-                      ? (_isPaused ? Colors.orange : Colors.red)
-                      : PulseColors.primary,
+                      ? (_isPaused ? context.recordingPaused : context.recordingActive)
+                      : context.primaryColor,
                   boxShadow: _isRecording && !_isPaused
                       ? [
                           BoxShadow(
@@ -252,7 +251,7 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget>
           _formatDuration(_recordedDuration),
           style: Theme.of(context).textTheme.headlineMedium?.copyWith(
             fontWeight: FontWeight.bold,
-            color: _isRecording ? Colors.red : null,
+            color: _isRecording ? context.recordingActive : null,
           ),
         ),
         const SizedBox(height: 8),
@@ -263,8 +262,8 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget>
           backgroundColor: context.outlineColor.withValues(alpha: 0.3),
           valueColor: AlwaysStoppedAnimation<Color>(
             _recordedDuration.inSeconds > (widget.maxDuration.inSeconds * 0.8)
-                ? Colors.red
-                : PulseColors.primary,
+                ? context.recordingActive
+                : context.primaryColor,
           ),
         ),
         const SizedBox(height: 4),
@@ -285,8 +284,8 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget>
         icon: Icon(Icons.mic),
         label: Text('Start Recording'),
         style: ElevatedButton.styleFrom(
-          backgroundColor: PulseColors.primary,
-          foregroundColor: context.onSurfaceColor,
+          backgroundColor: context.primaryColor,
+          foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30),
@@ -304,8 +303,8 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget>
           icon: Icon(_isPaused ? Icons.play_arrow : Icons.pause),
           label: Text(_isPaused ? 'Resume' : 'Pause'),
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.orange,
-            foregroundColor: context.onSurfaceColor,
+            backgroundColor: context.recordingPaused,
+            foregroundColor: Colors.white,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
@@ -318,8 +317,8 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget>
           icon:  Icon(Icons.stop),
           label: Text('Finish'),
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.green,
-            foregroundColor: context.onSurfaceColor,
+            backgroundColor: context.recordingReady,
+            foregroundColor: Colors.white,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),

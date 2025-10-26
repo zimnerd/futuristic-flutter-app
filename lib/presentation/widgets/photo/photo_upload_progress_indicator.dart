@@ -96,13 +96,13 @@ class PhotoUploadProgressIndicator extends StatelessWidget {
         return context.outlineColor;
       case UploadStatus.uploading:
       case UploadStatus.processing:
-        return Colors.blue;
+        return context.statusInfo;
       case UploadStatus.completed:
-        return Colors.green;
+        return context.successColor;
       case UploadStatus.failed:
-        return Colors.red;
+        return context.errorColor;
       case UploadStatus.cancelled:
-        return Colors.orange;
+        return context.statusCancelled;
     }
   }
 
@@ -112,13 +112,13 @@ class PhotoUploadProgressIndicator extends StatelessWidget {
         return Icon(Icons.schedule, size: 16, color: context.outlineColor);
       case UploadStatus.uploading:
       case UploadStatus.processing:
-        return Icon(Icons.cloud_upload, size: 16, color: Colors.blue);
+        return Icon(Icons.cloud_upload, size: 16, color: context.statusInfo);
       case UploadStatus.completed:
-        return Icon(Icons.check_circle, size: 16, color: Colors.green);
+        return Icon(Icons.check_circle, size: 16, color: context.successColor);
       case UploadStatus.failed:
         return Icon(Icons.error, size: 16, color: context.errorColor);
       case UploadStatus.cancelled:
-        return Icon(Icons.cancel, size: 16, color: Colors.orange);
+        return Icon(Icons.cancel, size: 16, color: context.statusCancelled);
     }
   }
 
@@ -203,7 +203,7 @@ class BatchUploadProgressIndicator extends StatelessWidget {
                       context,
                       '${batchProgress.successCount}',
                       'Success',
-                      color: Colors.green,
+                      color: context.successColor,
                     ),
                     if (batchProgress.hasErrors)
                       _buildStat(

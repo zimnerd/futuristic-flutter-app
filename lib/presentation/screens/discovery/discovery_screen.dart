@@ -24,8 +24,11 @@ import '../../widgets/discovery/swipe_card.dart' as swipe_widget;
 import '../../widgets/common/empty_state_widget.dart';
 import '../../widgets/common/pulse_toast.dart';
 import '../../widgets/common/skeleton_loading.dart';
+import '../../widgets/filters/filter_preview_widget.dart';
+import '../../blocs/filters/filter_bloc.dart';
+import '../../blocs/filters/filter_event.dart';
+import '../../blocs/filters/filter_state.dart';
 
-import '../ai_companion/ai_companion_screen.dart';
 import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Modern Discovery Screen - PulseLink's unique swipe interface
@@ -652,8 +655,21 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
           left: 0,
           right: 0,
           child: Container(
-            decoration: PulseDecorations.glassmorphism(
-              color: context.surfaceColor,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  context.surfaceColor,
+                  context.surfaceColor.withValues(alpha: 0.95),
+                ],
+              ),
+              border: Border(
+                bottom: BorderSide(
+                  color: context.borderColor.shade200,
+                  width: 0.5,
+                ),
+              ),
             ),
             child: SafeArea(
               child: Padding(
@@ -661,54 +677,107 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                   horizontal: PulseSpacing.lg,
                   vertical: PulseSpacing.md,
                 ),
-                child: Column(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Compact single-row header
-                    Row(
-                      children: [
-                        // Search icon + app title
-                        Expanded(
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.search,
-                                color: context.textSecondary,
-                                size: 20,
+                    // Left: Useful info - Boost Status or Quick Stats
+                    Expanded(
+                      child: BlocBuilder<DiscoveryBloc, DiscoveryState>(
+                        builder: (context, state) {
+                          if (state is DiscoveryLoaded && state.isBoostActive) {
+                            // Show boost status when active
+                            return Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: PulseSpacing.md,
+                                vertical: PulseSpacing.sm,
                               ),
-                              const SizedBox(width: PulseSpacing.sm),
-                              Text(
-                                'Discover',
-                                style: PulseTypography.h4.copyWith(
-                                  color: context.textPrimary,
-                                  fontWeight: FontWeight.w700,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    PulseColors.primary.withValues(alpha: 0.2),
+                                    PulseColors.primary.withValues(alpha: 0.1),
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(
+                                  PulseBorderRadius.md,
+                                ),
+                                border: Border.all(
+                                  color: PulseColors.primary.withValues(
+                                    alpha: 0.3,
+                                  ),
+                                  width: 1,
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.bolt,
+                                    color: PulseColors.primary,
+                                    size: 16,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    '🚀 BOOST Active',
+                                    style: PulseTypography.labelSmall.copyWith(
+                                      color: PulseColors.primary,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
 
-                        // Boost button (prominently featured)
-                        _buildBoostButton(),
+                          // Show profile count when discovered
+                          if (state is DiscoveryLoaded) {
+                            return Text(
+                              'Discover ${state.userStack.length} profiles',
+                              style: PulseTypography.bodyMedium.copyWith(
+                                color: context.textSecondary,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            );
+                          }
+
+                          return const SizedBox.shrink();
+                        },
+                      ),
+                    ),
+
+                    // Right: Action buttons (Notifications + Filters + Rewind)
+                    Row(
+                      children: [
+                        // Rewind button (quick access)
+                        _buildModernHeaderButton(
+                          icon: Icons.undo,
+                          color: PulseColors.warning,
+                          onTap: () {
+                            HapticFeedback.mediumImpact();
+                            context.read<DiscoveryBloc>().add(
+                              const UndoLastSwipe(),
+                            );
+                          },
+                          tooltip: 'Undo Last Swipe',
+                        ),
                         const SizedBox(width: PulseSpacing.sm),
 
-                        // Notifications
-                        _buildHeaderButton(
+                        // Notifications button
+                        _buildModernHeaderButton(
                           icon: PulseIcons.notifications,
-                          color: context.outlineColor,
+                          color: PulseColors.warning,
                           onTap: _showNotificationsModal,
+                          tooltip: 'Notifications',
                         ),
                         const SizedBox(width: PulseSpacing.sm),
 
-                        // Filters
-                        _buildHeaderButton(
+                        // Filters button
+                        _buildModernHeaderButton(
                           icon: PulseIcons.filters,
                           color: PulseColors.primary,
                           onTap: _showFiltersModal,
+                          tooltip: 'Filters',
                         ),
-                        const SizedBox(width: PulseSpacing.sm),
-
-                        // More options menu
-                        _buildMoreOptionsMenu(),
                       ],
                     ),
                   ],
@@ -721,124 +790,35 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
     );
   }
 
-  /// Build prominent boost button for monetization
-  Widget _buildBoostButton() {
-    return GestureDetector(
-      onTap: () {
-        HapticFeedback.mediumImpact();
-        context.read<DiscoveryBloc>().add(const UseBoost());
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: PulseSpacing.md,
-          vertical: PulseSpacing.sm,
-        ),
-        decoration: BoxDecoration(
-          gradient: PulseGradients.primary,
-          borderRadius: BorderRadius.circular(PulseBorderRadius.md),
-          boxShadow: [
-            BoxShadow(
-              color: PulseColors.primary.withValues(alpha: 0.3),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.rocket,
-              color: context.surfaceColor,
-              size: 16,
-            ),
-            const SizedBox(width: 4),
-            Text(
-              'BOOST',
-              style: PulseTypography.labelSmall.copyWith(
-                color: context.surfaceColor,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Build context menu for additional discovery options
-  Widget _buildMoreOptionsMenu() {
-    return PopupMenuButton<String>(
-      icon: Icon(Icons.more_vert, color: context.textPrimary, size: 20),
-      itemBuilder: (context) => [
-        PopupMenuItem(
-          value: 'rewind',
-          child: Row(
-            children: [
-              Icon(Icons.undo, color: PulseColors.primary, size: 18),
-              const SizedBox(width: PulseSpacing.sm),
-              const Text('Rewind'),
-            ],
-          ),
-          onTap: () {
-            HapticFeedback.lightImpact();
-            context.read<DiscoveryBloc>().add(const UndoLastSwipe());
-          },
-        ),
-        PopupMenuItem(
-          value: 'ai',
-          child: Row(
-            children: [
-              Icon(Icons.auto_awesome, color: context.accentColor, size: 18),
-              const SizedBox(width: PulseSpacing.sm),
-              const Text('AI Assistant'),
-            ],
-          ),
-          onTap: () {
-            HapticFeedback.lightImpact();
-            _showAICompanionModal();
-          },
-        ),
-        PopupMenuItem(
-          value: 'liked',
-          child: Row(
-            children: [
-              Icon(Icons.favorite, color: PulseColors.error, size: 18),
-              const SizedBox(width: PulseSpacing.sm),
-              const Text('Who Liked You'),
-            ],
-          ),
-          onTap: () {
-            HapticFeedback.lightImpact();
-            context.push('/who-liked-you');
-          },
-        ),
-      ],
-      onSelected: (value) {
-        // Handled by onTap callbacks above
-      },
-    );
-  }
-
-  Widget _buildHeaderButton({
+  /// Modern header button with improved styling
+  Widget _buildModernHeaderButton({
     required IconData icon,
     required Color color,
     required VoidCallback onTap,
+    required String tooltip,
   }) {
-    return GestureDetector(
-      onTap: () {
-        HapticFeedback.lightImpact();
-        onTap();
-      },
-      child: Container(
-        width: 44,
-        height: 44,
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(PulseBorderRadius.md),
-          border: Border.all(color: color.withValues(alpha: 0.2), width: 1),
+    return Tooltip(
+      message: tooltip,
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          onTap();
+        },
+        child: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(PulseBorderRadius.md),
+            border: Border.all(
+              color: color.withValues(alpha: 0.2),
+              width: 1,
+            ),
+          ),
+          child: Center(
+            child: Icon(icon, color: color, size: 18),
+          ),
         ),
-        child: Icon(icon, color: color, size: 20),
       ),
     );
   }
@@ -1585,6 +1565,9 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
 
   // Modal/Overlay Methods
   void _showFiltersModal() {
+    // Ensure FilterBLoC is loaded
+    context.read<FilterBLoC>().add(LoadFilterPreferences());
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -1621,7 +1604,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Filters',
+                      'Quick Filters',
                       style: PulseTypography.h3.copyWith(
                         color: context.textPrimary,
                       ),
@@ -1636,64 +1619,38 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                   ],
                 ),
               ),
-              // Scrollable content
+              // Dynamic content with BLoC
               Expanded(
-                child: SingleChildScrollView(
-                  controller: scrollController,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: PulseSpacing.lg,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildFilterSection('Age Range', '18 - 35'),
-                      _buildFilterSection('Distance', 'Within 50 km'),
-                      _buildFilterSection(
-                        'Interests',
-                        'Music, Travel, Fitness',
-                      ),
-                      _buildFilterSection('Education', 'Any'),
-                      _buildFilterSection(
-                        'Looking for',
-                        'Long-term relationship',
-                      ),
-                      const SizedBox(height: PulseSpacing.xl),
-                      // Apply filters button
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                            // Apply filters logic here
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: PulseColors.primary,
-                            foregroundColor: context.surfaceColor,
-                            padding: const EdgeInsets.symmetric(
-                              vertical: PulseSpacing.md,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                PulseSpacing.md,
-                              ),
-                            ),
-                          ),
-                          child: Text(
-                            'Apply Filters',
-                            style: PulseTypography.bodyLarge.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
+                child: BlocBuilder<FilterBLoC, FilterState>(
+                  builder: (context, state) {
+                    if (state is FilterLoading) {
+                      return Center(
+                        child: CircularProgressIndicator(
+                          color: PulseColors.primary,
                         ),
+                      );
+                    }
+
+                    if (state is FilterLoaded) {
+                      return SingleChildScrollView(
+                        controller: scrollController,
+                        child: FilterPreviewWidget(
+                          preferences: state.preferences,
+                          onAdvancedTap: () {
+                            Navigator.of(context).pop();
+                            context.push('/filters');
+                          },
+                        ),
+                      );
+                    }
+
+                    return Center(
+                      child: Text(
+                        'Unable to load filters',
+                        style: TextStyle(color: context.textPrimary),
                       ),
-                      // Bottom padding to ensure button is accessible
-                      SizedBox(
-                        height:
-                            MediaQuery.of(context).padding.bottom +
-                            PulseSpacing.lg,
-                      ),
-                    ],
-                  ),
+                    );
+                  },
                 ),
               ),
             ],
@@ -1703,165 +1660,6 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
     );
   }
 
-  void _showAICompanionModal() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      useSafeArea: true,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.7,
-        minChildSize: 0.5,
-        maxChildSize: 0.9,
-        builder: (context, scrollController) => Container(
-          decoration: BoxDecoration(
-            color: context.surfaceColor,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(PulseSpacing.xl),
-              topRight: Radius.circular(PulseSpacing.xl),
-            ),
-          ),
-          child: Column(
-            children: [
-              // Drag handle
-              Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(top: PulseSpacing.md),
-                decoration: BoxDecoration(
-                  color: context.borderColor.shade400,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              // Header
-              Padding(
-                padding: const EdgeInsets.all(PulseSpacing.lg),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'AI Companion',
-                      style: PulseTypography.h3.copyWith(
-                        color: context.textPrimary,
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      icon: Icon(
-                        Icons.close,
-                        color: context.borderColor.shade600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // Scrollable content
-              Expanded(
-                child: SingleChildScrollView(
-                  controller: scrollController,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: PulseSpacing.lg,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // AI Dating Coach section
-                      Container(
-                        padding: const EdgeInsets.all(PulseSpacing.lg),
-                        decoration: BoxDecoration(
-                          color: context.accentColor.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(PulseSpacing.md),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Your AI Dating Coach',
-                              style: PulseTypography.h4.copyWith(
-                                color: context.accentColor,
-                              ),
-                            ),
-                            const SizedBox(height: PulseSpacing.sm),
-                            Text(
-                              'Get personalized advice, conversation starters, and dating insights powered by AI.',
-                              style: PulseTypography.bodyMedium.copyWith(
-                                color: context.textPrimary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: PulseSpacing.lg),
-                      // AI Features
-                      _buildAIFeature(
-                        '💬',
-                        'Conversation Starters',
-                        'Get personalized icebreakers',
-                      ),
-                      _buildAIFeature(
-                        '📊',
-                        'Profile Analysis',
-                        'Optimize your dating profile',
-                      ),
-                      _buildAIFeature(
-                        '💡',
-                        'Dating Tips',
-                        'Personalized advice for better matches',
-                      ),
-                      _buildAIFeature(
-                        '🎯',
-                        'Match Insights',
-                        'Understand compatibility scores',
-                      ),
-                      const SizedBox(height: PulseSpacing.xl),
-                      // CTA Button
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) => const AiCompanionScreen(),
-                              ),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: PulseColors.primary,
-                            foregroundColor: context.surfaceColor,
-                            padding: const EdgeInsets.symmetric(
-                              vertical: PulseSpacing.md,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                PulseSpacing.md,
-                              ),
-                            ),
-                          ),
-                          child: Text(
-                            'Start Chat with AI Companion',
-                            style: PulseTypography.bodyLarge.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-                      // Bottom padding to ensure button is accessible
-                      SizedBox(
-                        height:
-                            MediaQuery.of(context).padding.bottom +
-                            PulseSpacing.lg,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 
   void _showNotificationsModal() {
     showModalBottomSheet(
@@ -1974,62 +1772,6 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildFilterSection(String title, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: PulseSpacing.lg),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            title,
-            style: PulseTypography.bodyMedium.copyWith(
-              color: context.textPrimary,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          Text(
-            value,
-            style: PulseTypography.bodyMedium.copyWith(
-              color: PulseColors.primary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAIFeature(String emoji, String title, String description) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: PulseSpacing.md),
-      child: Row(
-        children: [
-          Text(emoji, style: TextStyle(fontSize: 24)),
-          const SizedBox(width: PulseSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: PulseTypography.bodyMedium.copyWith(
-                    color: context.textPrimary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                Text(
-                  description,
-                  style: PulseTypography.labelMedium.copyWith(
-                    color: context.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }

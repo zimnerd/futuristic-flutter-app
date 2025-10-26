@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../../domain/entities/event.dart';
-import '../../theme/pulse_colors.dart';
 import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Widget to display event analytics indicators including:
@@ -53,7 +52,7 @@ class EventAnalyticsIndicators extends StatelessWidget {
   /// Shows: excellent (≥90%), good (70-89%), moderate (50-69%), poor (<50%)
   Widget _buildAttendanceBadge(BuildContext context) {
     final health = event.attendanceHealth;
-    final config = _getAttendanceConfig(health);
+    final config = _getAttendanceConfig(context, health);
 
     return Container(
       padding: EdgeInsets.symmetric(
@@ -96,7 +95,7 @@ class EventAnalyticsIndicators extends StatelessWidget {
   /// Build engagement score badge with percentage
   Widget _buildEngagementBadge(BuildContext context) {
     final score = event.engagementScore.round();
-    final color = _getEngagementColor(score);
+    final color = _getEngagementColor(context, score);
 
     return Container(
       padding: EdgeInsets.symmetric(
@@ -141,7 +140,7 @@ class EventAnalyticsIndicators extends StatelessWidget {
   /// Shows: premium (≥80), great (60-79), good (40-59), standard (<40)
   Widget _buildQualityBadge(BuildContext context) {
     final quality = event.eventQualityDisplay;
-    final config = _getQualityConfig(quality);
+    final config = _getQualityConfig(context, quality);
 
     return Container(
       padding: EdgeInsets.symmetric(
@@ -178,7 +177,7 @@ class EventAnalyticsIndicators extends StatelessWidget {
   /// Shows: viral (≥90), trending (70-89), popular (50-69), growing (<50)
   Widget _buildPopularityBadge(BuildContext context) {
     final popularity = event.popularityLevel;
-    final config = _getPopularityConfig(popularity);
+    final config = _getPopularityConfig(context, popularity);
 
     return Container(
       padding: EdgeInsets.symmetric(
@@ -218,8 +217,8 @@ class EventAnalyticsIndicators extends StatelessWidget {
         vertical: compact ? 4 : 6,
       ),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF00D95F), Color(0xFF00E676)],
+        gradient: LinearGradient(
+          colors: [context.performanceExcellent, context.successColor],
         ),
         borderRadius: BorderRadius.circular(compact ? 12 : 16),
       ),
@@ -255,8 +254,8 @@ class EventAnalyticsIndicators extends StatelessWidget {
         vertical: compact ? 4 : 6,
       ),
       decoration: BoxDecoration(
-        color: PulseColors.primary.withValues(alpha: 0.15),
-        border: Border.all(color: PulseColors.primary, width: 1.5),
+        color: context.primaryColor.withValues(alpha: 0.15),
+        border: Border.all(color: context.primaryColor, width: 1.5),
         borderRadius: BorderRadius.circular(compact ? 12 : 16),
       ),
       child: Row(
@@ -264,7 +263,7 @@ class EventAnalyticsIndicators extends StatelessWidget {
         children: [
           Icon(
             Icons.visibility,
-            color: PulseColors.primary,
+            color: context.primaryColor,
             size: compact ? 12 : 14,
           ),
           if (!compact) ...[
@@ -272,7 +271,7 @@ class EventAnalyticsIndicators extends StatelessWidget {
             Text(
               '${_formatCount(event.viewCount)} views',
               style: TextStyle(
-                color: PulseColors.primary,
+                color: context.primaryColor,
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
               ),
@@ -291,8 +290,8 @@ class EventAnalyticsIndicators extends StatelessWidget {
         vertical: compact ? 4 : 6,
       ),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFFFFB800), Color(0xFFFFC94D)],
+        gradient: LinearGradient(
+          colors: [context.statusWarning, context.premiumGold],
         ),
         borderRadius: BorderRadius.circular(compact ? 12 : 16),
       ),
@@ -322,107 +321,110 @@ class EventAnalyticsIndicators extends StatelessWidget {
 
   /// Get attendance health configuration
   ({String label, IconData icon, List<Color> colors}) _getAttendanceConfig(
+    BuildContext context,
     String health,
   ) {
     return switch (health) {
       'excellent' => (
         label: 'Excellent',
         icon: Icons.people,
-        colors: const [Color(0xFF00D95F), Color(0xFF00E676)],
+        colors: [context.performanceExcellent, context.successColor],
       ),
       'good' => (
         label: 'Good',
         icon: Icons.people,
-        colors: const [Color(0xFF4CAF50), Color(0xFF66BB6A)],
+        colors: [context.performanceGood, context.successColor],
       ),
       'moderate' => (
         label: 'Moderate',
         icon: Icons.people_outline,
-        colors: const [Color(0xFFFFA726), Color(0xFFFFB74D)],
+        colors: [context.performanceModerate, context.statusWarning],
       ),
       'poor' => (
         label: 'Poor',
         icon: Icons.people_outline,
-        colors: const [Color(0xFFEF5350), Color(0xFFE57373)],
+        colors: [context.performancePoor, context.errorColor],
       ),
       _ => (
         label: 'N/A',
         icon: Icons.info_outline,
-        colors: const [Color(0xFF9E9E9E), Color(0xFFBDBDBD)],
+        colors: [context.performanceNeutral, context.disabledColor],
       ),
     };
   }
 
   /// Get engagement color based on score
-  Color _getEngagementColor(int score) {
-    if (score >= 70) return const Color(0xFF00D95F); // Excellent
-    if (score >= 50) return const Color(0xFF4CAF50); // Good
-    if (score >= 30) return const Color(0xFFFFA726); // Moderate
-    return const Color(0xFFEF5350); // Poor
+  Color _getEngagementColor(BuildContext context, int score) {
+    if (score >= 70) return context.performanceExcellent; // Excellent
+    if (score >= 50) return context.performanceGood; // Good
+    if (score >= 30) return context.performanceModerate; // Moderate
+    return context.performancePoor; // Poor
   }
 
   /// Get quality configuration
   ({String label, IconData icon, List<Color> colors}) _getQualityConfig(
+    BuildContext context,
     String quality,
   ) {
     return switch (quality) {
       'premium' => (
         label: 'Premium',
         icon: Icons.workspace_premium,
-        colors: PulseColors.premiumGradient,
+        colors: [context.premiumGradientStart, context.premiumGradientEnd],
       ),
       'great' => (
         label: 'Great',
         icon: Icons.star,
-        colors: const [Color(0xFF6E3BFF), Color(0xFF9D5CFF)],
+        colors: [context.primaryColor, context.accentColor],
       ),
       'good' => (
         label: 'Good',
         icon: Icons.check_circle,
-        colors: const [Color(0xFF4CAF50), Color(0xFF66BB6A)],
+        colors: [context.performanceGood, context.successColor],
       ),
       'standard' => (
         label: 'Standard',
         icon: Icons.event,
-        colors: const [Color(0xFF9E9E9E), Color(0xFFBDBDBD)],
+        colors: [context.performanceNeutral, context.disabledColor],
       ),
       _ => (
         label: 'N/A',
         icon: Icons.info_outline,
-        colors: const [Color(0xFF9E9E9E), Color(0xFFBDBDBD)],
+        colors: [context.performanceNeutral, context.disabledColor],
       ),
     };
   }
 
   /// Get popularity configuration
   ({String label, IconData icon, Color color}) _getPopularityConfig(
+    BuildContext context,
     String popularity,
   ) {
     return switch (popularity) {
       'viral' => (
         label: 'Viral',
         icon: Icons.whatshot,
-        color: const Color(0xFFFF3D00),
+        color: context.errorColor,
       ),
       'trending' => (
         label: 'Trending',
         icon: Icons.trending_up,
-        color: const Color(0xFFFF6B00),
+        color: context.statusWarning,
       ),
       'popular' => (
         label: 'Popular',
         icon: Icons.thumb_up,
-        color: const Color(0xFF6E3BFF),
+        color: context.primaryColor,
       ),
       'growing' => (
         label: 'Growing',
         icon: Icons.show_chart,
-        color: const Color(0xFF00C2FF),
+        color: context.accentColor,
       ),
       _ => (
         label: 'New',
         icon: Icons.fiber_new,
-        color: const Color(0xFF9E9E9E),
+        color: context.performanceNeutral,
       ),
     };
   }
@@ -459,7 +461,7 @@ class EventAnalyticsCard extends StatelessWidget {
               children: [
                 Icon(
                   Icons.analytics_outlined,
-                  color: PulseColors.primary,
+                  color: context.primaryColor,
                   size: 24,
                 ),
                 const SizedBox(width: 8),
@@ -474,7 +476,7 @@ class EventAnalyticsCard extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: PulseColors.primary.withValues(alpha: 0.1),
+                    color: context.primaryColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -482,7 +484,7 @@ class EventAnalyticsCard extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
-                      color: PulseColors.primary,
+                      color: context.primaryColor,
                     ),
                   ),
                 ),
@@ -495,7 +497,7 @@ class EventAnalyticsCard extends StatelessWidget {
               'Engagement Score',
               '${event.engagementScore.round()}%',
               Icons.trending_up,
-              _getEngagementColor(event.engagementScore.round()),
+              _getEngagementColorAlt(context, event.engagementScore.round()),
             ),
             const Divider(height: 20),
 
@@ -505,7 +507,7 @@ class EventAnalyticsCard extends StatelessWidget {
                 'Attendance Rate',
                 '${(event.attendanceRate * 100).toStringAsFixed(1)}%',
                 Icons.people,
-                _getAttendanceColor(event.attendanceRate),
+                _getAttendanceColor(context, event.attendanceRate),
               ),
               const Divider(height: 20),
             ],
@@ -516,7 +518,7 @@ class EventAnalyticsCard extends StatelessWidget {
                 'Satisfaction',
                 '${event.satisfactionScore.toStringAsFixed(1)} / 5.0',
                 Icons.star,
-                const Color(0xFFFFB800),
+                context.statusWarning,
               ),
               const Divider(height: 20),
             ],
@@ -526,7 +528,7 @@ class EventAnalyticsCard extends StatelessWidget {
               'Popularity',
               '${event.popularityScore.round()} / 100',
               Icons.whatshot,
-              PulseColors.secondary,
+              context.accentColor,
             ),
             const SizedBox(height: 16),
 
@@ -614,7 +616,7 @@ class EventAnalyticsCard extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: _getFunnelHealthColor(health).withValues(alpha: 0.1),
+            color: _getFunnelHealthColor(context, health).withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Row(
@@ -623,7 +625,7 @@ class EventAnalyticsCard extends StatelessWidget {
               Icon(
                 _getFunnelHealthIcon(health),
                 size: 16,
-                color: _getFunnelHealthColor(health),
+                color: _getFunnelHealthColor(context, health),
               ),
               const SizedBox(width: 6),
               Text(
@@ -631,7 +633,7 @@ class EventAnalyticsCard extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: _getFunnelHealthColor(health),
+                  color: _getFunnelHealthColor(context, health),
                 ),
               ),
             ],
@@ -672,7 +674,7 @@ class EventAnalyticsCard extends StatelessWidget {
                   height: 24,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [PulseColors.primary, PulseColors.secondary],
+                      colors: [context.primaryColor, context.accentColor],
                     ),
                     borderRadius: BorderRadius.circular(4),
                   ),
@@ -706,7 +708,7 @@ class EventAnalyticsCard extends StatelessWidget {
   ) {
     return Column(
       children: [
-        Icon(icon, color: PulseColors.primary, size: 24),
+        Icon(icon, color: context.primaryColor, size: 24),
         const SizedBox(height: 4),
         Text(
           value,
@@ -723,27 +725,27 @@ class EventAnalyticsCard extends StatelessWidget {
     );
   }
 
-  Color _getEngagementColor(int score) {
-    if (score >= 70) return const Color(0xFF00D95F);
-    if (score >= 50) return const Color(0xFF4CAF50);
-    if (score >= 30) return const Color(0xFFFFA726);
-    return const Color(0xFFEF5350);
+  Color _getEngagementColorAlt(BuildContext context, int score) {
+    if (score >= 70) return context.performanceExcellent;
+    if (score >= 50) return context.performanceGood;
+    if (score >= 30) return context.performanceModerate;
+    return context.performancePoor;
   }
 
-  Color _getAttendanceColor(double rate) {
-    if (rate >= 0.9) return const Color(0xFF00D95F);
-    if (rate >= 0.7) return const Color(0xFF4CAF50);
-    if (rate >= 0.5) return const Color(0xFFFFA726);
-    return const Color(0xFFEF5350);
+  Color _getAttendanceColor(BuildContext context, double rate) {
+    if (rate >= 0.9) return context.performanceExcellent;
+    if (rate >= 0.7) return context.performanceGood;
+    if (rate >= 0.5) return context.performanceModerate;
+    return context.performancePoor;
   }
 
-  Color _getFunnelHealthColor(String health) {
+  Color _getFunnelHealthColor(BuildContext context, String health) {
     return switch (health) {
-      'excellent' => const Color(0xFF00D95F),
-      'good' => const Color(0xFF4CAF50),
-      'moderate' => const Color(0xFFFFA726),
-      'poor' => const Color(0xFFEF5350),
-      _ => const Color(0xFF9E9E9E),
+      'excellent' => context.performanceExcellent,
+      'good' => context.performanceGood,
+      'moderate' => context.performanceModerate,
+      'poor' => context.performancePoor,
+      _ => context.performanceNeutral,
     };
   }
 

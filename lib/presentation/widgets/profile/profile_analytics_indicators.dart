@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../../domain/entities/user_profile.dart';
-import '../../theme/pulse_colors.dart';
 import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Displays profile analytics indicators for engagement level and quality
@@ -53,7 +52,7 @@ class ProfileAnalyticsIndicators extends StatelessWidget {
 
   Widget _buildEngagementLevelBadge(BuildContext context) {
     final engagementLevel = profile.engagementLevel;
-    final config = _getEngagementLevelConfig(engagementLevel);
+    final config = _getEngagementLevelConfig(context, engagementLevel);
 
     return Container(
       padding: EdgeInsets.symmetric(
@@ -140,21 +139,21 @@ class ProfileAnalyticsIndicators extends StatelessWidget {
     );
   }
 
-  _EngagementLevelConfig _getEngagementLevelConfig(String level) {
+  _EngagementLevelConfig _getEngagementLevelConfig(BuildContext context, String level) {
     switch (level) {
       case 'influencer':
         return _EngagementLevelConfig(
           label: 'Influencer',
           icon: Icons.local_fire_department,
-          colors: [const Color(0xFFFF6B6B), const Color(0xFFFF5252)],
+          colors: [context.errorColor, context.performancePoor],
         );
       case 'popular':
         return _EngagementLevelConfig(
           label: 'Popular',
           icon: Icons.trending_up,
           colors: [
-            PulseColors.secondary,
-            PulseColors.secondary.withValues(alpha: 0.8),
+            context.accentColor,
+            context.accentColor.withValues(alpha: 0.8),
           ],
         );
       case 'active':
@@ -162,22 +161,22 @@ class ProfileAnalyticsIndicators extends StatelessWidget {
           label: 'Active',
           icon: Icons.bolt,
           colors: [
-            PulseColors.primary,
-            PulseColors.primary.withValues(alpha: 0.8),
+            context.primaryColor,
+            context.primaryColor.withValues(alpha: 0.8),
           ],
         );
       case 'growing':
         return _EngagementLevelConfig(
           label: 'Growing',
           icon: Icons.arrow_upward,
-          colors: [const Color(0xFF00D95F), const Color(0xFF00B34D)],
+          colors: [context.successColor, context.performanceExcellent],
         );
       case 'new':
       default:
         return _EngagementLevelConfig(
           label: 'New',
           icon: Icons.new_releases,
-          colors: [const Color(0xFF9E9E9E), const Color(0xFF757575)],
+          colors: [context.performanceNeutral, context.disabledColor],
         );
     }
   }

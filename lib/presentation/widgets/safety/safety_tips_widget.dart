@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../../data/models/safety.dart';
-import '../../theme/pulse_colors.dart';
 import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Widget for displaying safety tips in a list format
@@ -80,7 +79,7 @@ class SafetyTipsWidget extends StatelessWidget {
             Icon(
               _getPriorityIcon(tip.priority),
               size: 16,
-              color: _getPriorityColor(tip.priority),
+              color: _getPriorityColor(context, tip.priority),
             ),
             const SizedBox(width: 4),
             Text(
@@ -88,12 +87,12 @@ class SafetyTipsWidget extends StatelessWidget {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: _getPriorityColor(tip.priority),
+                color: _getPriorityColor(context, tip.priority),
               ),
             ),
             const Spacer(),
             if (tip.isActive)
-              Icon(Icons.lightbulb, size: 16, color: Colors.amber),
+              Icon(Icons.lightbulb, size: 16, color: context.statusWarning),
           ],
         ),
         children: [
@@ -133,17 +132,17 @@ class SafetyTipsWidget extends StatelessWidget {
   Color _getCategoryColor(BuildContext context, SafetyTipCategory category) {
     switch (category) {
       case SafetyTipCategory.datingSafety:
-        return PulseColors.primary;
+        return context.primaryColor;
       case SafetyTipCategory.meetingTips:
-        return Colors.orange;
+        return context.statusWarning;
       case SafetyTipCategory.privacyProtection:
-        return Colors.green;
+        return context.successColor;
       case SafetyTipCategory.onlineSafety:
-        return Colors.blue;
+        return context.categoryNeutral;
       case SafetyTipCategory.emergencyPreparedness:
-        return Colors.red;
+        return context.categoryDanger;
       case SafetyTipCategory.scamAwareness:
-        return Colors.purple;
+        return context.categoryGeneral;
       case SafetyTipCategory.general:
         return context.outlineColor;
     }
@@ -168,13 +167,13 @@ class SafetyTipsWidget extends StatelessWidget {
     }
   }
 
-  Color _getPriorityColor(int priority) {
+  Color _getPriorityColor(BuildContext context, int priority) {
     if (priority >= 3) {
-      return Colors.red; // High priority
+      return context.priorityHigh; // High priority
     } else if (priority >= 2) {
-      return Colors.orange; // Medium priority
+      return context.priorityMedium; // Medium priority
     } else {
-      return Colors.green; // Low priority
+      return context.priorityLow; // Low priority
     }
   }
 

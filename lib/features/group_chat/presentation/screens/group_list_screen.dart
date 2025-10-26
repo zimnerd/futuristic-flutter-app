@@ -48,10 +48,10 @@ class _GroupListScreenState extends State<GroupListScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F7),
+      backgroundColor: context.backgroundColor,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: const Color(0xFF6E3BFF),
+        backgroundColor: context.primaryColor,
         foregroundColor: Colors.white,
         title: Text(
           'My Groups',
@@ -94,10 +94,10 @@ class _GroupListScreenState extends State<GroupListScreen>
                   leading: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.blue.withValues(alpha: 0.1),
+                      color: context.primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Icon(Icons.group_add, color: Colors.blue),
+                    child: Icon(Icons.group_add, color: context.primaryColor),
                   ),
                   title: Text(
                     'Create Group',
@@ -116,10 +116,10 @@ class _GroupListScreenState extends State<GroupListScreen>
                   leading: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.purple.withValues(alpha: 0.1),
+                      color: context.accentColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Icon(Icons.live_tv, color: Colors.purple),
+                    child: Icon(Icons.live_tv, color: context.accentColor),
                   ),
                   title: Text(
                     'Start Live Session',
