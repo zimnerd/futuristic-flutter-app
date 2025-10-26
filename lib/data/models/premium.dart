@@ -68,6 +68,33 @@ enum PremiumFeature {
   final String displayName;
   final String icon;
   final String description;
+
+  /// Convert backend feature key (uppercase_snake_case) to enum
+  /// E.g., "ADVANCED_FILTERS" -> advancedFilters
+  static PremiumFeature? fromBackendKey(String key) {
+    final keyMap = {
+      'ADVANCED_FILTERS': PremiumFeature.advancedFilters,
+      'UNLIMITED_LIKES': PremiumFeature.unlimitedLikes,
+      'READ_RECEIPTS': PremiumFeature.readReceipts,
+      'WHO_LIKED_YOU': PremiumFeature.whoLikedYou,
+      'PRIORITY_SUPPORT': PremiumFeature.prioritySupport,
+      'CUSTOM_GIFTS': PremiumFeature.customGifts,
+      'AI_COMPANION': PremiumFeature.aiCompanion,
+      'CONCIERGE_SERVICE': PremiumFeature.conciergeService,
+      'EXCLUSIVE_EVENTS': PremiumFeature.exclusiveEvents,
+      // Legacy/alternate names from backend
+      'PASSPORT': null, // Not supported yet
+      'SUPER_LIKES': null,
+      'REWIND': null,
+      'BASIC_MATCHING': null,
+      'PRIORITY_LIKES': null,
+      'UNLIMITED_MESSAGES': null,
+      'INCOGNITO_MODE': null,
+      'VERIFIED_BADGE': null,
+      'BOOST': null,
+    };
+    return keyMap[key];
+  }
 }
 
 /// User's premium subscription status

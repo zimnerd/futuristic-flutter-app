@@ -1288,8 +1288,8 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
               width: 60,
               height: 60,
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [PulseColors.primary, PulseColors.accent],
+                gradient: LinearGradient(
+                  colors: [PulseColors.primary, context.accentColor],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -1339,7 +1339,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
             gradient: LinearGradient(
               colors: isExpiringSoon
                   ? [PulseColors.warning, PulseColors.warningDark]
-                  : [PulseColors.primary, PulseColors.accent],
+                  : [PulseColors.primary, context.accentColor],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -1510,7 +1510,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                   ),
                   child: Icon(
                     Icons.favorite,
-                    color: Theme.of(context).colorScheme.surface,
+                    color: context.surfaceColor,
                     size: 50,
                   ),
                 ),
@@ -1556,7 +1556,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: PulseColors.primary,
-                          foregroundColor: PulseColors.white,
+                          foregroundColor: context.surfaceColor,
                         ),
                         child: Text('Say Hi'),
                       ),
@@ -1605,7 +1605,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
         maxChildSize: 0.95,
         builder: (context, scrollController) => Container(
           decoration: BoxDecoration(
-            color: PulseColors.white,
+            color: context.surfaceColor,
             borderRadius: BorderRadius.only(
               topLeft: Radius.circular(PulseSpacing.xl),
               topRight: Radius.circular(PulseSpacing.xl),
@@ -1677,7 +1677,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: PulseColors.primary,
-                            foregroundColor: PulseColors.white,
+                            foregroundColor: context.surfaceColor,
                             padding: const EdgeInsets.symmetric(
                               vertical: PulseSpacing.md,
                             ),
@@ -1724,7 +1724,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
         maxChildSize: 0.9,
         builder: (context, scrollController) => Container(
           decoration: BoxDecoration(
-            color: PulseColors.white,
+            color: context.surfaceColor,
             borderRadius: BorderRadius.only(
               topLeft: Radius.circular(PulseSpacing.xl),
               topRight: Radius.circular(PulseSpacing.xl),
@@ -1778,7 +1778,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                       Container(
                         padding: const EdgeInsets.all(PulseSpacing.lg),
                         decoration: BoxDecoration(
-                          color: PulseColors.accent.withValues(alpha: 0.1),
+                          color: context.accentColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(PulseSpacing.md),
                         ),
                         child: Column(
@@ -1787,7 +1787,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                             Text(
                               'Your AI Dating Coach',
                               style: PulseTypography.h4.copyWith(
-                                color: PulseColors.accent,
+                                color: context.accentColor,
                               ),
                             ),
                             const SizedBox(height: PulseSpacing.sm),
@@ -1837,7 +1837,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: PulseColors.primary,
-                            foregroundColor: PulseColors.white,
+                            foregroundColor: context.surfaceColor,
                             padding: const EdgeInsets.symmetric(
                               vertical: PulseSpacing.md,
                             ),

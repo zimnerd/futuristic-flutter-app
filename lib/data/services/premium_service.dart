@@ -245,19 +245,12 @@ class PremiumService {
         final List<dynamic> data = response.data['data'] ?? [];
         final features = data
             .map((featureData) {
-              // Extract 'key' field from feature object
+              // Extract 'key' field from feature object (uppercase_snake_case)
               final featureName = featureData['key'] as String?;
               if (featureName == null) return null;
               
-              // Convert string feature name to enum
-              try {
-                return PremiumFeature.values.firstWhere(
-                  (feature) => feature.name == featureName,
-                );
-              } catch (e) {
-                _logger.w('Unknown premium feature: $featureName');
-                return null;
-              }
+              // Convert backend key to enum using mapping
+              return PremiumFeature.fromBackendKey(featureName);
             })
             .where((feature) => feature != null)
             .cast<PremiumFeature>()
