@@ -3,33 +3,67 @@ import '../../core/constants/api_constants.dart';
 import '../../core/network/api_client.dart';
 import '../../domain/entities/filter_preferences.dart';
 
+/// Cache entry for filter options with TTL
+class _CacheEntry<T> {
+  final T data;
+  final DateTime timestamp;
+  static const Duration defaultTTL = Duration(hours: 24);
+
+  _CacheEntry(this.data) : timestamp = DateTime.now();
+
+  bool isExpired() {
+    return DateTime.now().difference(timestamp) > defaultTTL;
+  }
+}
+
 /// Service for managing user filter preferences
 /// Handles saving, loading, and syncing filter preferences with backend
 class PreferencesService {
   final ApiClient _apiClient;
   final Logger _logger = Logger();
 
+  // Cache for filter options (24-hour TTL)
+  _CacheEntry<List<String>>? _cachedInterests;
+  _CacheEntry<List<String>>? _cachedEducationLevels;
+  _CacheEntry<List<String>>? _cachedOccupations;
+  _CacheEntry<List<String>>? _cachedRelationshipTypes;
+  _CacheEntry<List<String>>? _cachedDrinkingOptions;
+  _CacheEntry<List<String>>? _cachedSmokingOptions;
+  _CacheEntry<List<String>>? _cachedExerciseOptions;
+
   PreferencesService(this._apiClient);
 
   /// Get user's current filter preferences from backend
   Future<FilterPreferences> getFilterPreferences() async {
     try {
-      _logger.d('Fetching filter preferences from backend');
+      _logger.i('📥 Fetching filter preferences from backend...');
 
       final response = await _apiClient.get(ApiConstants.usersPreferences);
 
       if (response.statusCode == 200) {
-        final responseData = response.data as Map<String, dynamic>;
-        final data = responseData['data'] as Map<String, dynamic>;
-        final preferences = FilterPreferences.fromJson(data);
-        _logger.d('Filter preferences loaded successfully');
-        return preferences;
+        try {
+          final responseData = response.data as Map<String, dynamic>;
+          final data = responseData['data'] as Map<String, dynamic>;
+          final preferences = FilterPreferences.fromJson(data);
+          _logger.i(
+            '✅ Filter preferences loaded: age ${preferences.minAge}-${preferences.maxAge}, distance ${preferences.maxDistance}km',
+          );
+          return preferences;
+        } catch (e, stackTrace) {
+          _logger.e('❌ Error parsing filter preferences JSON: $e');
+          _logger.e('Stack trace: $stackTrace');
+          _logger.e('Response data: ${response.data}');
+          return const FilterPreferences();
+        }
       } else {
-        _logger.w('Failed to load preferences, using defaults');
+        _logger.w(
+          '❌ Failed to load preferences (status ${response.statusCode}), using defaults',
+        );
         return const FilterPreferences();
       }
-    } catch (e) {
-      _logger.e('Error loading filter preferences: $e');
+    } catch (e, stackTrace) {
+      _logger.e('❌ Network error loading filter preferences: $e');
+      _logger.e('Stack trace: $stackTrace');
       return const FilterPreferences();
     }
   }
@@ -59,83 +93,159 @@ class PreferencesService {
 
   /// Get available interests for filtering
   Future<List<String>> getAvailableInterests() async {
+    // Return cached data if valid
+    if (_cachedInterests != null && !_cachedInterests!.isExpired()) {
+      _logger.d(
+        '💾 Returning cached interests (${_cachedInterests!.data.length} items)',
+      );
+      return _cachedInterests!.data;
+    }
+
     try {
-      _logger.d('Fetching available interests');
+      _logger.i('📥 Fetching available interests from API...');
 
       final response = await _apiClient.get('${ApiConstants.users}/interests');
 
       if (response.statusCode == 200) {
-        final responseData = response.data as Map<String, dynamic>;
-        final data = responseData['data'] as Map<String, dynamic>;
-        final interests = List<String>.from(data['interests'] ?? []);
-        _logger.d('Loaded ${interests.length} available interests');
-        return interests;
+        try {
+          final responseData = response.data as Map<String, dynamic>;
+          final data = responseData['data'] as Map<String, dynamic>;
+          final interests = List<String>.from(data['interests'] ?? []);
+          _logger.i(
+            '✅ Loaded ${interests.length} available interests from API',
+          );
+
+          // Cache the results
+          _cachedInterests = _CacheEntry(interests);
+          return interests;
+        } catch (e, stackTrace) {
+          _logger.e('❌ Error parsing interests JSON: $e');
+          _logger.e('Stack trace: $stackTrace');
+          _logger.e('Response data: ${response.data}');
+          return _defaultInterests;
+        }
       } else {
-        _logger.w('Failed to load interests, using defaults');
+        _logger.w(
+          '❌ Failed to load interests (status ${response.statusCode}), using defaults',
+        );
         return _defaultInterests;
       }
-    } catch (e) {
-      _logger.e('Error loading interests: $e');
+    } catch (e, stackTrace) {
+      _logger.e('❌ Network error loading interests: $e');
+      _logger.e('Stack trace: $stackTrace');
       return _defaultInterests;
     }
   }
 
   /// Get available education levels
   Future<List<String>> getEducationLevels() async {
+    // Return cached data if valid
+    if (_cachedEducationLevels != null &&
+        !_cachedEducationLevels!.isExpired()) {
+      _logger.d(
+        '💾 Returning cached education levels (${_cachedEducationLevels!.data.length} items)',
+      );
+      return _cachedEducationLevels!.data;
+    }
+
     try {
-      _logger.d('Fetching education levels');
+      _logger.i('📥 Fetching education levels from API...');
 
       final response = await _apiClient.get(
         '${ApiConstants.users}/education-levels',
       );
 
       if (response.statusCode == 200) {
-        final responseData = response.data as Map<String, dynamic>;
-        final data = responseData['data'] as Map<String, dynamic>;
-        final levels = List<String>.from(data['levels'] ?? []);
-        _logger.d('Loaded ${levels.length} education levels');
-        return levels;
+        try {
+          final responseData = response.data as Map<String, dynamic>;
+          final data = responseData['data'] as Map<String, dynamic>;
+          final levels = List<String>.from(data['levels'] ?? []);
+          _logger.i('✅ Loaded ${levels.length} education levels from API');
+
+          // Cache the results
+          _cachedEducationLevels = _CacheEntry(levels);
+          return levels;
+        } catch (e, stackTrace) {
+          _logger.e('❌ Error parsing education levels JSON: $e');
+          _logger.e('Stack trace: $stackTrace');
+          _logger.e('Response data: ${response.data}');
+          return _defaultEducationLevels;
+        }
       } else {
-        _logger.w('Failed to load education levels, using defaults');
+        _logger.w(
+          '❌ Failed to load education levels (status ${response.statusCode}), using defaults',
+        );
         return _defaultEducationLevels;
       }
-    } catch (e) {
-      _logger.e('Error loading education levels: $e');
+    } catch (e, stackTrace) {
+      _logger.e('❌ Network error loading education levels: $e');
+      _logger.e('Stack trace: $stackTrace');
       return _defaultEducationLevels;
     }
   }
 
   /// Get available occupations
   Future<List<String>> getOccupations() async {
+    // Return cached data if valid
+    if (_cachedOccupations != null && !_cachedOccupations!.isExpired()) {
+      _logger.d(
+        '💾 Returning cached occupations (${_cachedOccupations!.data.length} items)',
+      );
+      return _cachedOccupations!.data;
+    }
+
     try {
-      _logger.d('Fetching occupations from backend');
+      _logger.i('📥 Fetching occupations from API...');
       final response = await _apiClient.getOccupations();
 
       if (response.statusCode == 200 && response.data != null) {
-        final data = response.data;
-        if (data is Map && data['data'] != null) {
-          final occupations = (data['data']['occupations'] as List?)
-              ?.map((e) => e.toString())
-              .toList();
-          if (occupations != null && occupations.isNotEmpty) {
-            _logger.i('Loaded ${occupations.length} occupations from backend');
-            return occupations;
+        try {
+          final data = response.data;
+          if (data is Map && data['data'] != null) {
+            final occupations = (data['data']['occupations'] as List?)
+                ?.map((e) => e.toString())
+                .toList();
+            if (occupations != null && occupations.isNotEmpty) {
+              _logger.i('✅ Loaded ${occupations.length} occupations from API');
+
+              // Cache the results
+              _cachedOccupations = _CacheEntry(occupations);
+              return occupations;
+            }
           }
+          _logger.w('❌ Response has invalid data structure');
+        } catch (e, stackTrace) {
+          _logger.e('❌ Error parsing occupations data: $e');
+          _logger.e('Stack trace: $stackTrace');
+          _logger.e('Response data: ${response.data}');
         }
+      } else {
+        _logger.w(
+          '❌ Failed to load occupations (status ${response.statusCode ?? 'null'}), using defaults',
+        );
       }
 
-      _logger.w('Backend returned invalid data, using defaults');
       return _defaultOccupations;
-    } catch (e) {
-      _logger.e('Error loading occupations: $e');
+    } catch (e, stackTrace) {
+      _logger.e('❌ Network error loading occupations: $e');
+      _logger.e('Stack trace: $stackTrace');
       return _defaultOccupations;
     }
   }
 
   /// Get available relationship types
   Future<List<String>> getRelationshipTypes() async {
+    // Return cached data if valid
+    if (_cachedRelationshipTypes != null &&
+        !_cachedRelationshipTypes!.isExpired()) {
+      _logger.d(
+        'Returning cached relationship types (${_cachedRelationshipTypes!.data.length} items)',
+      );
+      return _cachedRelationshipTypes!.data;
+    }
+
     try {
-      _logger.d('Fetching relationship types from backend');
+      _logger.d('Fetching relationship types from API');
       final response = await _apiClient.getRelationshipTypes();
 
       if (response.statusCode == 200 && response.data != null) {
@@ -145,7 +255,10 @@ class PreferencesService {
               ?.map((e) => e.toString())
               .toList();
           if (types != null && types.isNotEmpty) {
-            _logger.i('Loaded ${types.length} relationship types from backend');
+            _logger.i('Loaded ${types.length} relationship types from API');
+
+            // Cache the results
+            _cachedRelationshipTypes = _CacheEntry(types);
             return types;
           }
         }
@@ -161,8 +274,17 @@ class PreferencesService {
 
   /// Get available drinking options
   Future<List<String>> getDrinkingOptions() async {
+    // Return cached data if valid
+    if (_cachedDrinkingOptions != null &&
+        !_cachedDrinkingOptions!.isExpired()) {
+      _logger.d(
+        'Returning cached drinking options (${_cachedDrinkingOptions!.data.length} items)',
+      );
+      return _cachedDrinkingOptions!.data;
+    }
+
     try {
-      _logger.d('Fetching drinking options from backend');
+      _logger.d('Fetching drinking options from API');
       final response = await _apiClient.getDrinkingOptions();
 
       if (response.statusCode == 200 && response.data != null) {
@@ -172,7 +294,10 @@ class PreferencesService {
               ?.map((e) => e.toString())
               .toList();
           if (options != null && options.isNotEmpty) {
-            _logger.i('Loaded ${options.length} drinking options from backend');
+            _logger.i('Loaded ${options.length} drinking options from API');
+
+            // Cache the results
+            _cachedDrinkingOptions = _CacheEntry(options);
             return options;
           }
         }
@@ -188,8 +313,16 @@ class PreferencesService {
 
   /// Get available smoking options
   Future<List<String>> getSmokingOptions() async {
+    // Return cached data if valid
+    if (_cachedSmokingOptions != null && !_cachedSmokingOptions!.isExpired()) {
+      _logger.d(
+        'Returning cached smoking options (${_cachedSmokingOptions!.data.length} items)',
+      );
+      return _cachedSmokingOptions!.data;
+    }
+
     try {
-      _logger.d('Fetching smoking options from backend');
+      _logger.d('Fetching smoking options from API');
       final response = await _apiClient.getSmokingOptions();
 
       if (response.statusCode == 200 && response.data != null) {
@@ -199,7 +332,10 @@ class PreferencesService {
               ?.map((e) => e.toString())
               .toList();
           if (options != null && options.isNotEmpty) {
-            _logger.i('Loaded ${options.length} smoking options from backend');
+            _logger.i('Loaded ${options.length} smoking options from API');
+
+            // Cache the results
+            _cachedSmokingOptions = _CacheEntry(options);
             return options;
           }
         }
@@ -215,8 +351,17 @@ class PreferencesService {
 
   /// Get available exercise options
   Future<List<String>> getExerciseOptions() async {
+    // Return cached data if valid
+    if (_cachedExerciseOptions != null &&
+        !_cachedExerciseOptions!.isExpired()) {
+      _logger.d(
+        'Returning cached exercise options (${_cachedExerciseOptions!.data.length} items)',
+      );
+      return _cachedExerciseOptions!.data;
+    }
+
     try {
-      _logger.d('Fetching exercise options from backend');
+      _logger.d('Fetching exercise options from API');
       final response = await _apiClient.getExerciseOptions();
 
       if (response.statusCode == 200 && response.data != null) {
@@ -226,7 +371,10 @@ class PreferencesService {
               ?.map((e) => e.toString())
               .toList();
           if (options != null && options.isNotEmpty) {
-            _logger.i('Loaded ${options.length} exercise options from backend');
+            _logger.i('Loaded ${options.length} exercise options from API');
+
+            // Cache the results
+            _cachedExerciseOptions = _CacheEntry(options);
             return options;
           }
         }

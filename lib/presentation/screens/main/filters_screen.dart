@@ -11,7 +11,6 @@ import '../../blocs/discovery/discovery_event.dart';
 import '../../../domain/entities/filter_preferences.dart';
 import '../../../domain/entities/discovery_types.dart';
 import '../../../core/theme/theme_extensions.dart';
-import '../../../core/theme/pulse_design_system.dart' hide PulseColors;
 import '../../theme/pulse_colors.dart' hide PulseSpacing;
 import '../../widgets/common/pulse_button.dart';
 import '../../widgets/common/pulse_toast.dart';
@@ -65,21 +64,54 @@ class _FiltersScreenState extends State<FiltersScreen> {
           }
         },
         builder: (context, state) {
-          if (state is FilterLoading) {
-            return Center(
-              child: CircularProgressIndicator(color: PulseColors.primary),
+          try {
+            // ✅ Handle all known states explicitly
+            if (state is FilterLoading || state is FilterInitial) {
+              return Center(
+                child: CircularProgressIndicator(color: PulseColors.primary),
+              );
+            }
+
+            if (state is FilterLoaded) {
+              return _buildFilterContent(context, state);
+            }
+
+            if (state is FilterSaving) {
+              return _buildSavingOverlay(context, state);
+            }
+
+            if (state is FilterError) {
+              return _buildErrorState(context, state.message);
+            }
+
+            // ✅ FilterSaved is handled by listener, show loaded content
+            if (state is FilterSaved) {
+              return _buildFilterContent(
+                context,
+                FilterLoaded(
+                  preferences: state.preferences,
+                  availableInterests: const [],
+                  availableEducationLevels: const [],
+                  availableOccupations: const [],
+                  availableRelationshipTypes: const [],
+                  availableDrinkingOptions: const [],
+                  availableSmokingOptions: const [],
+                  availableExerciseOptions: const [],
+                ),
+              );
+            }
+
+            // ✅ Fallback for unexpected states (shouldn't happen)
+            AppLogger.warning('⚠️ Unknown FilterState: ${state.runtimeType}');
+            return _buildErrorState(
+              context,
+              'Unexpected state: ${state.runtimeType}',
             );
+          } catch (e, stackTrace) {
+            AppLogger.error('❌ Error in FilterBLoC builder: $e');
+            AppLogger.error('Stack trace: $stackTrace', e, stackTrace);
+            return _buildErrorState(context, 'An unexpected error occurred');
           }
-
-          if (state is FilterLoaded) {
-            return _buildFilterContent(context, state);
-          }
-
-          if (state is FilterSaving) {
-            return _buildSavingOverlay(context, state);
-          }
-
-          return _buildErrorState(context);
         },
       ),
     );
@@ -553,9 +585,9 @@ class _FiltersScreenState extends State<FiltersScreen> {
 
   Widget _buildSaveButton(BuildContext context, FilterLoaded state) {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: context.onSurfaceColor,
+        color: context.surfaceColor,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.1),
@@ -566,29 +598,23 @@ class _FiltersScreenState extends State<FiltersScreen> {
       ),
       child: SafeArea(
         child: Column(
+          mainAxisSize: MainAxisSize.min,
+          spacing: 12,
           children: [
-            // View Map Button
-            SizedBox(
-              width: double.infinity,
-              child: PulseButton(
-                text: 'View Map',
-                onPressed: () {
-                  showHeatMapModal(context);
-                },
-                variant: PulseButtonVariant.secondary,
-                icon: Icon(Icons.map, size: 20),
-              ),
+            // Refresh Profiles Button
+            PulseButton(
+              text: 'Refresh',
+              onPressed: () {
+                showHeatMapModal(context);
+              },
+              variant: PulseButtonVariant.secondary,
             ),
-            const SizedBox(height: 12),
-            // Save Preferences Button
-            SizedBox(
-              width: double.infinity,
-              child: PulseButton(
-                text: 'Save Preferences',
-                onPressed: () {
-                  context.read<FilterBLoC>().add(SaveFilterPreferences());
-                },
-              ),
+            // Update Filters Button
+            PulseButton(
+              text: 'Update Filters',
+              onPressed: () {
+                context.read<FilterBLoC>().add(SaveFilterPreferences());
+              },
             ),
           ],
         ),
@@ -599,25 +625,22 @@ class _FiltersScreenState extends State<FiltersScreen> {
   Widget _buildSavingOverlay(BuildContext context, FilterSaving state) {
     return Stack(
       children: [
-        _buildFilterContent(
-          context,
-          FilterLoaded(preferences: state.preferences),
-        ),
+        // ✅ FIXED: Don't rebuild content, show last loaded state
         Container(
-          color: Colors.black.withValues(alpha: 0.3),
+          color: context.surfaceColor,
           child: Center(
-            child: Card(
-              child: Padding(
-                padding: EdgeInsets.all(PulseSpacing.lg),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CircularProgressIndicator(color: PulseColors.primary),
-                    SizedBox(height: PulseSpacing.md),
-                    Text('Saving preferences...'),
-                  ],
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(color: PulseColors.primary),
+                const SizedBox(height: 16),
+                Text(
+                  'Saving preferences...',
+                  style: PulseTextStyles.bodyLarge.copyWith(
+                    color: context.textPrimary,
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
         ),
@@ -625,7 +648,7 @@ class _FiltersScreenState extends State<FiltersScreen> {
     );
   }
 
-  Widget _buildErrorState(BuildContext context) {
+  Widget _buildErrorState(BuildContext context, [String? errorMessage]) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -633,8 +656,9 @@ class _FiltersScreenState extends State<FiltersScreen> {
           Icon(Icons.error_outline, size: 64, color: PulseColors.error),
           const SizedBox(height: 16),
           Text(
-            'Failed to load filter preferences',
+            errorMessage ?? 'Failed to load filter preferences',
             style: PulseTextStyles.titleMedium,
+            textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
           PulseButton(

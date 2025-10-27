@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:logger/logger.dart';
 
 import '../../../data/services/preferences_service.dart';
+import '../../../domain/entities/filter_preferences.dart';
 import 'filter_event.dart';
 import 'filter_state.dart';
 
@@ -34,19 +35,49 @@ class FilterBLoC extends Bloc<FilterEvent, FilterState> {
     LoadFilterPreferences event,
     Emitter<FilterState> emit,
   ) async {
+    // ✅ OPTIMIZATION: Skip loading if data is already loaded
+    if (state is FilterLoaded) {
+      _logger.d('Filter preferences already loaded, skipping fetch');
+      return;
+    }
+
     try {
       emit(FilterLoading());
-      _logger.d('Loading filter preferences');
+      _logger.i('🔄 Starting to load filter preferences...');
 
-      final preferences = await _preferencesService.getFilterPreferences();
-      final interests = await _preferencesService.getAvailableInterests();
-      final educationLevels = await _preferencesService.getEducationLevels();
-      final occupations = await _preferencesService.getOccupations();
-      final relationshipTypes = await _preferencesService
-          .getRelationshipTypes();
-      final drinkingOptions = await _preferencesService.getDrinkingOptions();
-      final smokingOptions = await _preferencesService.getSmokingOptions();
-      final exerciseOptions = await _preferencesService.getExerciseOptions();
+      // Load all data in parallel for better performance
+      _logger.d('📡 Making parallel API calls for filter options');
+      final results = await Future.wait([
+        _preferencesService.getFilterPreferences(),
+        _preferencesService.getAvailableInterests(),
+        _preferencesService.getEducationLevels(),
+        _preferencesService.getOccupations(),
+        _preferencesService.getRelationshipTypes(),
+        _preferencesService.getDrinkingOptions(),
+        _preferencesService.getSmokingOptions(),
+        _preferencesService.getExerciseOptions(),
+      ], eagerError: true);
+
+      _logger.i('✅ All parallel API calls completed');
+
+      final preferences = results[0] as FilterPreferences;
+      final interests = results[1] as List<String>;
+      final educationLevels = results[2] as List<String>;
+      final occupations = results[3] as List<String>;
+      final relationshipTypes = results[4] as List<String>;
+      final drinkingOptions = results[5] as List<String>;
+      final smokingOptions = results[6] as List<String>;
+      final exerciseOptions = results[7] as List<String>;
+
+      _logger.d('📊 Data retrieved:');
+      _logger.d('  - Preferences: ${preferences.minAge}-${preferences.maxAge}');
+      _logger.d('  - Interests: ${interests.length} items');
+      _logger.d('  - Education levels: ${educationLevels.length} items');
+      _logger.d('  - Occupations: ${occupations.length} items');
+      _logger.d('  - Relationship types: ${relationshipTypes.length} items');
+      _logger.d('  - Drinking options: ${drinkingOptions.length} items');
+      _logger.d('  - Smoking options: ${smokingOptions.length} items');
+      _logger.d('  - Exercise options: ${exerciseOptions.length} items');
 
       emit(
         FilterLoaded(
@@ -61,10 +92,22 @@ class FilterBLoC extends Bloc<FilterEvent, FilterState> {
         ),
       );
 
-      _logger.d('Filter preferences loaded successfully');
-    } catch (e) {
-      _logger.e('Error loading filter preferences: $e');
-      emit(FilterError('Failed to load filter preferences'));
+      _logger.i('✨ Filter preferences loaded and state emitted successfully');
+    } catch (e, stackTrace) {
+      _logger.e('❌ ERROR loading filter preferences');
+      _logger.e('Error: $e');
+      _logger.e('Stack trace: $stackTrace');
+
+      // Log specific error types
+      if (e is TypeError) {
+        _logger.e('🔴 Type Error detected - possible data format issue');
+      } else if (e is FormatException) {
+        _logger.e('🔴 Format Exception - JSON parsing issue');
+      } else if (e is NoSuchMethodError) {
+        _logger.e('🔴 NoSuchMethod - method not found on object');
+      }
+
+      emit(FilterError('Failed to load filter preferences: ${e.toString()}'));
     }
   }
 
