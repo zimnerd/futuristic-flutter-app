@@ -26,7 +26,6 @@ import '../../widgets/discovery/swipe_card.dart' as swipe_widget;
 import '../../widgets/common/pulse_toast.dart';
 import '../../widgets/common/skeleton_loading.dart';
 import '../../widgets/filters/filter_preview_widget.dart';
-import '../../widgets/common/keyboard_dismissible_scaffold.dart';
 import '../../blocs/filters/filter_bloc.dart';
 import '../../blocs/filters/filter_event.dart';
 import '../../blocs/filters/filter_state.dart';
@@ -542,66 +541,87 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
   @override
   Widget build(BuildContext context) {
     // Determine if dark mode is active
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = context.isDarkMode;
+
+    // Set system UI overlay style based on theme
+    SystemChrome.setSystemUIOverlayStyle(
+      SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+        statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
+        systemNavigationBarColor: context.surfaceColor,
+        systemNavigationBarIconBrightness: isDark
+            ? Brightness.light
+            : Brightness.dark,
+      ),
+    );
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: isDark
-          ? SystemUiOverlayStyle.light.copyWith(
-              statusBarColor: Colors.transparent,
-            )
-          : SystemUiOverlayStyle.dark.copyWith(
-              statusBarColor: Colors.transparent,
-            ),
-      child: MultiBlocProvider(
-        providers: [
-          BlocProvider(
-            create: (context) =>
-                BoostBloc(BoostService())..add(CheckBoostStatus()),
-          ),
-          BlocProvider(
-            create: (context) => PremiumBloc(
-              premiumService: PremiumService(ApiClient.instance),
-              authBloc: context.read<AuthBloc>(),
-            )..add(LoadCurrentSubscription()),
-          ),
-        ],
-        child: KeyboardDismissibleScaffold(
-          body: SafeArea(
-            child: BlocListener<DiscoveryBloc, DiscoveryState>(
-              listener: (context, state) {
-              // Handle rewind success/error feedback
-              if (state is DiscoveryLoaded && state.rewindJustCompleted) {
-                // Rewind was successful
-                PulseToast.success(
-                  context,
-                  message: 'Rewound last action',
-                  duration: const Duration(seconds: 2),
-                );
+      value: SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+        statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
+        systemNavigationBarColor: context.surfaceColor,
+        systemNavigationBarIconBrightness: isDark
+            ? Brightness.light
+            : Brightness.dark,
+      ),
+      child: Scaffold(
+        backgroundColor: context.backgroundColor,
+        extendBodyBehindAppBar: true,
+        body: SafeArea(
+          top: false,
+          bottom: false,
+          child: Container(
+            color: context.backgroundColor,
+            child: MultiBlocProvider(
+              providers: [
+                BlocProvider(
+                  create: (context) =>
+                      BoostBloc(BoostService())..add(CheckBoostStatus()),
+                ),
+                BlocProvider(
+                  create: (context) => PremiumBloc(
+                    premiumService: PremiumService(ApiClient.instance),
+                    authBloc: context.read<AuthBloc>(),
+                  )..add(LoadCurrentSubscription()),
+                ),
+              ],
+              child: BlocListener<DiscoveryBloc, DiscoveryState>(
+                listener: (context, state) {
+                  // Handle rewind success/error feedback
+                  if (state is DiscoveryLoaded && state.rewindJustCompleted) {
+                    // Rewind was successful
+                    PulseToast.success(
+                      context,
+                      message: 'Rewound last action',
+                      duration: const Duration(seconds: 2),
+                    );
 
-                // Reset the flag to prevent showing the toast again
-                context.read<DiscoveryBloc>().add(const ClearRewindFlag());
-              }
+                    // Reset the flag to prevent showing the toast again
+                    context.read<DiscoveryBloc>().add(const ClearRewindFlag());
+                  }
 
-              // Handle boost success feedback
-              if (state is DiscoveryBoostActivated) {
-                PulseToast.success(
-                  context,
-                  message:
-                      'Boost activated for ${state.boostDuration.inMinutes} minutes!',
-                  duration: const Duration(seconds: 3),
-                );
-              }
+                  // Handle boost success feedback
+                  if (state is DiscoveryBoostActivated) {
+                    PulseToast.success(
+                      context,
+                      message:
+                          'Boost activated for ${state.boostDuration.inMinutes} minutes!',
+                      duration: const Duration(seconds: 3),
+                    );
+                  }
 
-              // Handle errors
-              if (state is DiscoveryError) {
-                PulseToast.error(
-                  context,
-                  message: state.message,
-                  duration: const Duration(seconds: 3),
-                );
-              }
-            },
-            child: BlocBuilder<DiscoveryBloc, DiscoveryState>(
+                  // Handle errors
+                  if (state is DiscoveryError) {
+                    PulseToast.error(
+                      context,
+                      message: state.message,
+                      duration: const Duration(seconds: 3),
+                    );
+                  }
+                },
+                child: BlocBuilder<DiscoveryBloc, DiscoveryState>(
               buildWhen: (previous, current) {
                 // Only rebuild when user stack data actually changes
                 if (previous is DiscoveryLoaded && current is DiscoveryLoaded) {
@@ -650,10 +670,11 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                   ); // Container
               }, // BlocBuilder builder
             ), // BlocBuilder
-            ), // DiscoveryBloc BlocListener child
-          ), // SafeArea
-        ), // KeyboardDismissibleScaffold
-      ), // MultiBlocProvider
+              ), // DiscoveryBloc BlocListener child
+            ), // MultiBlocProvider
+          ), // Container
+        ), // SafeArea
+      ), // Scaffold
     ); // AnnotatedRegion
   }
 

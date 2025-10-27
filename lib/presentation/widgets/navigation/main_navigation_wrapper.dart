@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:line_icons/line_icons.dart';
 import '../../../core/theme/pulse_design_system.dart';
+import '../../../core/theme/theme_extensions.dart';
 import '../../../core/network/api_client.dart';
 
 /// Modern Main Navigation Wrapper with PulseLink Design
@@ -90,9 +91,11 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
       final response = await ApiClient.instance.getUnreadMessageCount();
       if (response.statusCode == 200 && response.data != null) {
         final count = response.data['count'] ?? 0;
-        setState(() {
-          _unreadMessageCount = count;
-        });
+        if (mounted) {
+          setState(() {
+            _unreadMessageCount = count;
+          });
+        }
       }
     } catch (e) {
       // Handle error silently, keep current count
@@ -138,7 +141,7 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
     return Scaffold(
       body: widget.navigationShell,
       extendBody: true,
-      bottomNavigationBar: _buildCurvedBottomBar(),
+      bottomNavigationBar: SafeArea(top: false, child: _buildCurvedBottomBar()),
     );
   }
 
@@ -149,10 +152,10 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
       child: Container(
         height: 60,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.surfaceColor,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
+              color: context.shadowColor,
               blurRadius: 12,
               offset: const Offset(0, -2),
             ),
@@ -183,23 +186,23 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
   }) {
     final isActive = index == widget.navigationShell.currentIndex;
 
-    return AnimatedBuilder(
-      animation: _animationController,
-      builder: (context, child) {
-        final scale =
-            index == widget.navigationShell.currentIndex &&
-                _animationController.isAnimating
-            ? 1.0 - (_animationController.value * 0.08)
-            : 1.0;
+    return Expanded(
+      child: AnimatedBuilder(
+        animation: _animationController,
+        builder: (context, child) {
+          final scale =
+              index == widget.navigationShell.currentIndex &&
+                  _animationController.isAnimating
+              ? 1.0 - (_animationController.value * 0.08)
+              : 1.0;
 
-        return Transform.scale(
-          scale: scale,
-          child: Expanded(
+          return Transform.scale(
+            scale: scale,
             child: InkWell(
               onTap: () => _onItemTapped(index),
               borderRadius: BorderRadius.circular(8),
-              splashColor: PulseColors.primary.withValues(alpha: 0.1),
-              highlightColor: PulseColors.primary.withValues(alpha: 0.05),
+              splashColor: context.primaryColor.withValues(alpha: 0.1),
+              highlightColor: context.primaryColor.withValues(alpha: 0.05),
               child: Container(
                 alignment: Alignment.center,
                 padding: const EdgeInsets.symmetric(vertical: 8),
@@ -214,8 +217,8 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
                         Icon(
                           isActive ? item.activeIcon : item.icon,
                           color: isActive
-                              ? PulseColors.primary
-                              : const Color(0xFF999999),
+                              ? context.primaryColor
+                              : context.textSecondary,
                           size: 24,
                         ),
                         if (badgeCount != null && badgeCount > 0)
@@ -228,17 +231,21 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
                                 vertical: 1,
                               ),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFFF6B6B),
+                                color: context.errorColor,
                                 borderRadius: BorderRadius.circular(6),
                                 border: Border.all(
-                                  color: Colors.white,
+                                  color: context.surfaceColor,
                                   width: 1,
                                 ),
                               ),
                               child: Text(
                                 badgeCount > 99 ? '99+' : badgeCount.toString(),
-                                style: const TextStyle(
-                                  color: Colors.white,
+                                style: TextStyle(
+                                  color:
+                                      context.primaryColor ==
+                                          PulseColors.primary
+                                      ? Colors.white
+                                      : context.textOnPrimary,
                                   fontSize: 9,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -251,8 +258,8 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
                       item.label,
                       style: TextStyle(
                         color: isActive
-                            ? PulseColors.primary
-                            : const Color(0xFF999999),
+                            ? context.primaryColor
+                            : context.textSecondary,
                         fontSize: 10,
                         fontWeight: isActive
                             ? FontWeight.w600
@@ -266,9 +273,9 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
                 ),
               ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }
