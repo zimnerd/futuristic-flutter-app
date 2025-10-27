@@ -16,6 +16,7 @@ import '../profile/profile_details_screen.dart';
 import '../../widgets/common/robust_network_image.dart';
 import '../../widgets/verification/verification_badge.dart';
 import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
+import '../../theme/overlay_styling.dart';
 
 /// Who Liked You Screen - Premium Feature
 ///
@@ -693,14 +694,7 @@ class _UserGridCard extends StatelessWidget {
                 child: Container(
                   height: 100,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.black.withValues(alpha: isPremium ? 0.8 : 0.5),
-                      ],
-                    ),
+                    gradient: OverlayStyling.getOverlayGradient(context),
                   ),
                 ),
               ),

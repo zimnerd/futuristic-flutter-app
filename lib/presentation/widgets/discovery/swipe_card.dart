@@ -12,6 +12,7 @@ import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 import '../common/robust_network_image.dart';
 import '../verification/verification_badge.dart';
 import '../dialogs/report_user_dialog.dart';
+import '../../theme/overlay_styling.dart';
 
 // Animation durations for consistent timing
 class _SwipeCardConstants {
@@ -364,14 +365,7 @@ class _UserInfoOverlay extends StatelessWidget {
           vertical: _SwipeCardConstants.userInfoVerticalPadding,
         ),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.transparent,
-              Colors.black.withValues(alpha: 0.8),
-            ],
-          ),
+          gradient: OverlayStyling.getOverlayGradient(context),
           borderRadius: BorderRadius.only(
             bottomLeft: Radius.circular(_SwipeCardConstants.cardBorderRadius),
             bottomRight: Radius.circular(_SwipeCardConstants.cardBorderRadius),
@@ -386,11 +380,7 @@ class _UserInfoOverlay extends StatelessWidget {
                 Expanded(
                   child: Text(
                     '${user.name}, ${user.age}',
-                    style: TextStyle(
-                      color: context.onSurfaceColor,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: OverlayStyling.getProfileNameStyle(context),
                   ),
                 ),
                 if (compatibilityScore != null) ...[
@@ -422,17 +412,13 @@ class _UserInfoOverlay extends StatelessWidget {
                       children: [
                         Icon(
                           Icons.favorite,
-                          color: context.onSurfaceColor,
+                          color: OverlayStyling.getOverlayTextColor(context),
                           size: 14,
                         ),
                         const SizedBox(width: 4),
                         Text(
                           '${compatibilityScore!.toInt()}%',
-                          style: TextStyle(
-                            color: context.onSurfaceColor,
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: OverlayStyling.getProfileDetailsStyle(context),
                         ),
                       ],
                     ),
@@ -449,7 +435,7 @@ class _UserInfoOverlay extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 user.bio,
-                style: TextStyle(color: context.textSecondary, fontSize: 14),
+                style: OverlayStyling.getProfileSubtitleStyle(context),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -567,15 +553,18 @@ class _UserInfoOverlay extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: context.onSurfaceColor.withValues(alpha: 0.1),
+        color: OverlayStyling.getOverlayTextColor(context)
+            .withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: context.onSurfaceColor.withValues(alpha: 0.2),
+          color: OverlayStyling.getOverlayTextColor(context)
+              .withValues(alpha: 0.2),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: context.onSurfaceColor.withValues(alpha: 0.1),
+            color: OverlayStyling.getOverlayTextColor(context)
+                .withValues(alpha: 0.1),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -584,17 +573,19 @@ class _UserInfoOverlay extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: context.onSurfaceColor, size: 12),
+          Icon(icon,
+              color: OverlayStyling.getOverlayTextColor(context), size: 12),
           const SizedBox(width: 5),
           Text(
             label,
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w600,
-              color: context.onSurfaceColor,
+              color: OverlayStyling.getOverlayTextColor(context),
               shadows: [
                 Shadow(
-                  color: context.onSurfaceColor.withValues(alpha: 0.2),
+                  color: OverlayStyling.getTextShadowColor(context)
+                      .withValues(alpha: 0.2),
                   offset: const Offset(0, 1),
                   blurRadius: 2,
                 ),

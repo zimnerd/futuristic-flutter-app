@@ -18,6 +18,7 @@ import '../../widgets/dialogs/report_user_dialog.dart';
 import '../../../core/utils/time_format_utils.dart';
 import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 import '../../widgets/profile/profile_strength_indicator.dart';
+import '../../theme/overlay_styling.dart';
 
 /// Context for profile viewing - determines which actions to show
 enum ProfileContext {
@@ -367,16 +368,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
               // Allow gestures to pass through to PageView
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.center,
-                    colors: [
-                      Colors.black.withValues(alpha: 0.6),
-                      Colors.black.withValues(alpha: 0.3),
-                      Colors.transparent,
-                    ],
-                    stops: const [0.0, 0.3, 0.6],
-                  ),
+                  gradient: OverlayStyling.getTopFadeGradient(context),
                 ),
               ),
             ),
@@ -391,16 +383,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
               // Allow gestures to pass through to PageView
               child: Container(
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.black.withValues(alpha: 0.7),
-                      Colors.black.withValues(alpha: 0.9),
-                    ],
-                    stops: const [0.0, 0.5, 1.0],
-                  ),
+                  gradient: OverlayStyling.getOverlayGradient(context),
                 ),
                 padding: const EdgeInsets.all(20),
                 child: Column(

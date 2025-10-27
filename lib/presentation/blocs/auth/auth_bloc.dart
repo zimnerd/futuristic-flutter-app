@@ -217,10 +217,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   /// Check if user profile is complete with minimum required fields
   bool _isProfileComplete(UserModel user) {
-    // Profile completion is no longer gated by percentage
-    // Users can access matching features regardless of profile completion %
-    // Profile enrichment is now optional/progressive
-    return true;
+    // Users must have at least 1 interest to access matching features
+    // This prevents 403 errors later when accessing discovery/matching
+    return user.interests.isNotEmpty;
   }
 
   /// Handles automatic login for development mode

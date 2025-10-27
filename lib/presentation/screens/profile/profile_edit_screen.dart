@@ -534,6 +534,15 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
   }
 
   void _saveInterestsSection() {
+    // ✅ VALIDATION: Require at least 1 interest
+    if (_selectedInterests.isEmpty) {
+      PulseToast.error(
+        context,
+        message: 'Please select at least 1 interest to continue',
+      );
+      return;
+    }
+
     context.read<ProfileBloc>().add(
       UpdateProfile(profile: _buildProfileFromFormData()),
     );
