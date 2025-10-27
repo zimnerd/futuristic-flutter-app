@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../theme/pulse_colors.dart';
 import '../../../domain/entities/user_profile.dart';
 import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
@@ -20,15 +19,15 @@ class ProfileCompletionCard extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            PulseColors.primary.withValues(alpha: 0.1),
-            PulseColors.secondary.withValues(alpha: 0.05),
+            context.primaryColor.withValues(alpha: 0.1),
+            context.accentColor.withValues(alpha: 0.05),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: PulseColors.primary.withValues(alpha: 0.2),
+          color: context.primaryColor.withValues(alpha: 0.2),
           width: 1,
         ),
       ),
@@ -40,14 +39,14 @@ class ProfileCompletionCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: PulseColors.primary.withValues(alpha: 0.1),
+                  color: context.primaryColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
                   completionData.isComplete
                       ? Icons.verified_user
                       : Icons.trending_up,
-                  color: PulseColors.primary,
+                  color: context.primaryColor,
                   size: 24,
                 ),
               ),
@@ -63,7 +62,7 @@ class ProfileCompletionCard extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
-                        color: Colors.black87,
+                        color: context.onSurfaceColor,
                       ),
                     ),
                     Text(
@@ -102,7 +101,7 @@ class ProfileCompletionCard extends StatelessWidget {
               child: Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [PulseColors.primary, PulseColors.secondary],
+                    colors: [context.primaryColor, context.accentColor],
                   ),
                   borderRadius: BorderRadius.circular(4),
                 ),
@@ -131,7 +130,7 @@ class ProfileCompletionCard extends StatelessWidget {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.grey[100],
+                    color: context.surfaceColor.withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
                       color: context.outlineColor.withValues(alpha: 0.3),
@@ -159,35 +158,16 @@ class ProfileCompletionCard extends StatelessWidget {
                 );
               }).toList(),
             ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: onTapIncomplete,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: PulseColors.primary,
-                  foregroundColor: context.onSurfaceColor,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: Text(
-                  'Complete Profile',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-                ),
-              ),
-            ),
           ] else ...[
             const SizedBox(height: 16),
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 12),
               decoration: BoxDecoration(
-                color: PulseColors.success.withValues(alpha: 0.1),
+                color: context.successColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
-                  color: PulseColors.success.withValues(alpha: 0.3),
+                  color: context.successColor.withValues(alpha: 0.3),
                 ),
               ),
               child: Row(
@@ -195,14 +175,14 @@ class ProfileCompletionCard extends StatelessWidget {
                 children: [
                   Icon(
                     Icons.check_circle,
-                    color: PulseColors.success,
+                    color: context.successColor,
                     size: 16,
                   ),
                   const SizedBox(width: 8),
                   Text(
                     'Your profile is looking great!',
                     style: TextStyle(
-                      color: PulseColors.success,
+                      color: context.successColor,
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                     ),

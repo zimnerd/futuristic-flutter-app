@@ -674,7 +674,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
                 color: context.surfaceColor,
               boxShadow: [
                 BoxShadow(
-                    color: context.onSurfaceColor.withValues(alpha: 0.1),
+                    color: context.shadowColor.withValues(alpha: 0.1),
                   blurRadius: 4,
                   offset: const Offset(0, 2),
                 ),
@@ -976,7 +976,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
               // Profile completion card (collapsible)
               if (_currentProfile != null)
                 Container(
-                    color: context.onSurfaceColor,
+                    color: context.surfaceColor,
                   child: Column(
                     children: [
                       InkWell(
