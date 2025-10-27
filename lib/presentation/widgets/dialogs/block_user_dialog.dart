@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../theme/pulse_colors.dart' hide PulseTextStyles;
 import '../../theme/pulse_theme.dart';
 import '../../blocs/block_report/block_report_bloc.dart';
-import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
+import '../common/pulse_button.dart';
 
 /// Dialog for blocking a user
 class BlockUserDialog extends StatefulWidget {
@@ -133,44 +133,22 @@ class _BlockUserDialogState extends State<BlockUserDialog> {
         ],
       ),
       actions: [
-        TextButton(
+        PulseButton(
+          text: 'Cancel',
           onPressed: _isBlocking
               ? null
               : () => Navigator.of(context).pop(false),
-          child: Text(
-            'Cancel',
-            style: PulseTextStyles.labelLarge.copyWith(
-              color: _isBlocking
-                  ? PulseColors.onSurface.withValues(alpha: 0.3)
-                  : PulseColors.onSurface.withValues(alpha: 0.7),
-            ),
-          ),
+          variant: PulseButtonVariant.tertiary,
+          size: PulseButtonSize.medium,
+          isDisabled: _isBlocking,
         ),
-        ElevatedButton(
+        PulseButton(
+          text: 'Block',
           onPressed: _isBlocking ? null : _handleBlock,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: PulseColors.error,
-            foregroundColor: context.onSurfaceColor,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-          child: _isBlocking
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                )
-              : Text(
-                  'Block',
-                  style: PulseTextStyles.labelLarge.copyWith(
-                    color: context.onSurfaceColor,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+          variant: PulseButtonVariant.danger,
+          size: PulseButtonSize.medium,
+          isDisabled: _isBlocking,
+          isLoading: _isBlocking,
         ),
       ],
     );

@@ -72,7 +72,7 @@ class PulseButton extends StatelessWidget {
           onPressed: isDisabled || isLoading ? null : onPressed,
           style: ElevatedButton.styleFrom(
             backgroundColor: context.primaryColor,
-            foregroundColor: context.onSurfaceColor,
+            foregroundColor: context.textOnPrimary,
             padding: _getPadding(),
             minimumSize: _getMinimumSize(),
             shape: RoundedRectangleBorder(
@@ -116,7 +116,7 @@ class PulseButton extends StatelessWidget {
           onPressed: isDisabled || isLoading ? null : onPressed,
           style: ElevatedButton.styleFrom(
             backgroundColor: context.errorColor,
-            foregroundColor: context.onSurfaceColor,
+            foregroundColor: context.colorScheme.onError,
             padding: _getPadding(),
             minimumSize: _getMinimumSize(),
             shape: RoundedRectangleBorder(

@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../domain/entities/user_profile.dart';
 import '../theme/pulse_colors.dart';
 import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
+import '../widgets/common/pulse_button.dart';
 
 /// Dialog for viewing and editing photo details
 ///
@@ -262,7 +263,8 @@ class _PhotoDetailsDialogState extends State<PhotoDetailsDialog> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        TextButton(
+                        PulseButton(
+                          text: 'Cancel',
                           onPressed: () {
                             setState(() {
                               _descriptionController.text =
@@ -270,16 +272,15 @@ class _PhotoDetailsDialogState extends State<PhotoDetailsDialog> {
                               _isEditingDescription = false;
                             });
                           },
-                          child: Text('Cancel'),
+                          variant: PulseButtonVariant.tertiary,
+                          size: PulseButtonSize.medium,
                         ),
                         const SizedBox(width: 8),
-                        ElevatedButton(
+                        PulseButton(
+                          text: 'Save',
                           onPressed: _handleSaveDescription,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: PulseColors.primary,
-                            foregroundColor: context.theme.colorScheme.onPrimary,
-                          ),
-                          child: Text('Save'),
+                          variant: PulseButtonVariant.primary,
+                          size: PulseButtonSize.medium,
                         ),
                       ],
                     ),

@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:line_icons/line_icons.dart';
 import '../../../core/theme/pulse_design_system.dart';
 import '../../../core/network/api_client.dart';
-import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 
 /// Modern Main Navigation Wrapper with PulseLink Design
 ///
@@ -32,28 +31,22 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
 
   final List<NavigationItem> _navigationItems = [
     NavigationItem(
-      icon: LineIcons.compassAlt,
-      activeIcon: LineIcons.compass,
+      icon: LineIcons.compass,
+      activeIcon: LineIcons.compassAlt,
       label: 'Discover',
       route: '/home',
     ),
     NavigationItem(
-      icon: LineIcons.heartbeat,
+      icon: LineIcons.heart,
       activeIcon: LineIcons.heartAlt,
       label: 'Sparks',
       route: '/matches',
     ),
     NavigationItem(
-      icon: LineIcons.thLarge,
-      activeIcon: LineIcons.thLarge,
+      icon: LineIcons.bars,
+      activeIcon: LineIcons.bars,
       label: 'Explore',
       route: '/explore',
-    ),
-    NavigationItem(
-      icon: LineIcons.calendarCheck,
-      activeIcon: LineIcons.calendarAlt,
-      label: 'Events',
-      route: '/events',
     ),
     NavigationItem(
       icon: LineIcons.comment,
@@ -128,8 +121,8 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
       _animationController.reverse();
     });
 
-    // Handle messages tab - mark conversations as read
-    if (index == 4) {
+    // Handle messages tab (index 3) - mark conversations as read
+    if (index == 3) {
       _markAllConversationsAsRead();
     }
 
@@ -150,68 +143,45 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
   }
 
   Widget _buildCurvedBottomBar() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Container(
-      margin: const EdgeInsets.fromLTRB(8, 8, 8, 8),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(30),
-        child: Container(
-          height: 80,
-          decoration: BoxDecoration(
-            color: isDark
-                ? const Color(0xFF1C1C1E)
-                : const Color(0xFF2C1810).withValues(alpha: 0.95),
-            borderRadius: BorderRadius.circular(30),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? 0.5 : 0.3),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildModernNavItem(_navigationItems[0], 0),
-                _buildModernNavItem(_navigationItems[1], 1),
-                _buildModernNavItem(_navigationItems[2], 2),
-                _buildModernNavItem(_navigationItems[3], 3),
-                _buildModernNavItem(
-                  _navigationItems[4],
-                  4,
-                  badgeCount: _unreadMessageCount,
-                ),
-                _buildModernNavItem(_navigationItems[5], 5),
-              ],
+      color: Colors.transparent,
+      padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
+      child: Container(
+        height: 60,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 12,
+              offset: const Offset(0, -2),
             ),
-          ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _buildNavItem(_navigationItems[0], 0),
+            _buildNavItem(_navigationItems[1], 1),
+            _buildNavItem(_navigationItems[2], 2),
+            _buildNavItem(
+              _navigationItems[3],
+              3,
+              badgeCount: _unreadMessageCount,
+            ),
+            _buildNavItem(_navigationItems[4], 4),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildModernNavItem(
+  Widget _buildNavItem(
     NavigationItem item,
     int index, {
     int? badgeCount,
   }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isActive = index == widget.navigationShell.currentIndex;
-    final screenWidth = MediaQuery.of(context).size.width;
-
-    // Responsive breakpoints
-    final bool isSmallScreen = screenWidth < 360;
-    final bool isMediumScreen = screenWidth >= 360 && screenWidth < 400;
-
-    // Use theme colors for active state
-    final activeColor = PulseColors.backgroundDark;
-    final inactiveColor = isDark
-        ? context.borderColor.shade500
-        : context.borderColor.shade400;
 
     return AnimatedBuilder(
       animation: _animationController,
@@ -219,129 +189,57 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
         final scale =
             index == widget.navigationShell.currentIndex &&
                 _animationController.isAnimating
-            ? 1.0 - (_animationController.value * 0.05)
+            ? 1.0 - (_animationController.value * 0.08)
             : 1.0;
 
         return Transform.scale(
           scale: scale,
-          child: InkWell(
-            onTap: () => _onItemTapped(index),
-            borderRadius: BorderRadius.circular(22),
-            child: isActive
-                ? Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.white.withValues(alpha: 0.6),
-                          PulseColors.primary.withValues(alpha: 0.8),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(22),
-                      boxShadow: [
-                        BoxShadow(
-                          color: activeColor.withValues(alpha: 0.8),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    padding: const EdgeInsets.all(1.5), // Border width
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 600),
-                      curve: Curves.easeInOut,
-                      padding: EdgeInsets.symmetric(
-                        horizontal: isSmallScreen ? 10 : (isMediumScreen ? 14 : 18),
-                        vertical: isSmallScreen ? 10 : 14,
-                      ),
-                      decoration: BoxDecoration(
-                        color: activeColor.withValues(alpha: 0.3),
-                        borderRadius: BorderRadius.circular(20.5),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            item.activeIcon,
-                            color: context.onSurfaceColor,
-                            size: isSmallScreen ? 20 : 24,
-                          ),
-                          if (!isSmallScreen) ...[
-                            SizedBox(width: isMediumScreen ? 6 : 10),
-                            Text(
-                              item.label,
-                              style: TextStyle(
-                                color: context.onSurfaceColor,
-                                fontSize: isMediumScreen ? 13 : 15,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                          if (badgeCount != null && badgeCount > 0 && !isSmallScreen) ...[
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: context.errorColor,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Text(
-                                badgeCount > 99 ? '99+' : badgeCount.toString(),
-                                style: TextStyle(
-                                  color: context.onSurfaceColor,
-                                  fontSize: isMediumScreen ? 10 : 12,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  )
-                : AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeInOut,
-                    padding: EdgeInsets.symmetric(
-                      horizontal: isSmallScreen ? 8 : 12,
-                      vertical: 10,
-                    ),
-                    child: Stack(
+          child: Expanded(
+            child: InkWell(
+              onTap: () => _onItemTapped(index),
+              borderRadius: BorderRadius.circular(8),
+              splashColor: PulseColors.primary.withValues(alpha: 0.1),
+              highlightColor: PulseColors.primary.withValues(alpha: 0.05),
+              child: Container(
+                alignment: Alignment.center,
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  spacing: 2,
+                  children: [
+                    Stack(
                       clipBehavior: Clip.none,
                       children: [
                         Icon(
-                          item.icon,
-                          color: inactiveColor,
-                          size: isSmallScreen ? 20 : 24,
+                          isActive ? item.activeIcon : item.icon,
+                          color: isActive
+                              ? PulseColors.primary
+                              : const Color(0xFF999999),
+                          size: 24,
                         ),
                         if (badgeCount != null && badgeCount > 0)
                           Positioned(
                             right: -6,
                             top: -6,
                             child: Container(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: isSmallScreen ? 3 : 4,
-                                vertical: 2,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 3,
+                                vertical: 1,
                               ),
                               decoration: BoxDecoration(
-                                color: context.errorColor,
-                                borderRadius: BorderRadius.circular(8),
+                                color: const Color(0xFFFF6B6B),
+                                borderRadius: BorderRadius.circular(6),
                                 border: Border.all(
-                                  color: isDark
-                                      ? PulseColors.surfaceDark
-                                      : PulseColors.white,
-                                  width: 2,
+                                  color: Colors.white,
+                                  width: 1,
                                 ),
                               ),
                               child: Text(
                                 badgeCount > 99 ? '99+' : badgeCount.toString(),
-                                style: TextStyle(
-                                  color: context.onSurfaceColor,
-                                  fontSize: isSmallScreen ? 8 : 10,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 9,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -349,7 +247,25 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper>
                           ),
                       ],
                     ),
-                  ),
+                    Text(
+                      item.label,
+                      style: TextStyle(
+                        color: isActive
+                            ? PulseColors.primary
+                            : const Color(0xFF999999),
+                        fontSize: 10,
+                        fontWeight: isActive
+                            ? FontWeight.w600
+                            : FontWeight.w500,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         );
       },

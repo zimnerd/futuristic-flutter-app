@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/theme/pulse_design_system.dart';
+import '../../widgets/common/pulse_button.dart';
 import '../../../core/utils/haptic_feedback_utils.dart';
 import '../../../data/services/boost_service.dart';
 import '../../../data/services/premium_service.dart';
@@ -518,23 +519,20 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
           ],
         ),
         actions: [
-          TextButton(
+          PulseButton(
+            text: 'Maybe Later',
             onPressed: () => Navigator.of(context).pop(),
-            child: Text('Maybe Later'),
+            variant: PulseButtonVariant.tertiary,
+            size: PulseButtonSize.medium,
           ),
-          ElevatedButton(
+          PulseButton(
+            text: 'Upgrade Now',
             onPressed: () {
               Navigator.of(context).pop();
               context.push('/premium');
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: context.primaryColor,
-              foregroundColor: context.onSurfaceColor,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: Text('Upgrade Now'),
+            variant: PulseButtonVariant.primary,
+            size: PulseButtonSize.medium,
           ),
         ],
       ),
@@ -1176,69 +1174,30 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                 child: Column(
                   children: [
                     // Refresh button
-                    SizedBox(
-                      width: double.infinity,
-                      height: 48,
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          HapticFeedback.mediumImpact();
-                          context.read<DiscoveryBloc>().add(
-                            const LoadDiscoverableUsers(resetStack: true),
-                          );
-                        },
-                        icon: Icon(
-                          Icons.refresh,
-                          color: context.onSurfaceColor,
-                        ),
-                        label: Text(
-                          'Refresh Profiles',
-                          style: PulseTypography.bodyLarge.copyWith(
-                            color: context.onSurfaceColor,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: context.primaryColor,
-                          foregroundColor: context.onSurfaceColor,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                              PulseBorderRadius.md,
-                            ),
-                          ),
-                        ),
-                      ),
+                    PulseButton(
+                      text: 'Refresh Profiles',
+                      onPressed: () {
+                        HapticFeedback.mediumImpact();
+                        context.read<DiscoveryBloc>().add(
+                          const LoadDiscoverableUsers(resetStack: true),
+                        );
+                      },
+                      variant: PulseButtonVariant.primary,
+                      size: PulseButtonSize.medium,
+                      fullWidth: true,
                     ),
                     const SizedBox(height: PulseSpacing.md),
 
                     // Update filters button
-                    SizedBox(
-                      width: double.infinity,
-                      height: 48,
-                      child: OutlinedButton.icon(
-                        onPressed: () {
-                          HapticFeedback.mediumImpact();
-                          context.push('/filters');
-                        },
-                        icon: Icon(Icons.tune, color: context.primaryColor),
-                        label: Text(
-                          'Update Filters',
-                          style: PulseTypography.bodyLarge.copyWith(
-                            color: context.primaryColor,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: context.primaryColor,
-                          side: BorderSide(
-                            color: context.primaryColor.withValues(alpha: 0.3),
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                              PulseBorderRadius.md,
-                            ),
-                          ),
-                        ),
-                      ),
+                    PulseButton(
+                      text: 'Update Filters',
+                      onPressed: () {
+                        HapticFeedback.mediumImpact();
+                        context.push('/filters');
+                      },
+                      variant: PulseButtonVariant.secondary,
+                      size: PulseButtonSize.medium,
+                      fullWidth: true,
                     ),
                   ],
                 ),
@@ -1327,73 +1286,32 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                   Column(
                     children: [
                       // Primary action
-                      SizedBox(
-                        width: double.infinity,
-                        height: 48,
-                        child: ElevatedButton.icon(
-                          onPressed: () {
-                            HapticFeedback.mediumImpact();
-                            context.read<DiscoveryBloc>().add(
-                              const LoadDiscoverableUsers(resetStack: true),
-                            );
-                          },
-                          icon: Icon(
-                            Icons.refresh,
-                            color: context.onSurfaceColor,
-                          ),
-                          label: Text(
-                            isAlreadyActedError
-                                ? 'Load More Profiles'
-                                : 'Try Again',
-                            style: PulseTypography.bodyLarge.copyWith(
-                              color: context.onSurfaceColor,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: context.primaryColor,
-                            foregroundColor: context.onSurfaceColor,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                PulseBorderRadius.md,
-                              ),
-                            ),
-                          ),
-                        ),
+                      PulseButton(
+                        text: isAlreadyActedError
+                            ? 'Load More Profiles'
+                            : 'Try Again',
+                        onPressed: () {
+                          HapticFeedback.mediumImpact();
+                          context.read<DiscoveryBloc>().add(
+                            const LoadDiscoverableUsers(resetStack: true),
+                          );
+                        },
+                        variant: PulseButtonVariant.primary,
+                        size: PulseButtonSize.medium,
+                        fullWidth: true,
                       ),
                       const SizedBox(height: PulseSpacing.md),
 
                       // Secondary action: Adjust Filters
-                      SizedBox(
-                        width: double.infinity,
-                        height: 48,
-                        child: OutlinedButton.icon(
-                          onPressed: () {
-                            HapticFeedback.mediumImpact();
-                            context.push('/filters');
-                          },
-                          icon: Icon(Icons.tune, color: context.primaryColor),
-                          label: Text(
-                            'Adjust Filters',
-                            style: PulseTypography.bodyLarge.copyWith(
-                              color: context.primaryColor,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: context.primaryColor,
-                            side: BorderSide(
-                              color: context.primaryColor.withValues(
-                                alpha: 0.3,
-                              ),
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                PulseBorderRadius.md,
-                              ),
-                            ),
-                          ),
-                        ),
+                      PulseButton(
+                        text: 'Adjust Filters',
+                        onPressed: () {
+                          HapticFeedback.mediumImpact();
+                          context.push('/filters');
+                        },
+                        variant: PulseButtonVariant.secondary,
+                        size: PulseButtonSize.medium,
+                        fullWidth: true,
                       ),
                     ],
                   ),
@@ -1762,32 +1680,28 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
                 Row(
                   children: [
                     Expanded(
-                      child: ElevatedButton(
+                      child: PulseButton(
+                        text: 'Continue',
                         onPressed: () {
                           // Continue swiping
                           context.read<DiscoveryBloc>().add(
                             const DismissMatch(),
                           );
                         },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: context.borderColor.shade200,
-                          foregroundColor: context.borderColor.shade700,
-                        ),
-                        child: Text('Continue'),
+                        variant: PulseButtonVariant.secondary,
+                        size: PulseButtonSize.medium,
                       ),
                     ),
                     const SizedBox(width: PulseSpacing.md),
                     Expanded(
-                      child: ElevatedButton(
+                      child: PulseButton(
+                        text: 'Say Hi',
                         onPressed: () {
                           // Go to chat
                           context.go('/chat/${state.matchedUser.id}');
                         },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: context.primaryColor,
-                          foregroundColor: context.surfaceColor,
-                        ),
-                        child: Text('Say Hi'),
+                        variant: PulseButtonVariant.primary,
+                        size: PulseButtonSize.medium,
                       ),
                     ),
                   ],

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../theme/pulse_colors.dart';
 import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
+import '../common/pulse_button.dart';
 
 /// Enhanced filter options for message conversations
 class MessageFilters {
@@ -144,15 +145,15 @@ class _MessageFilterBottomSheetState extends State<MessageFilterBottomSheet> {
           // Apply button
           Padding(
             padding: const EdgeInsets.all(PulseSpacing.lg),
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  widget.onFiltersChanged(_filters);
-                  Navigator.of(context).pop();
-                },
-                child: Text('Apply Filters'),
-              ),
+            child: PulseButton(
+              text: 'Apply Filters',
+              onPressed: () {
+                widget.onFiltersChanged(_filters);
+                Navigator.of(context).pop();
+              },
+              variant: PulseButtonVariant.primary,
+              size: PulseButtonSize.medium,
+              fullWidth: true,
             ),
           ),
         ],

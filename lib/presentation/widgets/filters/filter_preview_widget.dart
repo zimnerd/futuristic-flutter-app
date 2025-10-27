@@ -4,6 +4,7 @@ import '../../../core/theme/theme_extensions.dart';
 import '../../../domain/entities/filter_preferences.dart';
 import '../../blocs/filters/filter_bloc.dart';
 import '../../blocs/filters/filter_event.dart';
+import '../common/pulse_button.dart';
 
 /// Compact filter modal - single column, minimal space, maximum efficiency
 /// Like Bumble but even better - instant inline editing without modals
@@ -221,24 +222,11 @@ class _FilterPreviewWidgetState extends State<FilterPreviewWidget> {
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: ElevatedButton(
+                    child: PulseButton(
+                      text: 'Advanced',
                       onPressed: widget.onAdvancedTap,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: context.primaryColor,
-                        foregroundColor: context.surfaceColor,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: Text(
-                        'Advanced',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: context.surfaceColor,
-                        ),
-                      ),
+                      variant: PulseButtonVariant.primary,
+                      size: PulseButtonSize.medium,
                     ),
                   ),
                 ],

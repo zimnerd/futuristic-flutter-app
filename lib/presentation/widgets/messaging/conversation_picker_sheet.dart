@@ -3,6 +3,7 @@ import '../../../domain/entities/conversation.dart';
 import '../../theme/pulse_colors.dart';
 import '../common/robust_network_image.dart';
 import 'package:pulse_dating_app/core/theme/theme_extensions.dart';
+import '../common/pulse_button.dart';
 
 /// Conversation Picker Sheet
 ///
@@ -311,28 +312,17 @@ class _ConversationPickerSheetState extends State<ConversationPickerSheet> {
               child: SafeArea(
                 child: SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton(
+                  child: PulseButton(
+                    text: _selectedConversationIds.isEmpty
+                        ? 'Select conversations'
+                        : 'Forward to ${_selectedConversationIds.length} conversation${_selectedConversationIds.length > 1 ? 's' : ''}',
                     onPressed: _selectedConversationIds.isEmpty
                         ? null
                         : _confirmSelection,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: PulseColors.primary,
-                      disabledBackgroundColor: context.outlineColor.shade700,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: Text(
-                      _selectedConversationIds.isEmpty
-                          ? 'Select conversations'
-                          : 'Forward to ${_selectedConversationIds.length} conversation${_selectedConversationIds.length > 1 ? 's' : ''}',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: context.onSurfaceColor,
-                      ),
-                    ),
+                    variant: PulseButtonVariant.primary,
+                    size: PulseButtonSize.large,
+                    isDisabled: _selectedConversationIds.isEmpty,
+                    fullWidth: true,
                   ),
                 ),
               ),
