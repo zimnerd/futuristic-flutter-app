@@ -69,7 +69,7 @@ class _NotificationPreferencesWidgetState
         title: 'App Updates',
         description: 'Stay updated with app features and promotions',
         icon: Icons.notifications,
-        color: Colors.blue,
+        color: context.primaryColor,
         items: [
           NotificationItem(
             key: 'promotions',
@@ -120,7 +120,7 @@ class _NotificationPreferencesWidgetState
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Theme.of(context).shadowColor.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -296,7 +296,7 @@ class _NotificationPreferencesWidgetState
             value: _preferences[item.key] ?? false,
             onChanged: (value) => _updatePreference(item.key, value),
             activeTrackColor: PulseColors.primary,
-            activeThumbColor: Colors.white,
+            activeThumbColor: context.surfaceColor,
           ),
         ],
       ),

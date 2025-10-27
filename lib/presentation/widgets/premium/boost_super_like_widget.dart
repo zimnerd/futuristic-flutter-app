@@ -92,7 +92,7 @@ class _BoostSuperLikeWidgetState extends State<BoostSuperLikeWidget>
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
+                  color: context.surfaceColor.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(15),
                 ),
                 child: Text(
@@ -133,7 +133,7 @@ class _BoostSuperLikeWidgetState extends State<BoostSuperLikeWidget>
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.15),
+                color: context.surfaceColor.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(16),
                 border: _isBoostActive
                     ? Border.all(color: context.onSurfaceColor, width: 2)
@@ -146,12 +146,12 @@ class _BoostSuperLikeWidgetState extends State<BoostSuperLikeWidget>
                     width: 60,
                     height: 60,
                     decoration: BoxDecoration(
-                      color: Colors.orange.withValues(alpha: 0.2),
+                      color: context.statusWarning.withValues(alpha: 0.2),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       Icons.rocket_launch,
-                      color: Colors.orange,
+                      color: context.statusWarning,
                       size: 30,
                     ),
                   ),

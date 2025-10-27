@@ -147,7 +147,7 @@ class UploadProgressIndicator extends StatelessWidget {
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: isUploading
                             ? context.outlineColor.shade600
-                            : Colors.green.shade600,
+                            : context.recordingReady,
                       ),
                     ),
                     if (isUploading)
@@ -190,7 +190,7 @@ class CompactUploadProgress extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.7),
+        color: Theme.of(context).shadowColor.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -203,7 +203,7 @@ class CompactUploadProgress extends StatelessWidget {
               value: progress / 100,
               strokeWidth: 2,
               backgroundColor: context.surfaceColor.withValues(alpha: 0.3),
-              valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+              valueColor: AlwaysStoppedAnimation<Color>(context.surfaceColor),
             ),
           ),
           const SizedBox(width: 8),

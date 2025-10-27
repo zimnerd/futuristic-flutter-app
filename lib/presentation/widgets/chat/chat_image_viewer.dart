@@ -49,13 +49,13 @@ class _ChatImageViewerState extends State<ChatImageViewer> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: context.isDarkMode ? Colors.black : Colors.black87,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: context.isDarkMode ? Colors.black : Colors.black87,
         iconTheme: const IconThemeData(color: Colors.white),
         title: Text(
           '${_currentIndex + 1} / ${widget.images.length}',
-          style: TextStyle(color: Colors.white),
+          style: const TextStyle(color: Colors.white),
         ),
         actions: [
           IconButton(
@@ -127,7 +127,9 @@ class _ChatImageViewerState extends State<ChatImageViewer> {
                 ),
               );
             },
-            backgroundDecoration: BoxDecoration(color: Colors.black),
+            backgroundDecoration: BoxDecoration(
+              color: context.isDarkMode ? Colors.black : Colors.black87,
+            ),
           ),
 
           // Caption overlay (bottom)

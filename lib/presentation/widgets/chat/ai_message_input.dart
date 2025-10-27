@@ -157,7 +157,7 @@ class _AiMessageInputState extends State<AiMessageInput>
         color: context.surfaceColor,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
+            color: Theme.of(context).shadowColor.withValues(alpha: 0.1),
             blurRadius: 20,
             offset: const Offset(0, -2),
           ),
@@ -494,7 +494,7 @@ class _AiMessageInputState extends State<AiMessageInput>
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            color: Theme.of(context).shadowColor.withValues(alpha: 0.03),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -606,14 +606,14 @@ class _AiMessageInputState extends State<AiMessageInput>
                   _buildAttachmentOption(
                     icon: Icons.camera_alt_rounded,
                     label: 'Photo',
-                    color: Colors.blue,
+                    color: context.primaryColor,
                     onTap: widget.onCamera,
                   ),
                   const SizedBox(width: 16),
                   _buildAttachmentOption(
                     icon: Icons.photo_library_rounded,
                     label: 'Gallery',
-                    color: Colors.green,
+                    color: context.recordingReady,
                     onTap: widget.onGallery,
                   ),
                   const SizedBox(width: 16),
@@ -627,14 +627,14 @@ class _AiMessageInputState extends State<AiMessageInput>
                   _buildAttachmentOption(
                     icon: Icons.video_library_rounded,
                     label: 'Videos',
-                    color: Colors.purple,
+                    color: context.categoryGeneral,
                     onTap: widget.onVideoGallery,
                   ),
                   const SizedBox(width: 16),
                   _buildAttachmentOption(
                     icon: Icons.location_on_rounded,
                     label: 'Location',
-                    color: Colors.orange,
+                    color: context.statusWarning,
                     onTap: () {
                       setState(() {
                         _showAttachments = false;

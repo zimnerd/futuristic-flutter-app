@@ -285,7 +285,7 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget>
         label: Text('Start Recording'),
         style: ElevatedButton.styleFrom(
           backgroundColor: context.primaryColor,
-          foregroundColor: Colors.white,
+          foregroundColor: context.surfaceColor,
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30),
@@ -304,7 +304,7 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget>
           label: Text(_isPaused ? 'Resume' : 'Pause'),
           style: ElevatedButton.styleFrom(
             backgroundColor: context.recordingPaused,
-            foregroundColor: Colors.white,
+            foregroundColor: context.surfaceColor,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
@@ -318,7 +318,7 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget>
           label: Text('Finish'),
           style: ElevatedButton.styleFrom(
             backgroundColor: context.recordingReady,
-            foregroundColor: Colors.white,
+            foregroundColor: context.surfaceColor,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
