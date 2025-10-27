@@ -439,10 +439,16 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
       height: _selectedHeight,
       religion: ProfilePhysicalAttributesSection.mapReligionToBackend(_selectedReligion),
       politics: ProfilePhysicalAttributesSection.mapPoliticsToBackend(_selectedPolitics),
-      drinking: _selectedDrinking,
-      smoking: _selectedSmoking,
-      drugs: _selectedDrugs,
-      children: _selectedChildren,
+      drinking: ProfileLifestyleChoicesSection.mapDrinkingToBackend(
+        _selectedDrinking,
+      ),
+      smoking: ProfileLifestyleChoicesSection.mapSmokingToBackend(
+        _selectedSmoking,
+      ),
+      drugs: ProfileLifestyleChoicesSection.mapDrugsToBackend(_selectedDrugs),
+      children: ProfileLifestyleChoicesSection.mapChildrenToBackend(
+        _selectedChildren,
+      ),
       languages: _selectedLanguages,
       personalityTraits: _selectedPersonalityTraits,
       promptQuestions: _promptAnswers.keys.toList(),
