@@ -22,7 +22,6 @@ import '../../blocs/premium/premium_state.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../widgets/boost/boost_confirmation_dialog.dart';
 import '../../widgets/discovery/swipe_card.dart' as swipe_widget;
-import '../../widgets/common/empty_state_widget.dart';
 import '../../widgets/common/pulse_toast.dart';
 import '../../widgets/common/skeleton_loading.dart';
 import '../../widgets/filters/filter_preview_widget.dart';
@@ -856,7 +855,24 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
         child: const ProfileCardSkeleton(),
       );
     } else if (state is DiscoveryLoaded && state.hasUsers) {
-      return _buildCardStack(state);
+      return RefreshIndicator(
+        onRefresh: () async {
+          HapticFeedback.mediumImpact();
+          context.read<DiscoveryBloc>().add(
+            const LoadDiscoverableUsers(resetStack: true),
+          );
+          await Future.delayed(const Duration(milliseconds: 500));
+
+          if (mounted) {
+            PulseToast.success(
+              context,
+              message: 'Profiles refreshed',
+              duration: const Duration(seconds: 1),
+            );
+          }
+        },
+        child: _buildCardStack(state),
+      );
     } else if (state is DiscoveryEmpty) {
       return _buildEmptyState();
     } else if (state is DiscoveryError) {
@@ -1111,8 +1127,123 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
         physics: const AlwaysScrollableScrollPhysics(),
         child: SizedBox(
           height: MediaQuery.of(context).size.height - 100,
-          child: EmptyStates.noMoreProfiles(
-            onAdjustFilters: () => context.push('/filters'),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Icon
+              Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  color: context.primaryColor.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.explore_off,
+                  size: 50,
+                  color: context.primaryColor,
+                ),
+              ),
+              const SizedBox(height: PulseSpacing.lg),
+
+              // Title
+              Text(
+                'No More Profiles',
+                style: PulseTypography.h2.copyWith(color: context.textPrimary),
+              ),
+              const SizedBox(height: PulseSpacing.md),
+
+              // Message
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: PulseSpacing.xl,
+                ),
+                child: Text(
+                  'You\'ve seen everyone nearby.\nYour filters might be too restrictive.',
+                  style: PulseTypography.bodyLarge.copyWith(
+                    color: context.textSecondary,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(height: PulseSpacing.xl),
+
+              // Action buttons
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: PulseSpacing.lg,
+                ),
+                child: Column(
+                  children: [
+                    // Refresh button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          HapticFeedback.mediumImpact();
+                          context.read<DiscoveryBloc>().add(
+                            const LoadDiscoverableUsers(resetStack: true),
+                          );
+                        },
+                        icon: Icon(
+                          Icons.refresh,
+                          color: context.onSurfaceColor,
+                        ),
+                        label: Text(
+                          'Refresh Profiles',
+                          style: PulseTypography.bodyLarge.copyWith(
+                            color: context.onSurfaceColor,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: context.primaryColor,
+                          foregroundColor: context.onSurfaceColor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              PulseBorderRadius.md,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: PulseSpacing.md),
+
+                    // Update filters button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          HapticFeedback.mediumImpact();
+                          context.push('/filters');
+                        },
+                        icon: Icon(Icons.tune, color: context.primaryColor),
+                        label: Text(
+                          'Update Filters',
+                          style: PulseTypography.bodyLarge.copyWith(
+                            color: context.primaryColor,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: context.primaryColor,
+                          side: BorderSide(
+                            color: context.primaryColor.withValues(alpha: 0.3),
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              PulseBorderRadius.md,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -1120,57 +1251,156 @@ class _DiscoveryScreenState extends State<DiscoveryScreen>
   }
 
   Widget _buildErrorState(DiscoveryError state) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(PulseSpacing.lg),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: context.errorColor.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.error_outline,
-                size: 40,
-                color: context.errorColor,
+    // Check if error is the "already acted on this user" error
+    final isAlreadyActedError = state.message.toLowerCase().contains(
+      'already acted',
+    );
+
+    return RefreshIndicator(
+      onRefresh: () async {
+        HapticFeedback.mediumImpact();
+        context.read<DiscoveryBloc>().add(
+          const LoadDiscoverableUsers(resetStack: true),
+        );
+        await Future.delayed(const Duration(milliseconds: 500));
+
+        if (mounted) {
+          PulseToast.success(
+            context,
+            message: 'Profiles refreshed',
+            duration: const Duration(seconds: 1),
+          );
+        }
+      },
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: SizedBox(
+          height: MediaQuery.of(context).size.height - 100,
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(PulseSpacing.lg),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      color: isAlreadyActedError
+                          ? context.statusWarning.withValues(alpha: 0.1)
+                          : context.errorColor.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      isAlreadyActedError
+                          ? Icons.done_all
+                          : Icons.error_outline,
+                      size: 40,
+                      color: isAlreadyActedError
+                          ? context.statusWarning
+                          : context.errorColor,
+                    ),
+                  ),
+                  const SizedBox(height: PulseSpacing.lg),
+                  Text(
+                    isAlreadyActedError
+                        ? 'Already Swiped'
+                        : 'Something went wrong',
+                    style: PulseTypography.h4.copyWith(
+                      color: context.borderColor.shade900,
+                    ),
+                  ),
+                  const SizedBox(height: PulseSpacing.sm),
+                  Text(
+                    isAlreadyActedError
+                        ? 'You\'ve already swiped on this profile.\nLet\'s find you more people!'
+                        : state.message,
+                    style: PulseTypography.bodyMedium.copyWith(
+                      color: context.textSecondary,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: PulseSpacing.lg),
+                  Column(
+                    children: [
+                      // Primary action
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            HapticFeedback.mediumImpact();
+                            context.read<DiscoveryBloc>().add(
+                              const LoadDiscoverableUsers(resetStack: true),
+                            );
+                          },
+                          icon: Icon(
+                            Icons.refresh,
+                            color: context.onSurfaceColor,
+                          ),
+                          label: Text(
+                            isAlreadyActedError
+                                ? 'Load More Profiles'
+                                : 'Try Again',
+                            style: PulseTypography.bodyLarge.copyWith(
+                              color: context.onSurfaceColor,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: context.primaryColor,
+                            foregroundColor: context.onSurfaceColor,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                PulseBorderRadius.md,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: PulseSpacing.md),
+
+                      // Secondary action: Adjust Filters
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            HapticFeedback.mediumImpact();
+                            context.push('/filters');
+                          },
+                          icon: Icon(Icons.tune, color: context.primaryColor),
+                          label: Text(
+                            'Adjust Filters',
+                            style: PulseTypography.bodyLarge.copyWith(
+                              color: context.primaryColor,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: context.primaryColor,
+                            side: BorderSide(
+                              color: context.primaryColor.withValues(
+                                alpha: 0.3,
+                              ),
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                PulseBorderRadius.md,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: PulseSpacing.lg),
-            Text(
-              'Something went wrong',
-              style: PulseTypography.h4.copyWith(
-                color: context.borderColor.shade900,
-              ),
-            ),
-            const SizedBox(height: PulseSpacing.sm),
-            Text(
-              state.message,
-              style: PulseTypography.bodyMedium.copyWith(
-                color: context.textSecondary,
-              ),
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: PulseSpacing.lg),
-            ElevatedButton(
-              onPressed: () {
-                context.read<DiscoveryBloc>().add(
-                  const LoadDiscoverableUsers(resetStack: true),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: context.primaryColor,
-                foregroundColor: context.surfaceColor,
-              ),
-              child: Text('Try Again'),
-            ),
-          ],
+          ),
         ),
       ),
     );

@@ -57,7 +57,13 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
     try {
       emit(const DiscoveryLoading());
 
-      final filters = event.filters ?? const DiscoveryFilters();
+      // Use provided filters or create default filters that require:
+      // - Verified users only
+      // - Users with at least one photo
+      final filters =
+          event.filters ??
+          const DiscoveryFilters(verifiedOnly: true, hasPhotos: true);
+      
       final users = await _discoveryService.getDiscoverableUsers(
         filters: filters,
         // reset: event.resetStack, // Removed - backend doesn't support this parameter
@@ -102,12 +108,14 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
       final preferences = await _preferencesService.getFilterPreferences();
 
       // Convert FilterPreferences to DiscoveryFilters
+      // IMPORTANT: Always enforce verified + photos requirement
       final filters = DiscoveryFilters(
         minAge: preferences.minAge,
         maxAge: preferences.maxAge,
         maxDistance: preferences.maxDistance,
         interests: preferences.interests,
-        verifiedOnly: preferences.showOnlyVerified,
+        verifiedOnly: true, // Always require verified users
+        hasPhotos: true, // Always require users with photos
         premiumOnly: false, // Not in FilterPreferences
         recentlyActive: false, // Not in FilterPreferences
       );
@@ -161,6 +169,12 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
       final updatedStack = List<UserProfile>.from(currentState.userStack)
         ..removeWhere((user) => user.id == event.userProfile.id);
 
+      // If stack is now empty, show empty state instead of loading state
+      if (updatedStack.isEmpty) {
+        emit(DiscoveryEmpty(currentFilters: currentState.currentFilters));
+        return;
+      }
+
       emit(
         currentState.copyWith(
           userStack: updatedStack,
@@ -179,7 +193,8 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
       }
 
       // Load more users if stack is getting low
-      if (updatedStack.length <= 3) {
+      // OPTIMIZED: Reduced threshold to 2 for aggressive pre-loading during fast swiping
+      if (updatedStack.length <= 2) {
         add(const LoadMoreUsers());
       }
     } catch (error) {
@@ -212,6 +227,23 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
       final updatedStack = List<UserProfile>.from(currentState.userStack)
         ..removeWhere((user) => user.id == event.userProfile.id);
 
+      // If stack is now empty, emit empty state
+      if (updatedStack.isEmpty) {
+        // For matches on last user, show match dialog then empty state
+        if (result.isMatch) {
+          emit(
+            DiscoveryMatchFound(
+              matchedUser: event.userProfile,
+              isNewMatch: true,
+              previousState: currentState.copyWith(userStack: const []),
+            ),
+          );
+        } else {
+          emit(DiscoveryEmpty(currentFilters: currentState.currentFilters));
+        }
+        return;
+      }
+
       final updatedState = currentState.copyWith(
         userStack: updatedStack,
         lastSwipedUser: event.userProfile,
@@ -241,7 +273,8 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
       }
 
       // Load more users if stack is getting low
-      if (updatedStack.length <= 3) {
+      // OPTIMIZED: Reduced threshold to 2 for aggressive pre-loading during fast swiping
+      if (updatedStack.length <= 2) {
         add(const LoadMoreUsers());
       }
     } catch (error) {
@@ -270,6 +303,23 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
       // Remove user from stack
       final updatedStack = List<UserProfile>.from(currentState.userStack)
         ..removeWhere((user) => user.id == event.userProfile.id);
+
+      // If stack is now empty, emit empty state
+      if (updatedStack.isEmpty) {
+        // For matches on last user, show match dialog then empty state
+        if (result.isMatch) {
+          emit(
+            DiscoveryMatchFound(
+              matchedUser: event.userProfile,
+              isNewMatch: true,
+              previousState: currentState.copyWith(userStack: const []),
+            ),
+          );
+        } else {
+          emit(DiscoveryEmpty(currentFilters: currentState.currentFilters));
+        }
+        return;
+      }
 
       final updatedState = currentState.copyWith(
         userStack: updatedStack,
@@ -300,7 +350,8 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
       }
 
       // Load more users if needed
-      if (updatedStack.length <= 3) {
+      // OPTIMIZED: Reduced threshold to 2 for aggressive pre-loading during fast swiping
+      if (updatedStack.length <= 2) {
         add(const LoadMoreUsers());
       }
     } catch (error) {

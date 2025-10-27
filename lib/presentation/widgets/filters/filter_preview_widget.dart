@@ -43,32 +43,6 @@ class _FilterPreviewWidgetState extends State<FilterPreviewWidget> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Quick Filters',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: context.textPrimary,
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: Icon(
-                      Icons.close,
-                      color: context.textSecondary,
-                      size: 24,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
             // Single column filter list - compact!
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),

@@ -39,6 +39,7 @@ class DiscoveryFilters extends Equatable {
     this.maxDistance,
     this.interests = const [],
     this.verifiedOnly = false,
+    this.hasPhotos = false,
     this.premiumOnly = false,
     this.recentlyActive = false,
   });
@@ -48,6 +49,7 @@ class DiscoveryFilters extends Equatable {
   final double? maxDistance;
   final List<String> interests;
   final bool verifiedOnly;
+  final bool hasPhotos;
   final bool premiumOnly;
   final bool recentlyActive;
 
@@ -57,6 +59,7 @@ class DiscoveryFilters extends Equatable {
     double? maxDistance,
     List<String>? interests,
     bool? verifiedOnly,
+    bool? hasPhotos,
     bool? premiumOnly,
     bool? recentlyActive,
   }) {
@@ -66,6 +69,7 @@ class DiscoveryFilters extends Equatable {
       maxDistance: maxDistance ?? this.maxDistance,
       interests: interests ?? this.interests,
       verifiedOnly: verifiedOnly ?? this.verifiedOnly,
+      hasPhotos: hasPhotos ?? this.hasPhotos,
       premiumOnly: premiumOnly ?? this.premiumOnly,
       recentlyActive: recentlyActive ?? this.recentlyActive,
     );
@@ -78,6 +82,7 @@ class DiscoveryFilters extends Equatable {
     maxDistance,
     interests,
     verifiedOnly,
+    hasPhotos,
     premiumOnly,
     recentlyActive,
   ];

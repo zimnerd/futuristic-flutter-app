@@ -50,6 +50,9 @@ class DiscoveryService {
           {
           queryParams['verifiedOnly'] = filters.verifiedOnly;
         }
+        if (filters.hasPhotos) {
+          queryParams['hasPhotos'] = filters.hasPhotos;
+        }
         if (filters.premiumOnly)
           {
           queryParams['premiumOnly'] = filters.premiumOnly;
