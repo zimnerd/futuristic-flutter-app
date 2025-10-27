@@ -4,6 +4,7 @@ import '../../../domain/entities/discovery_types.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/constants/api_constants.dart';
 import '../../../core/utils/logger.dart';
+import '../models/interest.dart';
 
 /// Service for handling user discovery and swipe operations
 ///
@@ -360,7 +361,23 @@ class DiscoveryService {
       isVerified: user['verified'] as bool? ?? false,
       interests:
           (user['interests'] as List<dynamic>?)
-              ?.map((interest) => interest as String)
+              ?.map((item) {
+                // Handle nested structure from API: {id, interest: {id, name, ...}}
+                if (item is String) return null;
+                if (item is Map<String, dynamic>) {
+                  final interestData =
+                      item['interest'] as Map<String, dynamic>?;
+                  if (interestData != null) {
+                    try {
+                      return Interest.fromJson(interestData);
+                    } catch (_) {
+                      return null;
+                    }
+                  }
+                }
+                return null;
+              })
+              .whereType<Interest>()
               .toList() ??
           [],
       occupation: profile?['occupation'] as String?,

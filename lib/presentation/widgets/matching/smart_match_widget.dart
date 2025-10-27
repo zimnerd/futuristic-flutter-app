@@ -401,7 +401,7 @@ class _SmartMatchWidgetState extends State<SmartMatchWidget>
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
-                                interest,
+                                interest.name,
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: PulseColors.primary,

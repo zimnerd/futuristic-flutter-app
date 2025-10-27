@@ -592,6 +592,9 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                         // These would come from profile data - placeholder for now
                       ],
                     ),
+                    const SizedBox(
+                      height: 60,
+                    ), // Spacing from bottom to keep pills away from action bar
                   ],
                 ),
               ),
@@ -1199,7 +1202,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      interest,
+                      interest.name,
                       style: PulseTextStyles.bodyMedium.copyWith(
                         color: context.onSurfaceColor,
                         fontWeight: FontWeight.w500,

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../../../domain/entities/user_profile.dart';
+import 'interest.dart';
 
 /// Simple match model without complex JSON generation
 /// Part of the clean architecture - easy to read and maintain
@@ -353,15 +354,24 @@ class MatchModel {
         interests:
             (userJson['interests'] as List<dynamic>?)
                 ?.map((interest) {
-                  // Handle both string interests and interest objects
+                  // Handle nested structure from API: {id, interest: {id, name, ...}}
                   if (interest is String) {
-                    return interest;
+                    return null; // Skip legacy format
                   } else if (interest is Map<String, dynamic>) {
-                    return interest['name']?.toString() ?? '';
+                    // Extract interest object from nested structure
+                    final interestData =
+                        interest['interest'] as Map<String, dynamic>?;
+                    if (interestData != null) {
+                      try {
+                        return Interest.fromJson(interestData);
+                      } catch (_) {
+                        return null;
+                      }
+                    }
                   }
-                  return interest.toString();
+                  return null;
                 })
-                .where((name) => name.isNotEmpty)
+                .whereType<Interest>()
                 .toList() ??
             [],
         occupation: userJson['occupation'],

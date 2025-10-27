@@ -5,6 +5,7 @@ import '../../../domain/entities/user_profile.dart';
 import '../../../core/utils/logger.dart';
 import '../models/match_model.dart';
 import '../models/user_model.dart';
+import '../models/interest.dart';
 
 /// Service for matching operations that matches BLoC expectations
 class MatchingService {
@@ -165,7 +166,23 @@ class MatchingService {
       isVerified: json['isVerified'] as bool? ?? false,
       interests:
           (json['interests'] as List<dynamic>?)
-              ?.map((interest) => interest as String)
+              ?.map((item) {
+                // Handle nested structure from API: {id, interest: {id, name, ...}}
+                if (item is String) return null;
+                if (item is Map<String, dynamic>) {
+                  final interestData =
+                      item['interest'] as Map<String, dynamic>?;
+                  if (interestData != null) {
+                    try {
+                      return Interest.fromJson(interestData);
+                    } catch (_) {
+                      return null;
+                    }
+                  }
+                }
+                return null;
+              })
+              .whereType<Interest>()
               .toList() ??
           [],
       occupation: json['occupation'] as String?,

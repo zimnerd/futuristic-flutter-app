@@ -180,7 +180,7 @@ class ProfileModal extends StatelessWidget {
                             ),
                           ),
                           child: Text(
-                            interest,
+                            interest.name,
                             style: TextStyle(
                               color: PulseColors.primary,
                               fontWeight: FontWeight.w500,

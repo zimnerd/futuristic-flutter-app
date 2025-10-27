@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../theme/pulse_colors.dart';
 import '../../../domain/entities/user_profile.dart';
+import '../../../data/models/interest.dart';
 import '../../widgets/profile/profile_completion_widget.dart';
 import '../../widgets/profile/verification_cta_banner.dart';
 import '../../blocs/profile/profile_bloc.dart';
@@ -710,7 +711,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           child: Text(
-            interest,
+            interest.name,
             style: PulseTextStyles.bodySmall.copyWith(
               color: PulseColors.primary,
               fontWeight: FontWeight.w500,
@@ -764,7 +765,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
           school: formData['school'] as String?,
           gender: formData['gender'] as String?,
           lookingFor: formData['lookingFor'] as String?,
-          interests: (formData['interests'] as List<dynamic>?)?.cast<String>(),
+          interests: (formData['interests'] as List<dynamic>?)
+              ?.map((item) {
+                if (item is String) return null; // Skip strings
+                if (item is Map<String, dynamic>) {
+                  try {
+                    return Interest.fromJson(item);
+                  } catch (_) {
+                    return null;
+                  }
+                }
+                return null;
+              })
+              .whereType<Interest>()
+              .toList(),
         );
 
         // Dispatch UpdateProfile event to save changes

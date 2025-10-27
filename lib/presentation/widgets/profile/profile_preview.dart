@@ -322,7 +322,7 @@ class ProfilePreview extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
           ),
           child: Text(
-            interest,
+            interest.name,
             style: TextStyle(
               color: context.onSurfaceColor,
               fontSize: 12,

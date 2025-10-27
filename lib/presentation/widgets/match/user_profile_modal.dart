@@ -275,7 +275,7 @@ class UserProfileModal extends StatelessWidget {
               .take(10) // Limit to avoid overflow
               .map(
                 (interest) => Chip(
-                  label: Text(interest, style: TextStyle(fontSize: 12)),
+                  label: Text(interest.name, style: TextStyle(fontSize: 12)),
                   backgroundColor: Theme.of(
                     context,
                   ).primaryColor.withValues(alpha: 0.1),

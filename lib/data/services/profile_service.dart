@@ -9,6 +9,7 @@ import 'package:uuid/uuid.dart';
 import '../../core/network/api_client.dart';
 import '../exceptions/app_exceptions.dart';
 import '../models/profile_model.dart';
+import '../models/interest.dart';
 import '../models/profile_stats.dart';
 import '../../domain/entities/user_profile.dart' as domain;
 import 'auth_service.dart';
@@ -202,20 +203,27 @@ class ProfileService {
     final locationStr = userData['location'] as String?;
     final location = _parseLocation(locationStr ?? '');
 
-    // Extract interests with nested structure support
+    // Extract interests with nested structure support from user_interests table
     final interestsList = userData['interests'] as List<dynamic>?;
     final interests =
         interestsList
             ?.map((item) {
-              // Handle string format (legacy)
-              if (item is String) return item;
-              // Handle nested object format (new API structure)
+              // Handle nested structure from API: {id, interest: {id, name, ...}}
+              if (item is String) return null; // Skip legacy format
               if (item is Map<String, dynamic>) {
-                return item['interest']?['name'] as String? ?? '';
+                // Extract interest object from nested structure
+                final interestData = item['interest'] as Map<String, dynamic>?;
+                if (interestData != null) {
+                  try {
+                    return Interest.fromJson(interestData);
+                  } catch (_) {
+                    return null;
+                  }
+                }
               }
-              return item.toString();
+              return null;
             })
-            .where((name) => name.isNotEmpty)
+            .whereType<Interest>()
             .toList() ??
         [];
 

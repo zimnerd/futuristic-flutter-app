@@ -149,10 +149,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
     _companyController.text =
         profile.company ?? ''; // Company not in backend schema
     _schoolController.text = profile.education ?? profile.school ?? '';
-    // Note: profile.interests is currently List<String> from UserProfile entity
-    // This is a mismatch - should be Interest objects from API
-    // For now, initialize as empty and let the API call populate actual interests
-    _selectedInterests = [];
+    // Populate interests from profile - now properly hydrated from API
+    _selectedInterests = profile.interests.isNotEmpty
+        ? List.from(profile.interests)
+        : [];
 
     // Normalize gender from backend format (MALE/FEMALE) to UI format (Man/Woman)
     _selectedGender = _normalizeGender(profile.gender) ?? 'Woman';
@@ -419,7 +419,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen>
                 ]
               : _photos)
           : _photos,
-      interests: _selectedInterests.map((i) => i.name).toList(),
+      interests: _selectedInterests,
       location: _currentProfile?.location ??
           UserLocation(latitude: 0.0, longitude: 0.0, city: 'Current City'),
       gender: isPreview ? _selectedGender : _convertGenderToBackendFormat(_selectedGender),

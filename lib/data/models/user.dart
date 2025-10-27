@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'interest.dart';
 import 'photo.dart';
 
 /// User model for the application
@@ -16,7 +17,7 @@ class User extends Equatable {
   final int? age; // Added from API spec
   final String? gender; // Added from API spec
   final String? location;
-  final List<String> interests;
+  final List<Interest> interests;
   final List<Photo> photos; // Photo objects with blurhash support
   final bool isOnline;
   final DateTime? lastSeen;
@@ -74,15 +75,22 @@ class User extends Equatable {
       interests:
           (json['interests'] as List?)
               ?.map((item) {
-                // Handle new nested structure: {id, interest: {id, name}}
-                if (item is String) return item; // Backward compatibility
-                if (item is Map<String, dynamic>) {
-                  // Extract interest.name from nested structure
-                  return item['interest']?['name'] as String? ?? '';
+                // Handle nested structure from API: {id, interest: {id, name, ...}}
+                if (item is String) {
+                  // Backward compatibility: if it's just a string, skip it
+                  return null;
                 }
-                return item.toString();
+                if (item is Map<String, dynamic>) {
+                  // Extract interest object from nested structure
+                  final interestData =
+                      item['interest'] as Map<String, dynamic>?;
+                  if (interestData != null) {
+                    return Interest.fromJson(interestData);
+                  }
+                }
+                return null;
               })
-              .where((name) => name.isNotEmpty)
+              .whereType<Interest>()
               .toList() ??
           [],
       photos:
@@ -126,7 +134,7 @@ class User extends Equatable {
       'age': age,
       'gender': gender,
       'location': location,
-      'interests': interests,
+      'interests': interests.map((interest) => interest.toJson()).toList(),
       'photos': photos.map((photo) => photo.toJson()).toList(),
       'isOnline': isOnline,
       'lastSeen': lastSeen?.toIso8601String(),
@@ -205,7 +213,7 @@ class User extends Equatable {
     int? age,
     String? gender,
     String? location,
-    List<String>? interests,
+    List<Interest>? interests,
     List<Photo>? photos,
     String? avatarBlurhash,
     bool? isOnline,

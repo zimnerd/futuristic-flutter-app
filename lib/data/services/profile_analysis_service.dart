@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:logger/logger.dart';
 
 import '../models/user_profile.dart';
+import '../models/interest.dart';
 import 'ai_preferences_service.dart';
 import '../../core/services/service_locator.dart';
 
@@ -175,13 +176,13 @@ class ProfileAnalysisService {
 
       return ProfileCompatibilityInsight(
         overallCompatibility: overallScore,
-        sharedInterests: sharedInterests,
+        sharedInterests: sharedInterests.map((i) => i.name).toList(),
         compatibilityFactors: [
           CompatibilityFactor(
             name: 'Interests',
             score: interestCompatibility,
             description: _generateInterestCompatibilityDescription(
-              sharedInterests,
+              sharedInterests.map((i) => i.name).toList(),
             ),
           ),
           CompatibilityFactor(
@@ -204,7 +205,7 @@ class ProfileAnalysisService {
         conversationSuggestions: await _generateCompatibilityBasedSuggestions(
           userProfile1,
           userProfile2,
-          sharedInterests,
+          sharedInterests.map((i) => i.name).toList(),
         ),
       );
     } catch (e) {
@@ -286,8 +287,8 @@ class ProfileAnalysisService {
   }
 
   Future<List<ConversationStarter>> _analyzeInterestsForStarters(
-    List<String> matchInterests,
-    List<String> currentUserInterests,
+    List<Interest> matchInterests,
+    List<Interest> currentUserInterests,
   ) async {
     final starters = <ConversationStarter>[];
     final sharedInterests = _findSharedInterests(
@@ -298,24 +299,28 @@ class ProfileAnalysisService {
     for (final interest in sharedInterests) {
       starters.add(
         ConversationStarter(
-          text: "I see we both love $interest! What got you started with it?",
+          text:
+              "I see we both love ${interest.name}! What got you started with it?",
           type: StarterType.interest,
           confidence: 0.9,
           category: StarterCategory.shared,
-          context: 'Shared interest: $interest',
+          context: 'Shared interest: ${interest.name}',
         ),
       );
     }
 
     // Also suggest unique interests
     final uniqueInterests = matchInterests
-        .where((interest) => !currentUserInterests.contains(interest))
+        .where(
+          (interest) =>
+              !currentUserInterests.any((other) => other.id == interest.id),
+        )
         .take(3);
 
     for (final interest in uniqueInterests) {
       starters.add(
         ConversationStarter(
-          text: "I'd love to hear about your interest in $interest!",
+          text: "I'd love to hear about your interest in ${interest.name}!",
           type: StarterType.interest,
           confidence: 0.7,
           category: StarterCategory.discovery,
@@ -522,7 +527,7 @@ class ProfileAnalysisService {
     );
   }
 
-  ProfileAnalysisResult _analyzeInterests(List<String> interests) {
+  ProfileAnalysisResult _analyzeInterests(List<Interest> interests) {
     final strengths = <ProfileStrength>[];
     final weaknesses = <ProfileWeakness>[];
     final suggestions = <ProfileSuggestion>[];
@@ -617,14 +622,14 @@ class ProfileAnalysisService {
         suggestions.length;
   }
 
-  List<String> _findSharedInterests(
+  List<Interest> _findSharedInterests(
     UserProfile profile1,
     UserProfile profile2,
   ) {
     return profile1.interests
         .where(
           (interest) => profile2.interests.any(
-            (other) => interest.toLowerCase() == other.toLowerCase(),
+            (other) => interest.id == other.id,
           ),
         )
         .toList();

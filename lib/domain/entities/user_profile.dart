@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:pulse_dating_app/core/utils/logger.dart';
+import 'package:pulse_dating_app/data/models/interest.dart';
 
 /// User profile entity for matching and display
 class UserProfile extends Equatable {
@@ -81,7 +82,7 @@ class UserProfile extends Equatable {
   final List<ProfilePhoto> photos;
   final UserLocation location;
   final bool isVerified;
-  final List<String> interests;
+  final List<Interest> interests;
   final String? occupation;
   final String? education;
   final int? height; // in cm
@@ -324,7 +325,7 @@ class UserProfile extends Equatable {
     List<ProfilePhoto>? photos,
     UserLocation? location,
     bool? isVerified,
-    List<String>? interests,
+    List<Interest>? interests,
     String? occupation,
     String? education,
     int? height,
@@ -476,7 +477,26 @@ class UserProfile extends Equatable {
           ? UserLocation.fromJson(json['location'] as Map<String, dynamic>)
           : UserLocation(address: 'Unknown', latitude: 0, longitude: 0),
       isVerified: json['isVerified'] as bool? ?? false,
-      interests: (json['interests'] as List<dynamic>?)?.cast<String>() ?? [],
+      interests:
+          (json['interests'] as List?)
+              ?.map((item) {
+                // Handle nested structure from API: {id, interest: {id, name, ...}}
+                if (item is String) {
+                  // Backward compatibility: skip string-only interests
+                  return null;
+                }
+                if (item is Map<String, dynamic>) {
+                  // Extract interest object from nested structure
+                  final interestData = item['interest'] as Map<String, dynamic>?;
+                  if (interestData != null) {
+                    return Interest.fromJson(interestData);
+                  }
+                }
+                return null;
+              })
+              .whereType<Interest>()
+              .toList() ??
+          [],
       occupation: json['occupation'] as String?,
       education: json['education'] as String?,
       height: json['height'] as int?,

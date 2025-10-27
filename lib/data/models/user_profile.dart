@@ -1,4 +1,5 @@
 import '../models/user.dart';
+import 'interest.dart';
 import 'photo.dart';
 
 /// Extended user profile for AI analysis
@@ -9,7 +10,7 @@ class UserProfile {
   final int? age;
   final String? gender;
   final String? location;
-  final List<String> interests;
+  final List<Interest> interests;
   final List<Photo> photos;
   final Map<String, dynamic>? preferences;
   final ProfilePersonality? personality;
@@ -65,7 +66,7 @@ class UserProfile {
       'age': age,
       'gender': gender,
       'location': location,
-      'interests': interests,
+      'interests': interests.map((interest) => interest.toJson()).toList(),
       'photos': photos.map((photo) => photo.toJson()).toList(),
       'preferences': preferences,
       'personality': personality?.toJson(),
@@ -85,15 +86,22 @@ class UserProfile {
       interests:
           (json['interests'] as List?)
               ?.map((item) {
-                // Handle new nested structure: {id, interest: {id, name}}
-                if (item is String) return item; // Backward compatibility
-                if (item is Map<String, dynamic>) {
-                  // Extract interest.name from nested structure
-                  return item['interest']?['name'] as String? ?? '';
+                // Handle nested structure from API: {id, interest: {id, name, ...}}
+                if (item is String) {
+                  // Backward compatibility: skip string-only interests
+                  return null;
                 }
-                return item.toString();
+                if (item is Map<String, dynamic>) {
+                  // Extract interest object from nested structure
+                  final interestData =
+                      item['interest'] as Map<String, dynamic>?;
+                  if (interestData != null) {
+                    return Interest.fromJson(interestData);
+                  }
+                }
+                return null;
               })
-              .where((name) => name.isNotEmpty)
+              .whereType<Interest>()
               .toList() ??
           [],
       photos:
