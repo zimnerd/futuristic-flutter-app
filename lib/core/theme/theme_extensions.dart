@@ -566,3 +566,124 @@ extension AccessibilityHelper on BuildContext {
     return (lighter + 0.05) / (darker + 0.05);
   }
 }
+
+/// Theme-aware gradients extension
+/// Provides adaptive gradients that work in both light and dark modes
+extension ThemeAwareGradientsExtension on BuildContext {
+  /// Light gray gradient for card sections in light mode
+  /// Light mode: Very subtle light gray gradient
+  /// Dark mode: Darker gradient for visibility
+  LinearGradient get subtleCardGradient {
+    return isDarkMode
+        ? LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              const Color(0xFF1A1F2E).withValues(alpha: 0.6),
+              const Color(0xFF2D3748).withValues(alpha: 0.4),
+            ],
+          )
+        : LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [const Color(0xFFFAFBFC), const Color(0xFFF3F5F7)],
+          );
+  }
+
+  /// Teal-tinted gradient for sections like Interests
+  /// Light mode: Subtle teal tint with light background
+  /// Dark mode: Darker teal gradient
+  LinearGradient get tealTintedGradient {
+    return isDarkMode
+        ? LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              const Color(0xFF1F3A2D).withValues(alpha: 0.6),
+              const Color(0xFF2D3748).withValues(alpha: 0.4),
+            ],
+          )
+        : LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [const Color(0xFFF3FDFB), const Color(0xFFEBF7F3)],
+          );
+  }
+
+  /// Brown-tinted gradient for sections like Lifestyle/Beliefs
+  /// Light mode: Subtle warm brown tint
+  /// Dark mode: Darker brown gradient
+  LinearGradient get brownTintedGradient {
+    return isDarkMode
+        ? LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              const Color(0xFF3A2F1F).withValues(alpha: 0.6),
+              const Color(0xFF2D3748).withValues(alpha: 0.4),
+            ],
+          )
+        : LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [const Color(0xFFFAF7F3), const Color(0xFFF5F0EB)],
+          );
+  }
+
+  /// Golden-tinted gradient for premium or special sections
+  /// Light mode: Subtle warm gold tint
+  /// Dark mode: Darker gold gradient
+  LinearGradient get goldTintedGradient {
+    return isDarkMode
+        ? LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              const Color(0xFF3A3220).withValues(alpha: 0.6),
+              const Color(0xFF2D3748).withValues(alpha: 0.4),
+            ],
+          )
+        : LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [const Color(0xFFFCFAF6), const Color(0xFFF8F5F0)],
+          );
+  }
+
+  /// Purple/lavender gradient for sections like About or General info
+  /// Light mode: Subtle purple tint
+  /// Dark mode: Darker purple gradient
+  LinearGradient get purpleTintedGradient {
+    return isDarkMode
+        ? LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              const Color(0xFF3A2D3F).withValues(alpha: 0.6),
+              const Color(0xFF2D3748).withValues(alpha: 0.4),
+            ],
+          )
+        : LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [const Color(0xFFF8F5FB), const Color(0xFFF1ECFB)],
+          );
+  }
+
+  /// Generic light surface gradient - almost invisible in light mode
+  /// Light mode: Nearly white, barely perceptible gradient
+  /// Dark mode: Dark surface gradient
+  LinearGradient get lightSurfaceGradient {
+    return isDarkMode
+        ? LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [surfaceColor, surfaceElevated],
+          )
+        : LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [const Color(0xFFFDFDFE), const Color(0xFFFBFCFD)],
+          );
+  }
+}

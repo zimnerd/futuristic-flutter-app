@@ -98,7 +98,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
     showDialog(
       context: context,
       barrierDismissible: true,
-      barrierColor: Colors.black.withValues(alpha: 0.9),
+      barrierColor: context.onSurfaceColor.withValues(alpha: 0.9),
       builder: (context) => _buildPhotoModal(),
     );
   }
@@ -254,69 +254,121 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
     return SliverAppBar(
       expandedHeight: 400,
       pinned: true,
-      backgroundColor: context.surfaceColor,
-      // Make icons always visible with white color against dark overlay
-      foregroundColor: context.onSurfaceColor,
+      // Transparent when expanded (over image), surface color when collapsed
+      backgroundColor: Colors.transparent,
+      scrolledUnderElevation: 0,
       elevation: 0,
+      // Always light text/icons for visibility over image
+      foregroundColor: context.textOnPrimary,
+      // Custom leading button with background
+      leading: Container(
+        margin: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: context.onSurfaceColor.withValues(alpha: 0.2),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () => Navigator.of(context).pop(),
+          color: context.textOnPrimary,
+        ),
+      ),
+      // Add semi-transparent dark background when pinned for better contrast
+      flexibleSpace: FlexibleSpaceBar(
+        background: Stack(
+          children: [
+            _buildPhotoCarousel(),
+            // Semi-transparent overlay at top for icon visibility when pinned
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              height: 56, // AppBar height
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      context.onSurfaceColor.withValues(alpha: 0.3),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      // Remove the top-level title - use FlexibleSpaceBar title instead
       actions: [
         if (!widget.isOwnProfile)
-          PopupMenuButton<String>(
-            icon: Icon(Icons.more_vert),
-            onSelected: (value) {
-              switch (value) {
-                case 'share':
-                  _shareProfile();
-                  break;
-                case 'report':
-                  _reportProfile();
-                  break;
-                case 'block':
-                  _blockUser();
-                  break;
-              }
-            },
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'share',
-                child: Row(
-                  children: [
-                    Icon(Icons.share, size: 20),
-                    SizedBox(width: 12),
-                    Text('Share Profile'),
-                  ],
+          Container(
+            margin: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: context.onSurfaceColor.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: PopupMenuButton<String>(
+              icon: Icon(Icons.more_vert),
+              onSelected: (value) {
+                switch (value) {
+                  case 'share':
+                    _shareProfile();
+                    break;
+                  case 'report':
+                    _reportProfile();
+                    break;
+                  case 'block':
+                    _blockUser();
+                    break;
+                }
+              },
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: 'share',
+                  child: Row(
+                    children: [
+                      Icon(Icons.share, size: 20),
+                      SizedBox(width: 12),
+                      Text('Share Profile'),
+                    ],
+                  ),
                 ),
-              ),
-              PopupMenuItem(
-                value: 'report',
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.flag_outlined,
-                      size: 20,
-                      color: context.errorColor,
-                    ),
-                    const SizedBox(width: 12),
-                    Text('Report', style: TextStyle(color: context.errorColor)),
-                  ],
+                PopupMenuItem(
+                  value: 'report',
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.flag_outlined,
+                        size: 20,
+                        color: context.errorColor,
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        'Report',
+                        style: TextStyle(color: context.errorColor),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              PopupMenuItem(
-                value: 'block',
-                child: Row(
-                  children: [
-                    Icon(Icons.block, size: 20, color: context.errorColor),
-                    const SizedBox(width: 12),
-                    Text(
-                      'Block User',
-                      style: TextStyle(color: context.errorColor),
-                    ),
-                  ],
+                PopupMenuItem(
+                  value: 'block',
+                  child: Row(
+                    children: [
+                      Icon(Icons.block, size: 20, color: context.errorColor),
+                      const SizedBox(width: 12),
+                      Text(
+                        'Block User',
+                        style: TextStyle(color: context.errorColor),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
       ],
-      flexibleSpace: FlexibleSpaceBar(background: _buildPhotoCarousel()),
     );
   }
 
@@ -399,10 +451,12 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                             style: TextStyle(
                               fontSize: 28,
                               fontWeight: FontWeight.bold,
-                              color: context.onSurfaceColor,
+                              color: context.textOnPrimary,
                               shadows: [
                                 Shadow(
-                                  color: Colors.black45,
+                                  color: context.onSurfaceColor.withValues(
+                                    alpha: 0.5,
+                                  ),
                                   offset: Offset(0, 1),
                                   blurRadius: 3,
                                 ),
@@ -418,10 +472,12 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                             style: TextStyle(
                               fontSize: 28,
                               fontWeight: FontWeight.w500,
-                              color: context.onSurfaceColor,
+                              color: context.textOnPrimary,
                               shadows: [
                                 Shadow(
-                                  color: Colors.black45,
+                                  color: context.onSurfaceColor.withValues(
+                                    alpha: 0.5,
+                                  ),
                                   offset: Offset(0, 1),
                                   blurRadius: 3,
                                 ),
@@ -442,7 +498,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                         children: [
                           Icon(
                             Icons.location_on,
-                            color: context.onSurfaceColor,
+                            color: context.textOnPrimary,
                             size: 16,
                           ),
                           const SizedBox(width: 4),
@@ -450,10 +506,12 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                             widget.profile.distanceString,
                             style: TextStyle(
                               fontSize: 14,
-                              color: context.onSurfaceColor,
+                              color: context.textOnPrimary,
                               shadows: [
                                 Shadow(
-                                  color: Colors.black45,
+                                  color: context.onSurfaceColor.withValues(
+                                    alpha: 0.5,
+                                  ),
                                   offset: Offset(0, 1),
                                   blurRadius: 2,
                                 ),
@@ -483,10 +541,12 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                               'Online now',
                               style: TextStyle(
                                 fontSize: 14,
-                                color: context.onSurfaceColor,
+                                color: context.textOnPrimary,
                                 shadows: [
                                   Shadow(
-                                    color: Colors.black45,
+                                    color: context.onSurfaceColor.withValues(
+                                      alpha: 0.5,
+                                    ),
                                     offset: Offset(0, 1),
                                     blurRadius: 2,
                                   ),
@@ -505,11 +565,13 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                             : widget.profile.bio,
                         style: TextStyle(
                           fontSize: 14,
-                          color: context.onSurfaceColor,
+                          color: context.textOnPrimary,
                           height: 1.3,
                           shadows: [
                             Shadow(
-                              color: Colors.black45,
+                              color: context.onSurfaceColor.withValues(
+                                alpha: 0.5,
+                              ),
                               offset: Offset(0, 1),
                               blurRadius: 2,
                             ),
@@ -524,18 +586,8 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                       spacing: 8,
                       runSpacing: 8,
                       children: [
-                        // Occupation badge
-                        if (widget.profile.occupation != null)
-                          _buildBadgePill(
-                            icon: Icons.work_outline,
-                            label: widget.profile.occupation!,
-                          ),
-                        // Education badge
-                        if (widget.profile.education != null)
-                          _buildBadgePill(
-                            icon: Icons.school_outlined,
-                            label: widget.profile.education!,
-                          ),
+                        // Note: Work/Education badges removed from image overlay
+                        // They're displayed in the Details section below
                         // Add social media badges if available
                         // These would come from profile data - placeholder for now
                       ],
@@ -567,13 +619,15 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                         ),
                         decoration: BoxDecoration(
                           color: isActive
-                              ? Colors.white
-                              : Colors.white.withValues(alpha: 0.4),
+                              ? context.textOnPrimary
+                              : context.textOnPrimary.withValues(alpha: 0.4),
                           borderRadius: BorderRadius.circular(2),
                           boxShadow: isActive
                               ? [
                                   BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.2),
+                                    color: context.onSurfaceColor.withValues(
+                                      alpha: 0.2,
+                                    ),
                                     blurRadius: 4,
                                     offset: const Offset(0, 2),
                                   ),
@@ -601,18 +655,18 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      Colors.black.withValues(alpha: 0.7),
-                      Colors.black.withValues(alpha: 0.5),
+                      context.onSurfaceColor.withValues(alpha: 0.7),
+                      context.onSurfaceColor.withValues(alpha: 0.5),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.2),
+                    color: context.textOnPrimary.withValues(alpha: 0.2),
                     width: 1,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.3),
+                      color: context.onSurfaceColor.withValues(alpha: 0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -623,14 +677,14 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                   children: [
                     Icon(
                       Icons.photo_library_outlined,
-                      color: context.onSurfaceColor,
+                      color: context.textOnPrimary,
                       size: 16,
                     ),
                     const SizedBox(width: 6),
                     Text(
                       '${_currentPhotoIndex + 1}/${widget.profile.photos.length}',
                       style: PulseTextStyles.labelMedium.copyWith(
-                        color: context.onSurfaceColor,
+                        color: context.textOnPrimary,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -677,50 +731,6 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
       color: context.outlineColor.withValues(alpha: 0.15),
       child: Center(
         child: Icon(Icons.error_outline, size: 48, color: context.outlineColor),
-      ),
-    );
-  }
-
-  /// Builds a badge pill for displaying profile attributes (occupation, education, etc.)
-  Widget _buildBadgePill({required IconData icon, required String label}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.3),
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: context.onSurfaceColor, size: 14),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: context.onSurfaceColor,
-              shadows: [
-                Shadow(
-                  color: Colors.black45,
-                  offset: Offset(0, 1),
-                  blurRadius: 2,
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -813,7 +823,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: context.onSurfaceColor,
+        color: context.surfaceColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: context.outlineColor.withValues(alpha: 0.1),
@@ -910,13 +920,9 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: PulseProfileColors.gradientAbout,
-        ),
+        gradient: context.purpleTintedGradient,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: PulseProfileColors.darkBorder, width: 1),
+        border: Border.all(color: context.borderColor, width: 1),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.2),
@@ -947,7 +953,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
               Text(
                 'About',
                 style: PulseTextStyles.titleLarge.copyWith(
-                  color: PulseProfileColors.darkTextPrimary,
+                  color: context.onSurfaceColor,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -958,7 +964,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
             widget.profile.bio,
             style: PulseTextStyles.bodyLarge.copyWith(
               height: 1.6,
-              color: PulseProfileColors.darkTextPrimary,
+              color: context.onSurfaceColor,
             ),
           ),
         ],
@@ -1051,7 +1057,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: context.onSurfaceColor,
+        color: context.surfaceColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: context.outlineColor.withValues(alpha: 0.1),
@@ -1110,13 +1116,9 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: PulseProfileColors.gradientInterests,
-        ),
+        gradient: context.tealTintedGradient,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: PulseProfileColors.darkBorder, width: 1),
+        border: Border.all(color: context.borderColor, width: 1),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.2),
@@ -1147,7 +1149,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
               Text(
                 'Interests',
                 style: PulseTextStyles.titleLarge.copyWith(
-                  color: PulseProfileColors.darkTextPrimary,
+                  color: context.onSurfaceColor,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -1199,7 +1201,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                     Text(
                       interest,
                       style: PulseTextStyles.bodyMedium.copyWith(
-                        color: PulseProfileColors.darkTextPrimary,
+                        color: context.onSurfaceColor,
                         fontWeight: FontWeight.w500,
                         fontSize: 15,
                       ),
@@ -1229,7 +1231,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
-                  color: PulseProfileColors.darkTextPrimary,
+                  color: context.onSurfaceColor,
                 ),
               ),
               const Spacer(),
@@ -1351,13 +1353,9 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: PulseProfileColors.gradientLifestyle,
-        ),
+        gradient: context.brownTintedGradient,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: PulseProfileColors.darkBorder, width: 1),
+        border: Border.all(color: context.outlineColor, width: 1),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.2),
@@ -1388,7 +1386,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
               Text(
                 'Physical & Beliefs',
                 style: PulseTextStyles.titleLarge.copyWith(
-                  color: PulseProfileColors.darkTextPrimary,
+                  color: context.onSurfaceColor,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -1478,13 +1476,9 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: PulseProfileColors.gradientLifestyle,
-        ),
+        gradient: context.brownTintedGradient,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: PulseProfileColors.darkBorder, width: 1),
+        border: Border.all(color: context.outlineColor, width: 1),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.2),
@@ -1515,7 +1509,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
               Text(
                 'Lifestyle Choices',
                 style: PulseTextStyles.titleLarge.copyWith(
-                  color: PulseProfileColors.darkTextPrimary,
+                  color: context.onSurfaceColor,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -1537,13 +1531,9 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: PulseProfileColors.gradientGoals,
-        ),
+        gradient: context.goldTintedGradient,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: PulseProfileColors.darkBorder, width: 1),
+        border: Border.all(color: context.outlineColor, width: 1),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.2),
@@ -1574,7 +1564,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
               Text(
                 'Looking For',
                 style: PulseTextStyles.titleLarge.copyWith(
-                  color: PulseProfileColors.darkTextPrimary,
+                  color: context.onSurfaceColor,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -1605,7 +1595,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                 child: Text(
                   goal,
                   style: PulseTextStyles.bodyMedium.copyWith(
-                    color: PulseProfileColors.darkTextPrimary,
+                    color: context.onSurfaceColor,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -1624,13 +1614,9 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: PulseProfileColors.gradientLanguages,
-        ),
+        gradient: context.purpleTintedGradient,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: PulseProfileColors.darkBorder, width: 1),
+        border: Border.all(color: context.outlineColor, width: 1),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.2),
@@ -1661,7 +1647,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
               Text(
                 'Languages',
                 style: PulseTextStyles.titleLarge.copyWith(
-                  color: PulseProfileColors.darkTextPrimary,
+                  color: context.onSurfaceColor,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -1692,7 +1678,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                 child: Text(
                   language,
                   style: PulseTextStyles.bodyMedium.copyWith(
-                    color: PulseProfileColors.darkTextPrimary,
+                    color: context.onSurfaceColor,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -1713,13 +1699,9 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: PulseProfileColors.gradientPersonality,
-        ),
+        gradient: context.purpleTintedGradient,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: PulseProfileColors.darkBorder, width: 1),
+        border: Border.all(color: context.outlineColor, width: 1),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.2),
@@ -1750,7 +1732,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
               Text(
                 'Personality',
                 style: PulseTextStyles.titleLarge.copyWith(
-                  color: PulseProfileColors.darkTextPrimary,
+                  color: context.onSurfaceColor,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -1781,7 +1763,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
                 child: Text(
                   trait,
                   style: PulseTextStyles.bodyMedium.copyWith(
-                    color: PulseProfileColors.darkTextPrimary,
+                    color: context.onSurfaceColor,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -1840,7 +1822,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
               Text(
                 widget.profile.promptAnswers[i],
                 style: PulseTextStyles.bodyLarge.copyWith(
-                  color: PulseProfileColors.darkTextPrimary,
+                  color: context.onSurfaceColor,
                   height: 1.5,
                 ),
               ),
@@ -1854,13 +1836,9 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: PulseProfileColors.gradientAbout,
-        ),
+        gradient: context.purpleTintedGradient,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: PulseProfileColors.darkBorder, width: 1),
+        border: Border.all(color: context.outlineColor, width: 1),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.2),
@@ -1891,7 +1869,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
               Text(
                 'My Vibe',
                 style: PulseTextStyles.titleLarge.copyWith(
-                  color: PulseProfileColors.darkTextPrimary,
+                  color: context.onSurfaceColor,
                   fontWeight: FontWeight.w600,
                 ),
               ),
