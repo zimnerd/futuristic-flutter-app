@@ -583,6 +583,30 @@ class ProfileService {
         _logger.i(
           '📤 Sending extended profile update: ${changedExtendedFields.keys}',
         );
+        
+        // Normalize enum values to match backend expectations
+        if (changedExtendedFields.containsKey('politics') &&
+            changedExtendedFields['politics'] != null) {
+          changedExtendedFields['politics'] = _normalizeEnumValue(
+            changedExtendedFields['politics'],
+            'politics',
+          );
+        }
+        if (changedExtendedFields.containsKey('drinking') &&
+            changedExtendedFields['drinking'] != null) {
+          changedExtendedFields['drinking'] = _normalizeEnumValue(
+            changedExtendedFields['drinking'],
+            'drinking',
+          );
+        }
+        if (changedExtendedFields.containsKey('drugs') &&
+            changedExtendedFields['drugs'] != null) {
+          changedExtendedFields['drugs'] = _normalizeEnumValue(
+            changedExtendedFields['drugs'],
+            'drugs',
+          );
+        }
+        
         _logger.d('📋 Extended fields data: $changedExtendedFields');
         final response = await _apiClient.put(
           '/users/me/profile',
@@ -1143,6 +1167,24 @@ class ProfileService {
 
   /// Sync confirmed photos with user profile
   /// Call this after confirming temporary uploads to link photos to profile
+  /// Normalize enum values to match backend expectations
+  /// Converts display values to API-compatible values
+  String _normalizeEnumValue(String value, String fieldName) {
+    switch (fieldName) {
+      case 'politics':
+        // Convert any "libertarian" to "liberal"
+        return value.toLowerCase() == 'libertarian'
+            ? 'liberal'
+            : value.toLowerCase();
+      case 'drinking':
+      case 'drugs':
+        // Convert to lowercase and replace spaces with dashes
+        return value.toLowerCase().replaceAll(' ', '-');
+      default:
+        return value;
+    }
+  }
+
   Future<List<domain.ProfilePhoto>> syncPhotos({
     required List<ProfilePhotoSync> photos,
   }) async {
@@ -1167,7 +1209,10 @@ class ProfileService {
 
       if (response.statusCode == 200) {
         final responseData = response.data as Map<String, dynamic>;
-        final photosData = responseData['data'] as List<dynamic>;
+        
+        // The API returns {data: {photos: [...]}} structure
+        final dataWrapper = responseData['data'] as Map<String, dynamic>;
+        final photosData = (dataWrapper['photos'] ?? []) as List<dynamic>;
 
         _logger.i('✅ Photos synced successfully');
 
